@@ -9,12 +9,17 @@ public class Position implements Comparable<Position>
 	/**
 	 * The line number in the file
 	 */
-	protected int m_line = 0;
+	private final int m_line;
 	
 	/**
 	 * The column number in the file
 	 */
-	protected int m_column = 0;
+	private final int m_column;
+	
+	/**
+	 * An object representing the position (0, 0)
+	 */
+	public static final Position ZERO = new Position(0, 0);
 	
 	/**
 	 * Creates a new position object.

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class AnnotatedString
 {
@@ -43,12 +45,31 @@ public class AnnotatedString
 	 */
 	public static final transient int CRLF_SIZE = System.getProperty("line.separator").length();
 
+	/**
+	 * Creates a new empty annotated string
+	 */
 	public AnnotatedString()
 	{
 		super();
 		m_map = new HashMap<Range,Range>();
 		m_builder = new StringBuilder();
 		m_lines = new ArrayList<String>();
+	}
+	
+	/**
+	 * Creates a new annotated string by copying the contents of
+	 * another
+	 * @param s The string to copy
+	 */
+	public AnnotatedString(AnnotatedString s)
+	{
+		super();
+		m_map = new HashMap<Range,Range>(s.m_map.size());
+		m_map.putAll(s.m_map);
+		m_builder = new StringBuilder();
+		m_builder.append(s.m_builder);
+		m_lines = new ArrayList<String>(s.m_lines.size());
+		m_lines.addAll(s.m_lines);
 	}
 
 	/**
@@ -181,7 +202,7 @@ public class AnnotatedString
 			// Cannot guess source position in a multi-line range
 			return null;
 		}
-		int col_offset = p.m_column - r.getStart().m_column;
+		int col_offset = p.getColumn() - r.getStart().getColumn();
 		Position p_source_start = r_source.getStart();
 		Position out_p = new Position(p_source_start.getLine(), p_source_start.getColumn() + col_offset);
 		return out_p;
@@ -218,11 +239,28 @@ public class AnnotatedString
 		return out.toString();
 	}
 
+	/**
+	 * Returns a substring of the current annotated string.
+	 * @param r The range representing the part of the current string to keep.
+	 * @return The substring. All references to the external text file are
+	 * preserved (and their positions shifted accordingly) in the output
+	 * string.
+	 */
 	public AnnotatedString substring(/*@ non_null @*/ Range r)
 	{
 		return substring(r.getStart(), r.getEnd());
 	}
 
+	/**
+	 * Returns a substring of the current annotated string.
+	 * @param start The start position of the portion of the current
+	 * string to keep
+	 * @param end The end position of the portion of the current
+	 * string to keep
+	 * @return The substring. All references to the external text file are
+	 * preserved (and their positions shifted accordingly) in the output
+	 * string.
+	 */
 	public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
 	{
 		AnnotatedString out_as = new AnnotatedString();
@@ -232,7 +270,14 @@ public class AnnotatedString
 			if (i == m_currentLine)
 			{
 				String builder_string = m_builder.toString();
-				out_as.m_builder.append(builder_string.substring(0, Math.min(builder_string.length(), end.getColumn() + 1)));
+				if (i == start.getLine())
+				{
+					out_as.m_builder.append(builder_string.substring(start.getColumn(), Math.min(builder_string.length(), end.getColumn() + 1)));
+				}
+				else
+				{
+					out_as.m_builder.append(builder_string.substring(0, Math.min(builder_string.length(), end.getColumn() + 1)));
+				}
 			}
 			else
 			{
@@ -241,7 +286,7 @@ public class AnnotatedString
 				{
 					if (start.getLine() == end.getLine())
 					{
-						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length(), end.getColumn() + 1));
+						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length() - 1, end.getColumn() + 1));
 						out_as.m_builder.append(truncated_line);
 					}
 					else
@@ -256,6 +301,8 @@ public class AnnotatedString
 				}
 			}
 		}
+		out_as.m_currentLine = out_as.m_lines.size();
+		out_as.m_currentColumn = out_as.m_builder.toString().length();
 		// Second, remap associations
 		Range in_range = new Range(start, end);
 		for (Map.Entry<Range,Range> entry : m_map.entrySet())
@@ -271,6 +318,18 @@ public class AnnotatedString
 			}
 		}
 		return out_as;
+	}
+	
+	/**
+	 * Returns a substring of the current annotated string.
+	 * @param start The start position of the portion of the current
+	 * string to keep
+	 * @return The substring, from the start position to the very end of
+	 * the string
+	 */
+	public AnnotatedString substring(/*@ non_null @*/ Position start)
+	{
+		return substring(start, new Position(Integer.MAX_VALUE - 10, Integer.MAX_VALUE - 10));
 	}
 
 	/**
@@ -288,6 +347,122 @@ public class AnnotatedString
 		}
 		length += m_builder.toString().length();
 		return length;
+	}
+
+	/**
+	 * Attempts to match a regular expression to this string.
+	 * @param regex The regex to find. The pattern must not span multiple lines.
+	 * @param start The start position
+	 * @return A match, or {@code null} if the string cannot be found or
+	 * the position is outside the boundaries of the string
+	 */
+	public Match find(/* @non_null @*/ String regex, /* @non_null @*/ Position start)
+	{
+		String line_to_find = null;
+		for (int start_l = start.getLine(); start_l <= m_lines.size(); start_l++)
+		{
+			if (start_l < m_lines.size())
+			{
+				line_to_find = m_lines.get(start_l);
+			}
+			else if (start_l == m_lines.size())
+			{
+				line_to_find = m_builder.toString();
+			}
+			else
+			{
+				continue;
+			}
+			Pattern pat = Pattern.compile(regex);
+			Matcher mat = pat.matcher(line_to_find);
+			if (!mat.find(start.getColumn()))
+			{
+				continue;
+			}
+			return new Match(mat.group(0), new Position(start_l, mat.start()));
+		}
+		return null;
+	}
+
+	/**
+	 * Attempts to match a regular expression to this string. 
+	 * @param regex The string to find. The pattern must not span multiple lines.
+	 * @return A match, or {@code null} if the string cannot be found
+	 */
+	public Match find(/* @non_null @*/ String regex)
+	{
+		return find(regex, Position.ZERO);
+	}
+
+	/**
+	 * Replaces a pattern by another in the string.
+	 * @param regex The pattern to find. The pattern must not span multiple
+	 * lines.
+	 * @param to The string to replace it with. It must not span multiple
+	 * lines. If the replacement contains
+	 * occurrences of capture groups, and those capture groups were linked to
+	 * character ranges in the external text file, this link will be lost in
+	 * the resulting string. 
+	 * @param start The position where to start searching
+	 * @return A <em>new</em> instance of annotated string with the
+	 * replacement being made.
+	 */
+	public /*@ non_null @*/ AnnotatedString replace(String regex, String to, Position start)
+	{
+		Match m = find(regex, start);
+		if (m == null)
+		{
+			// No match; just return a copy of the whole string
+			return new AnnotatedString(this); 
+		}
+		Position found_pos = m.getPosition();
+		AnnotatedString part_left = null;
+		if (m.getPosition().equals(Position.ZERO))
+		{
+			// Match found right at the beginning
+			part_left = new AnnotatedString();
+		}
+		else
+		{
+			if (found_pos.getColumn() == 0)
+			{
+				part_left = substring(Position.ZERO, new Position(found_pos.getLine() - 1, Integer.MAX_VALUE));
+			}
+			else
+			{
+				part_left = substring(Position.ZERO, new Position(found_pos.getLine(), found_pos.getColumn() - 1));
+			}
+		}
+		part_left.append(to);
+		AnnotatedString part_right = substring(new Position(found_pos.getLine(), found_pos.getColumn() + m.getMatch().length()));
+		part_left.append(part_right);
+		return part_left;
+	}
+	
+	public /*@ non_null @*/ AnnotatedString replace(String regex, String to)
+	{
+		return replace(regex, to, Position.ZERO);
+	}
+	
+	public /*@ non_null @*/ AnnotatedString replaceAll(String regex, String to)
+	{
+		int max_iterations = 1000;
+		AnnotatedString replaced = this;
+		for (int i = 0; i < max_iterations; i++)
+		{
+			AnnotatedString rep = replaced.replace(regex, to);
+			if (rep.toString().compareTo(replaced.toString()) != 0)
+			{
+				// Something changed
+				replaced = rep;
+			}
+			else
+			{
+				// No change: stop
+				break;
+			}
+		}
+		return replaced;
 	}
 
 	/**

@@ -2,11 +2,13 @@ package ca.uqac.lif.texlint;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static ca.uqac.lif.texlint.AnnotatedString.CRLF;
 import static ca.uqac.lif.texlint.AnnotatedString.CRLF_SIZE;
 
+@SuppressWarnings("unused")
 public class AnnotatedStringTest 
 {
 	@Test
@@ -167,6 +169,29 @@ public class AnnotatedStringTest
 	}
 	
 	@Test
+	public void testAppend7()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Hello", Range.make(0, 0, 4));
+		as.append(" ");
+		AnnotatedString as2 = new AnnotatedString().append("world!", Range.make(1, 10, 15));
+		as.append(as2);
+		assertEquals("Hello world!", as.toString());
+		Position p = as.getSourcePosition(new Position(0, 1));
+		assertNotNull(p);
+		assertEquals(0, p.getLine());
+		assertEquals(1, p.getColumn());
+		p = as.getSourcePosition(new Position(0, 5));
+		assertNull(p); // No association registered for the space between hello and world
+		p = as.getSourcePosition(new Position(0, 7));
+		assertNotNull(p);
+		assertEquals(1, p.getLine());
+		assertEquals(11, p.getColumn());
+		p = as.getSourcePosition(new Position(1, 7));
+		assertNull(p);
+	}
+	
+	@Test
 	public void testSubstring1()
 	{
 		AnnotatedString as_orig = new AnnotatedString();
@@ -213,5 +238,69 @@ public class AnnotatedStringTest
 		assertNotNull(p);
 		assertEquals(0, p.getLine());
 		assertEquals(7, p.getColumn());
+	}
+	
+	@Test
+	public void testFind1()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello", Range.make(0, 0, 4)).appendNewLine().append("world!", Range.make(0, 6, 11));
+		Match m = as_orig.find("ll");
+		assertNotNull(m);
+		assertEquals("ll", m.getMatch());
+		Position p = m.getPosition();
+		assertEquals(0, p.getLine());
+		assertEquals(2, p.getColumn());
+		m = as_orig.find("w..ld");
+		assertNotNull(m);
+		assertEquals("world", m.getMatch());
+		p = m.getPosition();
+		assertEquals(1, p.getLine());
+		assertEquals(0, p.getColumn());
+	}
+	
+	@Test
+	public void testReplace1()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello", Range.make(0, 0, 4)).appendNewLine().append("world!", Range.make(0, 6, 11));
+		AnnotatedString as_rep = as_orig.replace("ll", "rr");
+		assertNotNull(as_rep);
+		assertEquals("Herro" + CRLF + "world!", as_rep.toString());
+		Position p = as_rep.getSourcePosition(new Position(0, 1));
+		assertEquals(0, p.getLine());
+		assertEquals(1, p.getColumn());
+		p = as_rep.getSourcePosition(new Position(0, 2));
+		assertNull(p); // p is a replacement string
+	}
+	
+	@Test
+	public void testReplace2()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello", Range.make(0, 0, 4)).appendNewLine().append("world!", Range.make(0, 6, 11));
+		AnnotatedString as_rep = as_orig.replace("He", "Al");
+		assertNotNull(as_rep);
+		assertEquals("Alllo" + CRLF + "world!", as_rep.toString());
+		Position p = as_rep.getSourcePosition(new Position(0, 1));
+		assertNull(p); // p is a replacement string
+		p = as_rep.getSourcePosition(new Position(0, 2));
+		assertEquals(0, p.getLine());
+		assertEquals(2, p.getColumn());
+	}
+	
+	@Test
+	public void testReplaceAll1()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello", Range.make(0, 0, 4)).appendNewLine().append("wolld!", Range.make(0, 6, 11));
+		AnnotatedString as_rep = as_orig.replaceAll("ll", "rr");
+		assertNotNull(as_rep);
+		assertEquals("Herro" + CRLF + "worrd!", as_rep.toString());
+		Position p = as_rep.getSourcePosition(new Position(0, 1));
+		assertEquals(0, p.getLine());
+		assertEquals(1, p.getColumn());
+		p = as_rep.getSourcePosition(new Position(0, 2));
+		assertNull(p); // p is a replacement string
 	}
 }

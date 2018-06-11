@@ -81,12 +81,12 @@ public class Range implements Comparable<Range>
 	 */
 	protected static int guessLength(Position start, Position end)
 	{
-		if (start.m_line != end.m_line)
+		if (start.getLine() != end.getLine())
 		{
 			// Cannot guess length for ranges that span multiple lines
 			return -1;
 		}
-		return (end.m_column - start.m_column + 1);
+		return (end.getColumn() - start.getColumn() + 1);
 	}
 	
 	@Override
@@ -229,7 +229,7 @@ public class Range implements Comparable<Range>
 	 */
 	public boolean isMultiLine()
 	{
-		return m_start.m_line != m_end.m_line;
+		return m_start.getLine() != m_end.getLine();
 	}
 	
 	/**
