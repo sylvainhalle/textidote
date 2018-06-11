@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    AntRun, a general-purpose Ant build script
+    Copyright (C) 2015-2016  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<project
+  name="AntRun"
+  default="dist"
+  basedir="."
+  xmlns:jacoco="antlib:org.jacoco.ant">
+  
+  <!-- The build script's version number. Do not edit! -->
+  <property name="antrun.version" value="1.3"/>
+  
+  <!-- Load project properties from XML file -->
+  <xmlproperty file="config.xml"/>
+  
+  <!--
+    Default values. Note that Ant's properties cannot be overwritten once
+    set; therefore, any property with the same name defined in config.xml
+    will have precedence over the values below.
+  -->
+  
+  <!-- The project's display name -->
+  <property name="build.name" value="AntRun"/>
+  
+  <!-- The project's version number -->
+  <property name="build.version" value="1.0"/>
+  
+  <!-- The folder where libraries (ant-contrib, etc.) will be downloaded
+       if necessary -->
+  <property name="build.libdir" value="lib"/>
+
+  <!-- The folder with the project's source files -->
+  <property name="build.srcdir" value="Source/Core/src"/>
+  
+  <!-- The folder where the compiled files should go -->
+  <property name="build.bindir" value="Source/Core/bin"/>
+  
+  <!-- The folder where the downloaded dependencies (if any) should go -->
+  <property name="build.depdir" value="dep"/>
+  
+  <!-- The folder with the project's test source files -->
+  <property name="build.test.srcdir" value="Source/CoreTest/src"/>
+  
+  <!-- The folder where the compiled test files should go -->
+  <property name="build.test.bindir" value="Source/CoreTest/bin"/>
+  
+  <!-- The folder where the Javadoc files should go -->
+  <property name="build.docdir" value="doc"/>
+  
+  <!-- The folder where the jUnit test reports should go -->
+  <property name="test.reportdir" value="tests/junit"/>
+  
+    <!-- The folder where the coverage test reports should go -->
+  <property name="coverage.reportdir" value="tests/coverage"/>
+  
+  <!-- The project's main class. This is used for the generation of the
+       runable JAR file in the "jar" target -->
+  <property name="build.mainclass" value="ca.uqac.lif.antrun.Main"/>
+  
+  <!-- Debug level. If set to true, will produce more detailed reports
+       on test code coverage. Set to false for production. -->
+  <property name="build.debug" value="true"/>
+  
+  <!-- Target jar file -->
+  <property name="build.jar.filename" value="AntRun.jar"/>
+  
+  <!-- Generate a jar with the documentation -->
+  <property name="build.jar.withdoc" value="false"/>
+  
+  <!-- Generate a jar with the sources -->
+  <property name="build.jar.withsrc" value="false"/>
+  
+  <!-- Generate a jar with the dependencies -->
+  <property name="build.jar.withdeps" value="true"/>
+  
+  <!-- Base name of the jar to produce (used by the "zip" target) -->
+  <basename property="build.jar.basename" file="${build.jar.filename}" suffix=".jar"/>
+  
+  <!-- Location of the Java 6 boot classpath. If this is not set, the compiler
+       will resort to the default boot classpath. -->
+  <property environment="env"/>
+  <property name="java6.boot.classpath" value="${env.JAVA6_BOOTCLASSES}"/>
+  
+  <!-- Target: initialization
+       All other targets should ultimately
+       depend on this one (except perhaps very simple ones such as
+       "clean".
+  -->
+  <target name="init" depends="ant-contrib,xmltask"
+    description="Initialize the project">
+    <!-- Load ant-contrib -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml"
+      classpath="${build.libdir}/ant-contrib-1.0b3.jar"/>
+    <!-- Load xmltask -->
+    <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask"
+      classpath="${build.libdir}/${xmltask.jarname}"/>
+    <!-- Set the extension dir -->
+    <propertyregex property="build.extdir" 
+               input="${java.ext.dirs}" 
+               regexp="[${path.separator}]([^${path.separator}]+)$" 
+               select="\1"/>
+    <echo level="info">Your extension folder is ${build.extdir}</echo>
+    <!-- Create depdir -->
+    <mkdir dir="${build.depdir}"/>
+    <!-- Create a global classpath that other tasks will refer to -->
+    <path id="build.classpath">
+      <pathelement location="${build.bindir}"/>
+      <fileset dir="${build.depdir}">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${build.libdir}">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement path="${java.class.path}"/>
+    </path>
+    <path id="build.test.classpath">
+      <pathelement location="${build.bindir}"/>
+      <fileset dir="${build.depdir}">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${build.libdir}">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement location="${build.test.bindir}"/>
+      <pathelement path="${java.class.path}"/>
+    </path>
+  </target>
+
+  <!-- Check if a local rt.jar is present. If so, it will override the
+       default rt.jar present in the system. The "compile" task should
+       depend on this. -->
+  <target name="check-rt" depends="init">
+    <available file="rt.jar" property="localrt.present"/>
+    <if>
+      <available file="rt.jar"/>
+      <then>
+        <echo message="Local bootstrap JAR is present"/>
+      </then>
+      <else>
+        <echo message="Local bootstrap JAR is not present"/>
+      </else>
+    </if>
+    <var name="java6.boot.classpath" unset="true"/>
+    <property name="java6.boot.classpath" value="rt.jar"/>
+  </target>
+  
+  <!-- Target: zip
+       Zips the jar
+  -->
+  <target name="zip" description="Zips the compiled jar">
+    <delete file="${build.jar.basename}-${build.version}.zip"/>
+    <zip basedir="." destfile="${build.jar.basename}-${build.version}.zip" includes="${build.jar.filename},Readme.md"/>
+  </target>
+  
+  <!-- Target: dist
+       This is the default target when Ant is invoked without an argument.
+  -->
+  <target name="dist" depends="jar" description="Same as jar">
+    <!-- Do nothing -->
+  </target>
+  
+  <!-- Target: compile
+       Compiles the main project
+  -->
+  <target name="compile" depends="init,check-rt" description="Compile the sources">
+    <mkdir dir="${build.bindir}"/>
+    <javac
+      target="1.6" source="1.6"
+      bootclasspath="${java6.boot.classpath}"
+      srcdir="${build.srcdir}"
+      destdir="${build.bindir}"
+      debug="${build.debug}"
+      includeantruntime="false">
+      <classpath refid="build.classpath"/>
+    </javac>
+    <copy todir="${build.bindir}" includeemptydirs="false">
+      <fileset dir="${build.srcdir}">
+        <exclude name="**/*.java"/>
+        <exclude name="**/doc-files/**"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <!-- Target: compile-tests
+       Compiles the unit tests
+  -->
+  <target name="compile-tests" depends="init,compile,junit" description="Compile the test sources">
+    <mkdir dir="${build.test.bindir}"/>
+    <javac
+      target="1.6" source="1.6"
+      bootclasspath="${java6.boot.classpath}"
+      srcdir="${build.test.srcdir}"
+      destdir="${build.test.bindir}"
+      includeantruntime="false">
+      <classpath refid="build.classpath"/>
+    </javac>
+    <copy todir="${build.test.bindir}" includeemptydirs="false">
+      <fileset dir="${build.test.srcdir}" excludes="**/*.java"/>
+    </copy>
+  </target>
+  
+  <!-- Target: javadoc
+       Generates the javadoc associated to the project
+  -->
+  <target name="javadoc" depends="init,doclet" description="Generate the documentation">
+    <mkdir dir="${build.docdir}"/>
+    <javadoc sourcepath="${build.srcdir}"
+             destdir="${build.docdir}"
+             packagenames="*"
+             excludepackagenames=""
+             defaultexcludes="yes"
+             author="true"
+             version="true"
+             use="true"
+             Encoding="utf8"
+             docencoding="utf8"
+             charset="utf8"
+             windowtitle="${build.name} Documentation">
+      <doclet name="ch.raffael.mddoclet.MarkdownDoclet" path="lib/markdown-doclet-1.4-all.jar"></doclet>
+      <doctitle><![CDATA[<h1>]]>${build.name}<![CDATA[ Documentation</h1>]]></doctitle>
+      <bottom><![CDATA[<i>Copyright&nbsp;&#169; ]]>${build.author}<![CDATA[. All Rights Reserved.</i>]]></bottom>
+      <link href="http://docs.oracle.com/javase/6/docs/api/"/>
+      <classpath refid="build.classpath"/>
+    </javadoc>
+  </target>
+  
+  <!-- Target: jar
+       Generates a JAR file with the compiled files and javadoc
+  -->
+  <target name="jar" depends="compile,javadoc" description="Create the runnable JAR">
+      <tstamp>
+         <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+      </tstamp>
+      <jar destfile="${build.jar.filename}" filesetmanifest="skip">
+	  <manifest>
+	      <attribute name="Main-Class" value="${build.mainclass}"/>
+	      <attribute name="Class-Path" value="."/>
+	      <attribute name="Built-By" value="${user.name}"/>
+	      <attribute name="Built-Date" value="${TODAY}"/>
+          <attribute name="Implementation-Version" value="${build.version}"/>
+	  </manifest>
+	  <fileset dir="${build.bindir}"/>
+	  <zipgroupfileset dir="${build.depdir}">
+	    <include name="**/*.jar" if="${build.jar.withdeps}"/>
+	  </zipgroupfileset>
+	  <fileset dir="${build.srcdir}">
+	    <include name="*" if="${build.jar.withsrc}"/>
+	  </fileset>
+	  <fileset dir="${build.docdir}">
+	    <include name="*" if="${build.jar.withdoc}"/>
+	  </fileset>
+      </jar>
+  </target>
+  
+  <!-- Target: test
+       Performs tests with jUnit and generates code coverage report
+       with JaCoCo
+  -->
+  <target name="test" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests and generate coverage report">
+    <mkdir dir="${test.reportdir}"/>
+    <mkdir dir="${coverage.reportdir}"/>
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+      <classpath path="${build.libdir}/jacocoant.jar"/>
+    </taskdef>
+    <jacoco:coverage>
+      <junit printsummary="yes" haltonfailure="false" fork="true"
+        failureproperty="test.failed">
+        <classpath refid="build.test.classpath"/>
+        <formatter type="brief" usefile="false"/>
+        <formatter type="xml"/>
+        <batchtest fork="yes" todir="${test.reportdir}">
+          <fileset dir="${build.test.srcdir}">
+            <include name="**/*.java"/>
+          </fileset>
+        </batchtest>
+      </junit>
+    </jacoco:coverage>
+    <!-- jUnit report -->
+    <junitreport todir="${test.reportdir}">
+        <fileset dir="${test.reportdir}">
+            <include name="TEST-*.xml"/>
+        </fileset>
+        <report format="frames" todir="${test.reportdir}"/>
+    </junitreport>
+    <!-- JaCoCo report -->
+    <jacoco:report>
+      <executiondata>
+        <file file="jacoco.exec"/>
+      </executiondata>
+      <structure name="${build.name}">
+        <classfiles>
+            <fileset dir="${build.bindir}"/>
+        </classfiles>
+        <sourcefiles encoding="UTF-8">
+            <fileset dir="${build.srcdir}"/>
+        </sourcefiles>
+      </structure>
+      <html destdir="${coverage.reportdir}"/>
+    </jacoco:report>
+    <!-- Fail if some test has failed -->
+    <fail if="test.failed"/>
+  </target>
+  
+  <!-- Target: install-deps
+       Copies whatever was fetched by the download-deps task into the
+       system's extension folder. This task should probably be run as
+       administrator to work.
+  -->
+  <target name="install-deps" depends="init">
+    <copy todir="${build.extdir}" includeemptydirs="false">
+      <fileset dir="${build.depdir}" includes="*.jar" />
+    </copy>
+  </target>
+  
+  <!-- Target: clean
+       Wipes any temporary files or directories
+  -->
+  <target name="clean" description="Clean the project">
+    <delete>
+      <fileset dir="." includes="**/*.xml~"/>
+    </delete>
+    <delete dir="${build.libdir}"/>
+    <delete dir="${build.bindir}"/>
+    <delete dir="${build.docdir}"/>
+    <delete dir="${build.depdir}"/>
+    <delete dir="${test.reportdir}"/>
+    <delete dir="${coverage.reportdir}"/>
+    <delete file="jacoco.exec"/>
+  </target>
+  
+  <!-- Target: show-properties
+       Prints all the properties.
+  -->
+  <target name="show-properties" depends="init" description="Print all properties">
+      <echoproperties/>
+  </target>
+  
+  <!-- Target: dummy
+       Do nothing. This is only to test the build file
+  -->
+  <target name="dummy" description="Do nothing">
+      <!-- Do nothing -->
+  </target>
+  
+  <!-- Target: run
+       Invokes the runnable jar generated by the "dist" target
+  -->
+  <target name="run" description="Invoke the runnable JAR">
+    <java jar="${build.jar.filename}" fork="true"/>
+  </target>
+  
+  <!-- Target: antrun-version
+       Shows the version of AntRun
+  -->
+  <target name="antrun-version" description="Show build script version">
+    <echo message="This is AntRun version ${antrun.version}" level="info"/>
+  </target>
+  
+  <!-- ==========================================
+    Bootstrap targets
+    The following targets download the necessary dependencies
+    the build script requires
+    ========================================== -->
+  
+  <!-- Target: ant-contrib.
+       Downloads ant-contrib, only if it does not exist
+  -->
+  <condition property="ant-contrib.absent" value="false" else="true">
+    <available file="${build.libdir}/ant-contrib-1.0b3.jar"/>
+  </condition>
+  <target name="ant-contrib" if="${ant-contrib.absent}"
+    description="Install ant-contrib if not present">
+    <echo message="ant-contrib is not installed. Downloading..." level="info"/>
+    <mkdir dir="${build.libdir}"/>
+    <get src="http://sylvainhalle.github.io/AntRun/dependencies/ant-contrib-1.0b3-bin.zip" dest="${build.libdir}/ant-contrib-1.0b3-bin.zip"/>
+    <unzip src="${build.libdir}/ant-contrib-1.0b3-bin.zip" dest="${build.libdir}">
+      <patternset>
+        <include name="**/*.jar"/>
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
+  </target>
+  
+  <!-- Target: xmltask
+       Download XmlTask JAR if not present, and put it in the lib folder
+  -->
+  <property name="xmltask.jarname" value="xmltask.jar"/>
+  <condition property="xmltask.absent" value="false" else="true">
+    <available file="${build.libdir}/${xmltask.jarname}"/>
+  </condition>
+  <target name="xmltask" if="${xmltask.absent}">
+    <mkdir dir="${build.libdir}"/>
+    <get src="http://sylvainhalle.github.io/AntRun/dependencies/xmltask.jar" dest="${build.libdir}/${xmltask.jarname}"/>
+  </target>
+
+  <!-- Target: download-rt6
+       Download boot classpath for Java 1.6 and put it in the root folder
+  -->
+  <target name="download-rt6">
+    <get src="http://sylvainhalle.github.io/AntRun/dependencies/1.6.0_45/rt.jar" dest="."/>
+  </target>
+
+  
+  <!-- Target: junit
+       Download jUnit JARs if not present, and puts them in the lib folder
+  -->
+  <property name="junit.jarname" value="junit-4.12.jar"/>
+  <property name="junit.hamcrest" value="hamcrest-core-1.3.jar"/>
+  <condition property="junit.absent" value="false" else="true">
+    <and>
+      <available file="${build.libdir}/${junit.jarname}"/>
+      <available file="${build.libdir}/${junit.hamcrest}"/>
+    </and>
+  </condition>
+  <target name="junit" if="${junit.absent}" description="Install jUnit if not present">
+    <mkdir dir="${build.libdir}"/>
+    <!--
+    <get src="http://search.maven.org/remotecontent?filepath=junit/junit/4.12/${junit.jarname}" dest="${build.libdir}/${junit.jarname}"/>
+    <get src="http://search.maven.org/remotecontent?filepath=org/hamcrest/hamcrest-core/1.3/${junit.hamcrest}" dest="${build.libdir}/${junit.hamcrest}"/>
+    -->
+    <get src="https://repo1.maven.org/maven2/junit/junit/4.12/${junit.jarname}" dest="${build.libdir}/${junit.jarname}"/>
+    <get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/${junit.hamcrest}" dest="${build.libdir}/${junit.hamcrest}"/>
+  </target>
+  
+  <!-- Target: jacoco
+       Download JaCoCo if not present, and put it in the lib folder
+  -->
+  <property name="jacoco.jarname" value="jacocoant.jar"/>
+  <condition property="jacoco.absent" value="false" else="true">
+    <available file="${build.libdir}/${jacoco.jarname}"/>
+  </condition>
+  <target name="jacoco" if="${jacoco.absent}" description="Install JaCoCo if not present">
+    <mkdir dir="${build.libdir}"/>
+    <get src="http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.1/jacoco-0.8.1.zip" dest="${build.libdir}/jacoco.zip"/>
+    <unzip src="${build.libdir}/jacoco.zip" dest="${build.libdir}">
+      <patternset>
+        <include name="**/*.jar"/>
+      </patternset>
+      <mapper type="flatten"/>
+    </unzip>
+  </target>
+  
+  <!-- Target: doclet
+       Download Markdown doclet if not present, and put it in the lib folder
+  -->
+  <property name="doclet.jarname" value="markdown-doclet-1.4-all.jar"/>
+  <condition property="doclet.absent" value="false" else="true">
+    <available file="${build.libdir}/${doclet.jarname}"/>
+  </condition>
+  <target name="doclet" if="${doclet.absent}" description="Install Markdown doclet if not present">
+    <mkdir dir="${build.libdir}"/>
+    <get src="https://oss.sonatype.org/content/repositories/releases/ch/raffael/markdown-doclet/markdown-doclet/1.4/markdown-doclet-1.4-all.jar" dest="${build.libdir}/markdown-doclet-1.4-all.jar"/>
+  </target>
+  
+  <!-- Task: check-deps
+       Loops through all dependencies specified in config.xml; checks if
+       the target class name exists in the classpath and prints a status
+       message for each.
+  -->
+  <target name="check-deps" depends="init" description="Check dependency status">
+    <sequential>
+    <mkdir dir="${build.depdir}"/>
+    <xmltask source="config.xml">
+      <call path="/build/dependencies/dependency">
+        <param name="depname" path="name/text()"/>
+        <param name="classname" path="classname/text()"/>
+        <actions>
+          <if>
+            <available classname="@{classname}" classpathref="build.classpath"/>
+            <then>
+              <echo message="@{depname} is installed" level="info"/>
+            </then>
+            <else>
+              <echo message="@{depname} is missing from the classpath" level="info"/>
+            </else>
+          </if>
+        </actions>
+      </call>
+    </xmltask>
+    </sequential>
+  </target>
+  
+  <!-- Task: download-deps
+       Loops through all dependencies specified in config.xml; checks if
+       the target class name exists in the classpath; if not, downloads the
+       files specified in the <files> section to ${build.depdir}. In the case of
+       a zip, unzips all jar files found in the archive and copies them to
+       ${build.depdir}.
+  -->
+  <target name="download-deps" depends="init" description="Download unsatisfied JAR dependencies">
+    <sequential>
+    <mkdir dir="${build.depdir}"/>
+    <xmltask source="config.xml">
+      <call path="/build/dependencies/dependency">
+        <param name="bundle" path="bundle/text()"/>
+        <param name="depname" path="name/text()"/>
+        <param name="classname" path="classname/text()"/>
+        <actions>
+          <var name="depdest" value="${build.depdir}"/>
+          <if>
+            <equals arg1="false" arg2="@{bundle}" casesensitive="true" trim="true"/>
+            <then>
+              <var name="depdest" value="${build.libdir}"/>
+            </then>
+          </if>
+          <echo message="Checking if @{depname} is installed" level="info"/>
+          <if>
+            <available classname="@{classname}" classpathref="build.classpath"/>
+            <then>
+              <!-- It's there, do nothing -->
+            </then>
+            <else>
+              <echo message="@{depname} not present in classpath. Downloading and copying into ${depdest}..." level="info"/>
+              <xmltask source="config.xml">
+                <call path="/build/dependencies/dependency[name='@{depname}']/files/jar">
+                  <param name="url" path="text()"/>
+                  <actions>
+                    <get src="@{url}" dest="${depdest}"/>
+                  </actions>
+                </call>
+                <call path="/build/dependencies/dependency[name='@{depname}']/files/zip">
+                  <param name="url" path="text()"/>
+                  <actions>
+                    <get src="@{url}" dest="${depdest}"/>
+                    <var name="basename" unset="true"/>
+                    <basename property="basename" file="@{url}"/>
+		            <unzip src="${depdest}/${basename}" dest="${depdest}">
+		              <patternset>
+                        <include name="**/*.jar"/>
+		              </patternset>
+		              <mapper type="flatten"/>
+		            </unzip>
+                  </actions>
+                </call>
+              </xmltask>
+            </else>
+          </if>
+          
+        </actions>
+      </call>
+    </xmltask>
+    </sequential>
+  </target>
+  
+</project>
+<!-- :tabWidth=2: -->

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+  Configuration file for AntRun.
+  
+  Use this file to override the default properties contained
+  in build.xml. For example, to override the build.jar.filename
+  property (which sets the name of the compiled jar file), add
+  an element
+  
+  <jar>
+    <filename>foo</filename>
+  </jar>
+  
+  inside the <build> element.
+  
+  **Caveat emptor:** in some cases, changing this file and running ant
+  again will result in Ant using a cached version of the old file! Run
+  "ant dummy" to make sure that the correct data is being read. Otherwise
+  you might need to run "ant clean" and start over.
+-->
+<build>
+  <!-- Uncomment any of these if you want to override the build
+       script's default values -->
+
+  <!-- The project's name -->
+  <!-- <name>AntRun</name> -->
+  
+  <!-- The project's author. Currently this only
+  shows up in the footer of the Javadoc documentation. -->
+  <!-- <author>Marty McFly</author> -->
+  
+  <!-- The project's main class -->
+  <!-- <mainclass>my.package.MainClass</mainclass> -->
+  
+  <!--
+    Write JAR dependencies here.
+  -->
+  <dependencies>
+    <dependency>
+      <!-- This entry points to a nonexistent class on purpose, to test
+      whether the detection/download of dependencies works. Delete this in
+      a real-world project.
+      -->
+      <name>Test Dep</name>
+      <classname>ca.uqac.lif.NonExistentClass</classname>
+      <files>
+        <!-- You typically need only one of these two for each dependency -->
+        <jar>http://sylvainhalle.github.io/AntRun/placeholders/dummy-jar.jar</jar>
+        <zip>http://sylvainhalle.github.io/AntRun/placeholders/dummy-zip.zip</zip>
+      </files>
+      <!-- The following parameter is mandatory. Set it to false if you don't
+           want this library to be bundled into the compiled JAR. -->
+      <bundle>true</bundle>
+    </dependency>
+  </dependencies>
+</build>
