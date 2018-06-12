@@ -1,0 +1,8 @@
+# Spaces and punctuation
+
+sh:d:001	,\w				There should be a space after a comma
+sh:d:002	\.\w			There should be a space after a period
+sh:d:003	\s\.[^\s]		There should not be a space before the period at the end of a sentence
+sh:d:004	\s,[^\s]		There should not be a space before a comma
+sh:d:005	\s;				There should not be a space before a semicolon
+sh:d:006	\s:				There should not be a space before a colon

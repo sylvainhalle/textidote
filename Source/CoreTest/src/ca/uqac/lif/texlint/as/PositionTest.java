@@ -1,8 +1,10 @@
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.as;
 
 import static org.junit.Assert.*;
 
 import org.junit.Test;
+
+import ca.uqac.lif.texlint.as.Position;
 
 public class PositionTest
 {

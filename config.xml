@@ -23,33 +23,47 @@
        script's default values -->
 
   <!-- The project's name -->
-  <!-- <name>AntRun</name> -->
+  <name>TexLint</name>
   
   <!-- The project's author. Currently this only
   shows up in the footer of the Javadoc documentation. -->
-  <!-- <author>Marty McFly</author> -->
+  <author>Sylvain Hall&#233;</author>
+  
+  <!-- The project's version number -->
+  <version>0.1</version>
   
   <!-- The project's main class -->
-  <!-- <mainclass>my.package.MainClass</mainclass> -->
+  <mainclass>ca.uqac.lif.texlint.Main</mainclass>
+  
+  <!-- Redefine directories -->
+  <srcdir>Source/Core/src</srcdir>
+  <bindir>Source/Core/bin</bindir>
+  <depdir>Source/Core/dep</depdir>
+  <test>
+    <srcdir>Source/CoreTest/src</srcdir>
+    <bindir>Source/CoreTest/bin</bindir>
+  </test>
+  
+  <!-- Output jar -->
+  <jar>
+    <filename>texlint.jar</filename>
+    <withdoc>false</withdoc>
+    <withdeps>true</withdeps>
+  </jar>
   
   <!--
     Write JAR dependencies here.
   -->
   <dependencies>
     <dependency>
-      <!-- This entry points to a nonexistent class on purpose, to test
-      whether the detection/download of dependencies works. Delete this in
-      a real-world project.
+      <!--
+      Bullwinkle. Used to parse eSQL statements.
       -->
-      <name>Test Dep</name>
-      <classname>ca.uqac.lif.NonExistentClass</classname>
+      <name>Bullwinkle</name>
+      <classname>ca.uqac.lif.bullwinkle.BnfParser</classname>
       <files>
-        <!-- You typically need only one of these two for each dependency -->
-        <jar>http://sylvainhalle.github.io/AntRun/placeholders/dummy-jar.jar</jar>
-        <zip>http://sylvainhalle.github.io/AntRun/placeholders/dummy-zip.zip</zip>
+        <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.1/bullwinkle-1.4.1.zip</zip>
       </files>
-      <!-- The following parameter is mandatory. Set it to false if you don't
-           want this library to be bundled into the compiled JAR. -->
       <bundle>true</bundle>
     </dependency>
   </dependencies>

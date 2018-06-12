@@ -1,4 +1,4 @@
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.as;
 
 /**
  * Represents a contiguous interval of characters in a text file.
@@ -28,7 +28,7 @@ public class Range implements Comparable<Range>
 	 * @param end The end position of the range
 	 * @param length The declared length of the range
 	 */
-	public Range(Position start, Position end, int length)
+	public Range(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end, int length)
 	{
 		super();
 		m_start = start;
@@ -50,7 +50,7 @@ public class Range implements Comparable<Range>
 	 * Gets the start position of the range
 	 * @return The position
 	 */
-	public Position getStart()
+	/*@ pure non_null @*/ public Position getStart()
 	{
 		return m_start;
 	}
@@ -59,7 +59,7 @@ public class Range implements Comparable<Range>
 	 * Gets the end position of the range
 	 * @return The position
 	 */
-	public Position getEnd()
+	/*@ pure non_null @*/ public Position getEnd()
 	{
 		return m_end;
 	}
@@ -68,7 +68,7 @@ public class Range implements Comparable<Range>
 	 * Gets the length of the range
 	 * @return The length (in number of characters)
 	 */
-	public int getLength()
+	/*@ pure @*/ public int getLength()
 	{
 		return m_length;
 	}
@@ -79,7 +79,7 @@ public class Range implements Comparable<Range>
 	 * @param end The end position of the range
 	 * @return The length, or {@code -1} if no length could be guessed
 	 */
-	protected static int guessLength(Position start, Position end)
+	protected static int guessLength(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
 	{
 		if (start.getLine() != end.getLine())
 		{
@@ -90,7 +90,7 @@ public class Range implements Comparable<Range>
 	}
 	
 	@Override
-	public String toString()
+	/*@ pure non_null @*/ public String toString()
 	{
 		return m_start + "-" + m_end;
 	}
@@ -101,7 +101,7 @@ public class Range implements Comparable<Range>
 	 * @return {@code true} if the position is in the range,
 	 * {@code false} if it lies outside the range
 	 */
-	public boolean isWithin(Position p)
+	public boolean isWithin(/*@ non_null @*/ Position p)
 	{
 		return m_start.compareTo(p) <= 0 && m_end.compareTo(p) >= 0;
 	}
@@ -129,7 +129,7 @@ public class Range implements Comparable<Range>
 	 * @return The range corresponding to the intersection, or {@code null}
 	 * if the two ranges do not overlap
 	 */
-	public Range intersectWith(/*@ non_null @*/ Range r)
+	public /*@ nullable @*/ Range intersectWith(/*@ non_null @*/ Range r)
 	{
 		int start_l = m_start.getLine();
 		int start_c = m_start.getColumn();
@@ -206,13 +206,13 @@ public class Range implements Comparable<Range>
 	}
 	
 	@Override
-	public int hashCode()
+	/*@ pure @*/ public int hashCode()
 	{
 		return m_start.hashCode() + m_end.hashCode();
 	}
 	
 	@Override
-	public boolean equals(Object o)
+	/*@ pure @*/ public boolean equals(Object o)
 	{
 		if (!(o instanceof Range))
 		{
@@ -227,7 +227,7 @@ public class Range implements Comparable<Range>
 	 * @return {@code true} if the range spans multiple lines,
 	 * {@code false} otherwise
 	 */
-	public boolean isMultiLine()
+	/*@ pure @*/ public boolean isMultiLine()
 	{
 		return m_start.getLine() != m_end.getLine();
 	}
@@ -240,7 +240,7 @@ public class Range implements Comparable<Range>
 	 * @param end_c The end column
 	 * @return The range
 	 */
-	public static Range make(int start_l, int start_c, int end_l, int end_c)
+	/*@ non_null @*/ public static Range make(int start_l, int start_c, int end_l, int end_c)
 	{
 		return new Range(new Position(start_l, start_c), new Position(end_l, end_c));
 	}
@@ -252,7 +252,7 @@ public class Range implements Comparable<Range>
 	 * @param end_c The end column
 	 * @return The range
 	 */
-	public static Range make(int line, int start_c, int end_c)
+	/*@ non_null @*/ public static Range make(int line, int start_c, int end_c)
 	{
 		return make(line, start_c, line, end_c);
 	}

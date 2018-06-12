@@ -1,4 +1,4 @@
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.as;
 
 /**
  * Represents a position in a text file. This position is expressed
@@ -46,7 +46,7 @@ public class Position implements Comparable<Position>
 	@Override
 	public String toString()
 	{
-		return "L" + m_line + "C" + m_column;
+		return "L" + (m_line + 1) + "C" + (m_column + 1);
 	}
 
 	@Override

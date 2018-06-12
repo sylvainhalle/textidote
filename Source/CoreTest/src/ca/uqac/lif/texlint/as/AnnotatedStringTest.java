@@ -1,12 +1,16 @@
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.as;
 
+import static ca.uqac.lif.texlint.as.AnnotatedString.CRLF;
+import static ca.uqac.lif.texlint.as.AnnotatedString.CRLF_SIZE;
 import static org.junit.Assert.*;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static ca.uqac.lif.texlint.AnnotatedString.CRLF;
-import static ca.uqac.lif.texlint.AnnotatedString.CRLF_SIZE;
+import ca.uqac.lif.texlint.as.AnnotatedString;
+import ca.uqac.lif.texlint.as.Match;
+import ca.uqac.lif.texlint.as.Position;
+import ca.uqac.lif.texlint.as.Range;
 
 @SuppressWarnings("unused")
 public class AnnotatedStringTest 

@@ -1,0 +1,9 @@
+sh:001		\\(sub)*section\{\s*[a-z].*?\}			A section title should start with a capital
+sh:002		\\(sub)*section\{.*?[\.,;:]\s*\}		A section title should not end with a punctuation symbol
+sh:003		<<|>>									Use \og{} and \fg{} instead of << and >>
+sh:004		"										Use `` and '' instead of ""
+
+# Citations and references
+
+sh:c:001	\w\\(cite|ref)							Add a space before citation or reference
+sh:c:002	\\(cite|ref)\{.*?\}\s+[\.,;:]			Remove space between citation/reference and punctuation

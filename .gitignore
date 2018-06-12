@@ -32,6 +32,7 @@ jacoco.exec
 # ----------------------------------------------------
 
 # Eclipse-specific
+**/.joblock
 **/.metadata/
 **/*.pydevproject
 **/.project

@@ -1,9 +1,10 @@
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.as;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +35,11 @@ public class AnnotatedString
 	 * A list of lines contained in the string
 	 */
 	/*@ non_null @*/ protected List<String> m_lines;
+	
+	/**
+	 * The name of the resource (e.g. filename) this string comes from
+	 */
+	protected String m_resourceName;
 
 	/**
 	 * The OS-dependent line separator
@@ -54,6 +60,7 @@ public class AnnotatedString
 		m_map = new HashMap<Range,Range>();
 		m_builder = new StringBuilder();
 		m_lines = new ArrayList<String>();
+		m_resourceName = "";
 	}
 	
 	/**
@@ -70,6 +77,27 @@ public class AnnotatedString
 		m_builder.append(s.m_builder);
 		m_lines = new ArrayList<String>(s.m_lines.size());
 		m_lines.addAll(s.m_lines);
+		m_resourceName = s.m_resourceName;
+	}
+	
+	/**
+	 * Gets the name of the resource (e.g. filename) this string comes from
+	 * @return The name
+	 */
+	public String getResourceName()
+	{
+		return m_resourceName;
+	}
+	
+	/**
+	 * Sets the name of the resource (e.g. filename) this string comes from
+	 * @param name The name
+	 * @return This string
+	 */
+	public AnnotatedString setResourceName(String name)
+	{
+		m_resourceName = name;
+		return this;
 	}
 
 	/**
@@ -189,7 +217,7 @@ public class AnnotatedString
 		return lines;
 	}
 
-	/*@ pure @*/ public Position getSourcePosition(/*@ non_null @*/ Position p)
+	/*@ pure @*/ public /*@ nullable @*/ Position getSourcePosition(/*@ non_null @*/ Position p)
 	{
 		Range r = findRangeFor(p);
 		if (r == null)
@@ -264,6 +292,7 @@ public class AnnotatedString
 	public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
 	{
 		AnnotatedString out_as = new AnnotatedString();
+		out_as.m_resourceName = m_resourceName;
 		// First, create list of lines corresponding to truncated string
 		for (int i = start.getLine(); i <= Math.min(m_currentLine, end.getLine()); i++)
 		{
@@ -358,7 +387,7 @@ public class AnnotatedString
 	 */
 	public Match find(/* @non_null @*/ String regex, /* @non_null @*/ Position start)
 	{
-		String line_to_find = null;
+		/*@ null @*/ String line_to_find = null;
 		for (int start_l = start.getLine(); start_l <= m_lines.size(); start_l++)
 		{
 			if (start_l < m_lines.size())
@@ -375,11 +404,22 @@ public class AnnotatedString
 			}
 			Pattern pat = Pattern.compile(regex);
 			Matcher mat = pat.matcher(line_to_find);
-			if (!mat.find(start.getColumn()))
+			int col = start.getColumn();
+			if (col >= line_to_find.length())
+			{
+				// Beyond end of line: move to next line
+				continue;
+			}
+			if (!mat.find(col))
 			{
 				continue;
 			}
-			return new Match(mat.group(0), new Position(start_l, mat.start()));
+			Match m = new Match(mat.group(0), new Position(start_l, mat.start()));
+			for (int i = 0; i <= mat.groupCount(); i++)
+			{
+				m.addGroup(mat.group(i));
+			}
+			return m;
 		}
 		return null;
 	}
@@ -432,6 +472,10 @@ public class AnnotatedString
 			{
 				part_left = substring(Position.ZERO, new Position(found_pos.getLine(), found_pos.getColumn() - 1));
 			}
+		}
+		for (int i = 1; i < m.groupCount(); i++)
+		{
+			to = to.replace("$" + i, m.group(i));
 		}
 		part_left.append(to);
 		AnnotatedString part_right = substring(new Position(found_pos.getLine(), found_pos.getColumn() + m.getMatch().length()));
@@ -507,5 +551,27 @@ public class AnnotatedString
 			new_end = new Position(orig_source_range.getEnd().getLine() + line_offset, resized_key_range.getStart().getColumn());
 		}
 		return new Range(new_start, new_end);
+	}
+	
+	/**
+	 * Creates an annotated string from a scanner
+	 * @param scanner The scanner
+	 * @return The annotated string
+	 */
+	/*@ non_null @*/ public static AnnotatedString read(/*@ non_null @*/ Scanner scanner)
+	{
+		AnnotatedString as = new AnnotatedString();
+		int line_pos = -1;
+		while (scanner.hasNextLine())
+		{
+			line_pos++;
+			if (line_pos > 0)
+			{
+				as.appendNewLine();
+			}
+			String line = scanner.nextLine();
+			as.append(line, Range.make(line_pos, 0, line.length() - 1));
+		}
+		return as;
 	}
 }
