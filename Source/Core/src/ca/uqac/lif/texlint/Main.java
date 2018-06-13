@@ -1,3 +1,20 @@
+/*
+    TexLint, a linter for LaTeX documents
+    Copyright (C) 2018  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ca.uqac.lif.texlint;
 
 import java.io.File;
@@ -7,13 +24,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import org.languagetool.Language;
+
 import ca.uqac.lif.texlint.as.AnnotatedString;
 import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.util.CliParser;
-import ca.uqac.lif.util.AnsiPrinter.Color;
 import ca.uqac.lif.util.CliParser.Argument;
 import ca.uqac.lif.util.CliParser.ArgumentMap;
 
+/**
+ * Command-line interface for TexLint.
+ * @author Sylvain Hallé
+ */
 public class Main 
 {
 	/**
@@ -41,6 +63,7 @@ public class Main
 		CliParser cli_parser = new CliParser();
 		cli_parser.addArgument(new Argument().withLongName("html").withDescription("Formats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
+		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
 		ArgumentMap map = cli_parser.parse(args);
 		boolean enable_colors = true;
 		if (map.hasOption("no-color"))
@@ -54,6 +77,18 @@ public class Main
 		// Create a linter
 		Linter linter = new Linter();
 		populateRules(linter);
+		
+		// Do we check the language?
+		if (map.hasOption("check"))
+		{
+			Language lang = LanguageFactory.getLanguageFromString(map.getOptionValue("check"));
+			if (lang == null)
+			{
+				stderr.println("Unknown language: " + map.getOptionValue("check"));
+				System.exit(-1);
+			}
+			linter.addDetexed(new CheckLanguage(lang));
+		}
 
 		// Process files
 		List<Advice> all_advice = new ArrayList<Advice>();

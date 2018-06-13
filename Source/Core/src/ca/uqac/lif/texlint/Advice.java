@@ -1,7 +1,32 @@
+/*
+    TexLint, a linter for LaTeX documents
+    Copyright (C) 2018  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ca.uqac.lif.texlint;
 
 import ca.uqac.lif.texlint.as.Range;
 
+/**
+ * A comment or suggestion on a portion of text. An advice applies to
+ * a specific location in the original file, designated by a {@link Range}
+ * object. It is generated from the evaluation of a {@link Rule}, and
+ * typically provides a message describing what the problem (or the
+ * suggestion) is.
+ * @author Sylvain Hallé
+ */
 public class Advice 
 {
 	/**
@@ -36,6 +61,7 @@ public class Advice
 	 * @param message The message associated with the advice
 	 * @param resource The name of the resource (e.g. filename) this
 	 * advice refers to
+	 * @param line The line of text on which the advice applies
 	 */
 	public Advice(/*@ non_null @*/ Rule rule, /*@ non_null @*/ Range range, 
 			/*@ non_null @*/ String message, /*@ non_null @*/ String resource,

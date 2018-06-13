@@ -1,3 +1,20 @@
+/*
+    TexLint, a linter for LaTeX documents
+    Copyright (C) 2018  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ca.uqac.lif.texlint.as;
 
 import static ca.uqac.lif.texlint.as.AnnotatedString.CRLF;
@@ -306,5 +323,32 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
 		assertNull(p); // p is a replacement string
+	}
+	
+	@Test
+	public void testGetPosition1()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Hello world!");
+		Position p = as.getPosition(3);
+		assertEquals(0, p.getLine());
+		assertEquals(3, p.getColumn());
+		assertNull(as.getPosition(-1));
+		assertNull(as.getPosition(20));
+	}
+	
+	@Test
+	public void testGetPosition2()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Hello").appendNewLine().append("world!");
+		Position p = as.getPosition(3);
+		assertEquals(0, p.getLine());
+		assertEquals(3, p.getColumn());
+		assertNull(as.getPosition(-1));
+		assertNull(as.getPosition(20));
+		p = as.getPosition(5 + CRLF_SIZE);
+		assertEquals(1, p.getLine());
+		assertEquals(0, p.getColumn());
 	}
 }

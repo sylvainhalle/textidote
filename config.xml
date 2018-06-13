@@ -57,12 +57,23 @@
   <dependencies>
     <dependency>
       <!--
-      Bullwinkle. Used to parse eSQL statements.
+      Bullwinkle. Used mainly because of its Cli parser.
       -->
       <name>Bullwinkle</name>
       <classname>ca.uqac.lif.bullwinkle.BnfParser</classname>
       <files>
         <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.1/bullwinkle-1.4.1.zip</zip>
+      </files>
+      <bundle>true</bundle>
+    </dependency>
+    <dependency>
+      <!--
+      Language Tool. Checks grammar on plain text.
+      -->
+      <name>Language Tool</name>
+      <classname>org.languagetool.JLanguageTool</classname>
+      <files>
+        <zip>https://github.com/languagetool-org/languagetool/archive/v4.1.zip</zip>
       </files>
       <bundle>true</bundle>
     </dependency>

@@ -1,3 +1,20 @@
+/*
+    TexLint, a linter for LaTeX documents
+    Copyright (C) 2018  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ca.uqac.lif.texlint;
 
 import ca.uqac.lif.texlint.as.AnnotatedString;
@@ -18,18 +35,53 @@ public class Detexer
 	 */
 	public AnnotatedString detex(AnnotatedString as)
 	{
+		as = removeEnvironments(as);
 		as = removeAllMarkup(as);
 		as = simplifySpaces(as);
 		return as;
 	}
 	
+	/**
+	 * Remove environments that are not likely to be interpreted as text
+	 * (tables, verbatim, equations, figures)
+	 * @param as The string to clean
+	 * @return 
+	 */
+	protected AnnotatedString removeEnvironments(AnnotatedString as)
+	{
+		int in_environment = 0;
+		for (int i = 0; i < as.lineCount(); i++)
+		{
+			String line = as.getLine(i);
+			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting).*"))
+			{
+				in_environment++;
+			}
+			if (in_environment > 0)
+			{
+				as.removeLine(i);
+				i--; // Step counter back so next loop is at same index
+			}
+			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting).*"))
+			{
+				in_environment--;
+			}
+		}
+		return as;
+	}
+	
+	/**
+	 * 
+	 * @param as
+	 * @return
+	 */
 	protected AnnotatedString removeAllMarkup(AnnotatedString as)
 	{
 		AnnotatedString as_out = new AnnotatedString();
 		boolean first_line = true;
-		for (int line_pos = 0; line_pos < as.getLines().size(); line_pos++)
+		for (int line_pos = 0; line_pos < as.lineCount(); line_pos++)
 		{
-			String source_line = as.getLines().get(line_pos);
+			String source_line = as.getLine(line_pos);
 			if (source_line.trim().isEmpty())
 			{
 				continue;
@@ -65,10 +117,14 @@ public class Detexer
 		as_out = as_out.replaceAll("\\\\includegraphics.*$", "");
 		// Commands that don't produce text
 		as_out = as_out.replaceAll("\\\\(label)\\{.*?\\}", "");
+		// Footnotes (ignore)
+		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
 		as_out = as_out.replaceAll("\\\\(cite|citep|citel)\\{.*?\\}", "[0]");
-		// Replace references by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref)\\{.*?\\}", "X");
+		// Replace verbatim by dummy placeholder
+		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
+		// Replace references and URLs by dummy placeholder
+		as_out = as_out.replaceAll("\\\\(ref|url)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle", "");
 		// Inputs and includes

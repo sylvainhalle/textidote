@@ -1,3 +1,20 @@
+/*
+    TexLint, a linter for LaTeX documents
+    Copyright (C) 2018  Sylvain Hallé
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package ca.uqac.lif.texlint.as;
 
 import java.util.ArrayList;
@@ -8,6 +25,11 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * A multi-line character string that keeps references to portions of
+ * another piece of text.
+ * @author Sylvain Hallé
+ */
 public class AnnotatedString
 {
 	/**
@@ -274,7 +296,7 @@ public class AnnotatedString
 	 * preserved (and their positions shifted accordingly) in the output
 	 * string.
 	 */
-	public AnnotatedString substring(/*@ non_null @*/ Range r)
+	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Range r)
 	{
 		return substring(r.getStart(), r.getEnd());
 	}
@@ -289,7 +311,7 @@ public class AnnotatedString
 	 * preserved (and their positions shifted accordingly) in the output
 	 * string.
 	 */
-	public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
+	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
 	{
 		AnnotatedString out_as = new AnnotatedString();
 		out_as.m_resourceName = m_resourceName;
@@ -356,7 +378,7 @@ public class AnnotatedString
 	 * @return The substring, from the start position to the very end of
 	 * the string
 	 */
-	public AnnotatedString substring(/*@ non_null @*/ Position start)
+	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start)
 	{
 		return substring(start, new Position(Integer.MAX_VALUE - 10, Integer.MAX_VALUE - 10));
 	}
@@ -367,7 +389,7 @@ public class AnnotatedString
 	 * delimiter at the end of each line except the last.
 	 * @return The length of the string
 	 */
-	public int length()
+	/*@ pure @*/ public int length()
 	{
 		int length = 0;
 		for (String line : m_lines)
@@ -387,7 +409,7 @@ public class AnnotatedString
 	 */
 	public Match find(/* @non_null @*/ String regex, /* @non_null @*/ Position start)
 	{
-		/*@ null @*/ String line_to_find = null;
+		/*@ nullable @*/ String line_to_find = null;
 		for (int start_l = start.getLine(); start_l <= m_lines.size(); start_l++)
 		{
 			if (start_l < m_lines.size())
@@ -507,6 +529,113 @@ public class AnnotatedString
 			}
 		}
 		return replaced;
+	}
+	
+	/**
+	 * Gets the number of lines in this string
+	 * @return The number of lines
+	 */
+	/*@ pure @*/ public int lineCount()
+	{
+		return m_lines.size() + 1;
+	}
+	
+	/**
+	 * Gets the n-th line of the string
+	 * @param line_nb The number of the line
+	 * @return The line; an exception if thrown if the argument is out
+	 * of bounds
+	 */
+	/*@ pure non_null @*/ public String getLine(int line_nb)
+	{
+		if (line_nb >= 0 && line_nb < m_lines.size())
+		{
+			return m_lines.get(line_nb);
+		}
+		if (line_nb == m_lines.size())
+		{
+			return m_builder.toString();
+		}
+		throw new ArrayIndexOutOfBoundsException("This line does not exist");
+	}
+	
+	/**
+	 * Computes the position (line/column) of the n-th character in the
+	 * string. If the string contains multiple
+	 * lines, the size of each line separator is also included in the count.
+	 * @param nb_chars The number of characters from the beginning of the
+	 * string
+	 * @return The position, or {@code null} if {@code nb_chars} lies beyond
+	 * the string boundaries
+	 */
+	/*@ pure nullable @*/ public Position getPosition(int nb_chars)
+	{
+		if (nb_chars < 0)
+		{
+			return null;
+		}
+		int char_count = 0, line_count = 0;
+		for (String line : m_lines)
+		{
+			if (nb_chars < char_count + line.length())
+			{
+				// It's on this line
+				return new Position(line_count, nb_chars - char_count);
+			}
+			char_count += line.length() + CRLF_SIZE;
+			line_count++;
+		}
+		String line = m_builder.toString();
+		if (nb_chars < char_count + line.length())
+		{
+			// It's on the last line
+			return new Position(line_count, nb_chars - char_count);
+		}
+		return null;
+	}
+	
+	/**
+	 * Removes a complete line from the string.
+	 * @param line_nb The line number
+	 * @return This string
+	 */
+	public AnnotatedString removeLine(int line_nb)
+	{
+		// Step 1: remove line from list
+		if (line_nb < 0 || line_nb >= lineCount())
+		{
+			// Nothing to do
+			return this;
+		}
+		if (line_nb < m_lines.size())
+		{
+			m_lines.remove(line_nb);
+		}
+		if (line_nb == m_lines.size())
+		{
+			m_builder = new StringBuilder();
+		}
+		// Step 2: adjust all positions on lines below line_nb
+		Map<Range,Range> new_ranges = new HashMap<Range,Range>();
+		for (Map.Entry<Range,Range> entry : m_map.entrySet())
+		{
+			int l_pos_start, l_pos_end;
+			Range r_key = entry.getKey();
+			l_pos_start = r_key.getStart().getLine();
+			if (l_pos_start > line_nb)
+			{
+				l_pos_start--;
+			}
+			l_pos_end = r_key.getEnd().getLine();
+			if (l_pos_end > line_nb)
+			{
+				l_pos_end--;
+			}
+			Range new_r_key = Range.make(l_pos_start, r_key.getStart().getColumn(), l_pos_end, r_key.getEnd().getColumn());
+			new_ranges.put(new_r_key, entry.getValue());
+		}
+		m_map = new_ranges;
+		return this;
 	}
 
 	/**

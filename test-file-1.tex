@@ -14,7 +14,7 @@
 
 A first paragraph with some stuff, some \textbf{bold text}   and other things, like a citation\cite{my:paper} .The text is  not evenly spaced.
 
-Here,I forget to put a space after a comma. I refer to \ref{fig:thisfig1} in the text, but I do not refer to the second one.
+Here,I forget to put a space after a comma. I refer to \ref{fig:thisfig1} in the text, but I do not refer to the second one. I can mention a filename such as \verb+myfile.txt+; some rules don't apply to this special markup; however, if I write myfile.txt, I'm likely to get a warning about a period not followed by a space.
 
 \begin{figure}
 \includegraphics{my_fig}
@@ -24,7 +24,11 @@ Here,I forget to put a space after a comma. I refer to \ref{fig:thisfig1} in the
 
 \section{a first section}
 
-Hello world!
+Hello world! The tex also, contains error of gramar and and spelling.
+
+\begin{equation*}
+4.3 \times 8.4 = foo a.b
+\end{equation*}
 
 \begin{itemize}
 \item Hello % This is a comment
@@ -40,6 +44,26 @@ Some other text, part of which is <<special>>, very "special".
 \caption{The figure's caption}
 \label{fig:thisfig2}
 \end{figure}
+
+  \begin{lstlisting}
+import Cowtest from 'cowtest';
+
+const seedUrl = "http://127.0.0.1:8080/";
+const tests = `${__dirname}/test.js`;
+const connector = "ava";
+const report = "html";
+const dataSaveMethod = { method: 'jsonl', coStr:`${__dirname}/data.jsonl` }
+
+Cowtest({
+  seedUrl,
+  tests,
+  connector,
+  dataSaveMethod,
+  report
+});
+  \end{lstlisting}
+  
+\section{ THIS TITLE IS IN CAPS AND SHOULD NOT}
 
 \end{document}
 %% :wrap=soft:

@@ -167,6 +167,10 @@ public class AnsiPrinter extends PrintStream
 		 */
 		public AnsiPrinter setForegroundColor(int r, int g, int b)
 		{
+			if (!m_enabled)
+			{
+				return this;
+			}
 			printBytes("\u001B[38;2;" + r + ";" + g + ";" + b + "m");
 			return this;	  
 		}
@@ -262,7 +266,10 @@ public class AnsiPrinter extends PrintStream
 		 */
 		public AnsiPrinter setBackgroundColor(int r, int g, int b)
 		{
-			printBytes("\u001B[48;2;" + r + ";" + g + ";" + b + "m");
+			if (m_enabled)
+			{
+				printBytes("\u001B[48;2;" + r + ";" + g + ";" + b + "m");
+			}
 			return this;	  
 		}
 
@@ -272,15 +279,21 @@ public class AnsiPrinter extends PrintStream
 		 */
 		public AnsiPrinter resetColors()
 		{
-			printBytes("\u001B[0m");
-			printBytes("\u001B[39m");
-			printBytes("\u001B[49m");
+			if (m_enabled)
+			{
+				printBytes("\u001B[0m");
+				printBytes("\u001B[39m");
+				printBytes("\u001B[49m");
+			}
 			return this;	  
 		}
 
 		public AnsiPrinter setUnderscore()
 		{
-			printBytes("\u001B[4m");
+			if (m_enabled)
+			{
+				printBytes("\u001B[4m");
+			}
 			return this;
 		}
 
