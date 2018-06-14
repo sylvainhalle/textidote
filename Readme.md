@@ -32,6 +32,47 @@ your choice.
 
 ## Using TeXLint
 
+To run TeXLint and perform a basic verification of the file, run:
 
+    java -jar texlint.jar somefile.tex
+
+TeXLint will analyze the file and produce a report that looks like this:
+
+```
+* L25C1-L25C25 A section title should start with a capital letter. [sh:001] 
+  \section{a first section}
+  ^^^^^^^^^^^^^^^^^^^^^^^^^
+* L38C1-L38C29 A section title should not end with a punctuation symbol. 
+  [sh:002] 
+  \subsection{ My subsection. }
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* L15C94-L15C99 Add a space before citation or reference. [sh:c:001] 
+   things, like a citation\cite{my:paper} .The text 
+```
+
+Each element of the list corresponds to a "warning", indicating that
+something in the text requires your attention. For each warning, the position
+in the original source file is given: LxxCyy indicates line xx, column yy. The
+warning is followed by a short comment describing the issue, and an excerpt
+from the line in question is displayed. The range of characters where the
+problem occurs is marked by the "^^^^" symbols below the text. Each of these
+warnings results from the evaluation of some "rule" on the text; an identifier
+of the rule in question is also shown between brackets.
+
+### Spelling, grammar and style
+
+If the Language Tool library is installed on your system, you can perform
+further checks on spelling and grammar, by passing the `--check` option at
+the command line. For example, to check text in English, you run:
+
+    java -jar texlint.jar --check en somefile.txt
+
+The `--check` parameter must be accompanied by a two-letter code indicating
+the language to be used. The code `en` stands for English; TeXLint also
+supports `fr` (French), `nl` (Dutch), `de` (German), `es` (Spanish).
+
+### Removing markup
+
+TODO (the option is `--detex`).
 
 %% :maxLineLen=78:wrap=soft:
