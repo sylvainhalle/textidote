@@ -37,6 +37,11 @@ public class RegexRule extends Rule
 	protected String m_pattern;
 	
 	/**
+	 * If this pattern is found, the rule does not apply
+	 */
+	protected String m_exceptionPattern;
+	
+	/**
 	 * The message template to generate when the pattern is found
 	 */
 	protected String m_message;
@@ -58,9 +63,25 @@ public class RegexRule extends Rule
 	 */
 	public RegexRule(String name, String pattern, String message)
 	{
+		this(name, pattern, null, message);
+	}
+	
+	/**
+	 * Creates a new regex rule
+	 * @param name The name given to the rule
+	 * @param pattern The pattern to find in the text
+	 * @param exception If this pattern is found, the rule does not apply
+	 * @param message The message template to generate when the pattern
+	 * is found. If the pattern contains capture groups, the message can
+	 * refer to these capture groups in the usual way (i.e. "$1" refers to
+	 * the first group, etc.).
+	 */
+	public RegexRule(String name, String pattern, String exception, String message)
+	{
 		super(name);
 		m_pattern = pattern;
 		m_message = message;
+		m_exceptionPattern = exception;
 	}
 
 	@Override
@@ -77,17 +98,32 @@ public class RegexRule extends Rule
 				// No cigarettes, no matches
 				break;
 			}
+			if (m_exceptionPattern != null && match.getMatch().matches(m_exceptionPattern))
+			{
+				// Rule does not apply
+				continue;
+			}
 			String message = createMessage(match);
 			Position start_pos = match.getPosition();
 			Position end_pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length() - 1);
 			Position source_start_pos = s.getSourcePosition(start_pos);
 			Position source_end_pos = s.getSourcePosition(end_pos);
-			if (source_end_pos == null)
+			Range r = null;
+			String original_line = "";
+			if (source_start_pos == null)
 			{
-				source_end_pos = source_start_pos;
+				r = Range.make(0, 0, 0);
 			}
-			Range r = new Range(source_start_pos, source_end_pos);
-			String original_line = original.getLines().get(source_start_pos.getLine());
+			else
+			{
+				original_line = original.getLine(source_start_pos.getLine());
+				if (source_end_pos == null)
+				{
+					source_end_pos = source_start_pos;
+				}
+				r = new Range(source_start_pos, source_end_pos);
+			}
+			assert r != null;
 			out_list.add(new Advice(this, r, message, s.getResourceName(), original_line));
 			pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length());;
 		}

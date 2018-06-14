@@ -55,6 +55,11 @@ public class Advice
 	protected String m_line;
 	
 	/**
+	 * Whether the range is on the original string or a sanitized version
+	 */
+	protected boolean m_originalRange = true;
+	
+	/**
 	 * Creates a new advice
 	 * @param rule The rule from which this advice was generated
 	 * @param range The range in the file where the advice applies
@@ -82,6 +87,18 @@ public class Advice
 	/*@ pure non_null @*/ public Range getRange()
 	{
 		return m_range;
+	}
+	
+	/**
+	 * Sets whether the range applies on the original text or a sanitized
+	 * version
+	 * @param b
+	 * @return This advice
+	 */
+	public Advice setOriginal(boolean b)
+	{
+		m_originalRange = b;
+		return this;
 	}
 	
 	/**
@@ -123,7 +140,12 @@ public class Advice
 	@Override
 	/*@ pure non_null @*/ public String toString()
 	{
-		return m_range + " " + m_message;
+		String range_string = m_range.toString();
+		if (!m_originalRange)
+		{
+			range_string = range_string.toLowerCase();
+		}
+		return range_string + " " + m_message;
 	}
 	
 	@Override

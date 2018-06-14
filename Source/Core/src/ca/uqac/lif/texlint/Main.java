@@ -19,10 +19,13 @@ package ca.uqac.lif.texlint;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.languagetool.Language;
 
@@ -42,7 +45,7 @@ public class Main
 	 * Filename where the regex rules are stored
 	 */
 	protected static final String REGEX_FILENAME = "rules/regex.csv";
-	
+
 	/**
 	 * Filename where the regex rules are stored
 	 */
@@ -56,14 +59,17 @@ public class Main
 	/**
 	 * Main method
 	 * @param args Command-line arguments
+	 * @throws IOException 
 	 */
-	public static void main(String[] args)
+	public static void main(String[] args) throws IOException
 	{
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
 		cli_parser.addArgument(new Argument().withLongName("html").withDescription("Formats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
+		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
+		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
 		ArgumentMap map = cli_parser.parse(args);
 		boolean enable_colors = true;
 		if (map.hasOption("no-color"))
@@ -71,13 +77,59 @@ public class Main
 			enable_colors = false;
 		}
 		AnsiPrinter stdout = new AnsiPrinter(System.out);
+		//FileOutputStream fos = new FileOutputStream("/tmp/resultat.txt");
+		//AnsiPrinter stdout = new AnsiPrinter(fos);
 		AnsiPrinter stderr = new AnsiPrinter(System.err);
 		printGreeting(stderr, enable_colors);
+		
+		// Only detex input
+		if (map.hasOption("detex"))
+		{
+			Detexer detexer = new Detexer();
+			List<String> filenames = map.getOthers();
+			if (filenames.isEmpty())
+			{
+				System.err.println("No filename is specified");
+				System.err.println("");
+				cli_parser.printHelp("Usage: java -jar texlint.jar [options] file1 [file2 ...]", System.err);
+				System.exit(1);
+			}
+			for (String filename : filenames)
+			{
+				File f = new File(filename);
+				if (!f.exists())
+				{
+					stderr.println("File " + filename + " not found (skipping)");
+					continue;
+				}
+				Scanner scanner = null;
+				try 
+				{
+					scanner = new Scanner(f);
+					AnnotatedString s = AnnotatedString.read(scanner);
+					s.setResourceName(filename);
+					AnnotatedString ds = detexer.detex(s);
+					stdout.println(ds);
+				}
+				catch (FileNotFoundException e) 
+				{
+					// Nothing to do; we already trapped this
+				}
+				finally
+				{
+					if (scanner != null)
+					{
+						scanner.close();
+					}
+				}
+			}
+			System.exit(0);
+		}
 
 		// Create a linter
 		Linter linter = new Linter();
 		populateRules(linter);
-		
+
 		// Do we check the language?
 		if (map.hasOption("check"))
 		{
@@ -87,7 +139,29 @@ public class Main
 				stderr.println("Unknown language: " + map.getOptionValue("check"));
 				System.exit(-1);
 			}
-			linter.addDetexed(new CheckLanguage(lang));
+			// Try to read dictionary from an Aspell file
+			Set<String> dictionary = new HashSet<String>();
+			try
+			{
+				dictionary.addAll(readDictionary(".aspell.en.pws"));
+				stderr.println("Found local Aspell dictionary");
+			}
+			catch (FileNotFoundException e)
+			{
+				// Do nothing
+			}
+			if (map.hasOption("dict"))
+			{
+				try
+				{
+					dictionary.addAll(readDictionary(map.getOptionValue("dict")));
+				}
+				catch (FileNotFoundException e)
+				{
+					stderr.println("Dictionary not found: " + map.getOptionValue("dict"));
+				}
+			}
+			linter.addDetexed(new CheckLanguage(lang, dictionary));
 		}
 
 		// Process files
@@ -196,7 +270,7 @@ public class Main
 		linter.addDetexed(readRules(REGEX_FILENAME_DETEX));
 		linter.add(new CheckFigureReferences());
 	}
-	
+
 	protected static List<Rule> readRules(String filename)
 	{
 		List<Rule> list = new ArrayList<Rule>();
@@ -214,10 +288,37 @@ public class Main
 				// Just ignore
 				continue;
 			}
-			RegexRule rr = new RegexRule(parts[0], parts[1], parts[2]);
-			list.add(rr);
+			if (parts.length == 3)
+			{
+				RegexRule rr = new RegexRule(parts[0], parts[1], parts[2]);
+				list.add(rr);
+			}
+			if (parts.length == 4)
+			{
+				RegexRule rr = new RegexRule(parts[0], parts[1], parts[2], parts[3]);
+				list.add(rr);
+			}
 		}
 		scanner.close();
 		return list;
+	}
+
+	/**
+	 * Reads a list of word from an Aspell-generated file
+	 * @return
+	 */
+	/*@ non_null @*/ protected static Set<String> readDictionary(String filename) throws FileNotFoundException
+	{
+		Set<String> dict = new HashSet<String>();
+		File f = new File(filename);
+		Scanner sc = null;
+		sc = new Scanner(f);
+		while (sc.hasNextLine())
+		{
+			String line = sc.nextLine();
+			dict.add(line.trim());
+		} 
+		sc.close();
+		return dict;
 	}
 }

@@ -131,6 +131,9 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 			}
 			else
 			{
+				// Language Tool advice has this strange markup
+				word = word.replaceAll("<suggestion>", "'");
+				word = word.replaceAll("</suggestion>", "'");
 				m_printer.print(word + " ");
 			}
 		}

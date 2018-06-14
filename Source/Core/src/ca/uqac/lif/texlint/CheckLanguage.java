@@ -19,7 +19,9 @@ package ca.uqac.lif.texlint;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
@@ -42,15 +44,32 @@ public class CheckLanguage extends Rule
 	 * The language tool object used to check the language
 	 */
 	JLanguageTool m_languageTool;
-	
+
+	/**
+	 * A set of words that should be ignored by spell checking
+	 */
+	Set<String> m_dictionary;
+
+	/**
+	 * Creates a new rule for checking a specific language
+	 * @param lang The language to check
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking
+	 */
+	public CheckLanguage(/*@ non_null @*/ Language lang, /*@ non_null @*/ Set<String> dictionary)
+	{
+		super("lt:" + lang.getShortCode());
+		m_languageTool = new MultiThreadedJLanguageTool(lang);
+		m_dictionary = dictionary;
+	}
+
 	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check
 	 */
 	public CheckLanguage(/*@ non_null @*/ Language lang)
 	{
-		super("lt:" + lang.getShortCode());
-		m_languageTool = new MultiThreadedJLanguageTool(lang);
+		this(lang, new HashSet<String>());
 	}
 
 	@Override
@@ -87,8 +106,17 @@ public class CheckLanguage extends Rule
 				end_src_pos = s.getSourcePosition(end_pos);
 			}
 			Range r = null;
+			boolean original_range = true;
 			if (start_src_pos == null)
 			{
+				original_range = false;
+				if (start_pos != null)
+				{
+					// Can't find the text in the original: used detexed
+					line = s.getLine(start_pos.getLine());
+					start_src_pos = start_pos;
+					end_src_pos = end_pos;
+				}
 				r = Range.make(0, 0, 0);
 			}
 			else
@@ -103,11 +131,56 @@ public class CheckLanguage extends Rule
 					r = new Range(start_src_pos, end_src_pos);
 				}
 			}
-			out_list.add(new Advice(new CheckLanguageSpecific(rm.getRule().getId()), r, rm.getMessage(), s.getResourceName(), line));
+			// Exception if spelling mistake and a dictionary is provided
+			int end_p = r.getEnd().getColumn();
+			if (end_p > line.length() - 1)
+			{
+				end_p = line.length() - 1;
+			}
+			if (rm.getRule().getId().startsWith("MORFOLOGIK"))
+			{
+				// This is a spelling mistake
+				String word = line.substring(Math.min(line.length() - 1, r.getStart().getColumn()), end_p);
+				word = cleanup(word);
+				if (m_dictionary.contains(word))
+				{
+					// Word is in dictionary: ignore
+					continue;
+				}
+			}
+			// Exception for false alarm regarding "smart quotes"
+			if (rm.getRule().getId().startsWith("EN_QUOTES") && rm.getMessage().contains("Use a smart opening quote"))
+			{
+				if (line.length() > 0)
+				{
+					String word = line.substring(Math.min(line.length() - 1, r.getStart().getColumn()), end_p).trim();
+					if (word.contains("``"))
+					{
+						// This type of quote is OK in LaTeX: ignore 
+						continue;
+					}
+				}
+			}
+			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId()), r, rm.getMessage() + " (" + rm.getFromPos() + ")", s.getResourceName(), line);
+			ad.setOriginal(original_range);
+			out_list.add(ad);
 		}
 		return out_list;
 	}
-	
+
+	/**
+	 * Cleans a word by removing spaces at the beginning and the end, and
+	 * punctuation symbols at the end
+	 * @param s The word to clean
+	 * @return The cleaned word
+	 */
+	protected static String cleanup(String s)
+	{
+		s = s.replaceAll("^[\\s]*", "");
+		s = s.replaceAll("[\\s\\.,':;]*$", "");
+		return s;
+	}
+
 	public class CheckLanguageSpecific extends Rule
 	{
 		public CheckLanguageSpecific(String id)
@@ -121,7 +194,7 @@ public class CheckLanguage extends Rule
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
+
 		/*@ pure non_null @*/ public CheckLanguage getParent()
 		{
 			return CheckLanguage.this;

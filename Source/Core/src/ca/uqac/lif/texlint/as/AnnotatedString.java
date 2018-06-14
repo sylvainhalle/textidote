@@ -313,6 +313,10 @@ public class AnnotatedString
 	 */
 	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
 	{
+		if (start.getLine() >= lineCount())
+		{
+			throw new StringIndexOutOfBoundsException("Line " + start.getLine() + " does not exist");
+		}
 		AnnotatedString out_as = new AnnotatedString();
 		out_as.m_resourceName = m_resourceName;
 		// First, create list of lines corresponding to truncated string
@@ -348,7 +352,15 @@ public class AnnotatedString
 				}
 				else
 				{
-					out_as.m_lines.add(line);
+					if (i == end.getLine())
+					{
+						String truncated_line = line.substring(0, Math.min(line.length(), end.getColumn() + 1));
+						out_as.m_lines.add(truncated_line);
+					}
+					else
+					{
+						out_as.m_lines.add(line);
+					}
 				}
 			}
 		}
@@ -556,7 +568,7 @@ public class AnnotatedString
 		{
 			return m_builder.toString();
 		}
-		throw new ArrayIndexOutOfBoundsException("This line does not exist");
+		throw new ArrayIndexOutOfBoundsException("Line " + line_nb + " does not exist");
 	}
 	
 	/**
@@ -607,13 +619,17 @@ public class AnnotatedString
 			// Nothing to do
 			return this;
 		}
+		m_currentLine--;
 		if (line_nb < m_lines.size())
 		{
 			m_lines.remove(line_nb);
 		}
-		if (line_nb == m_lines.size())
+		else if (line_nb == m_lines.size())
 		{
 			m_builder = new StringBuilder();
+			String l = m_lines.remove(line_nb - 1);
+			m_builder.append(l);
+			m_currentColumn = l.length();
 		}
 		// Step 2: adjust all positions on lines below line_nb
 		Map<Range,Range> new_ranges = new HashMap<Range,Range>();
@@ -622,17 +638,43 @@ public class AnnotatedString
 			int l_pos_start, l_pos_end;
 			Range r_key = entry.getKey();
 			l_pos_start = r_key.getStart().getLine();
+			l_pos_end = r_key.getEnd().getLine();
+			if (l_pos_end < line_nb)
+			{
+				// This range is completely above the cut line: nothing to change
+				new_ranges.put(entry.getKey(), entry.getValue());
+				continue;
+			}
 			if (l_pos_start > line_nb)
 			{
-				l_pos_start--;
+				// This range is completely below the cut line: simply offset
+				// key range by one line up
+				Range new_r_key = Range.make(l_pos_start - 1, r_key.getStart().getColumn(), l_pos_end - 1, r_key.getEnd().getColumn());
+				new_ranges.put(new_r_key, entry.getValue());
+				continue;
 			}
-			l_pos_end = r_key.getEnd().getLine();
-			if (l_pos_end > line_nb)
+			// If we get here, the key range is across the cut line
+			if (l_pos_start == line_nb)
 			{
-				l_pos_end--;
+				// Range starts on line to be cut
+				if (l_pos_end == line_nb)
+				{
+					// Single line range: just remove it
+					continue;
+				}
+				else
+				{
+					// TODO. This is the case of a multi-line range that starts on
+					// the cut line, and ends strictly below the cut line
+					throw new UnsupportedOperationException("Method removeLine does not work on multi-line character ranges");
+				}
 			}
-			Range new_r_key = Range.make(l_pos_start, r_key.getStart().getColumn(), l_pos_end, r_key.getEnd().getColumn());
-			new_ranges.put(new_r_key, entry.getValue());
+			else
+			{
+				// TODO. This is the case of a multi-line range that starts strictly
+				// above the cut line, and ends on the cut line or below
+				throw new UnsupportedOperationException("Method removeLine does not work on multi-line character ranges");
+			}
 		}
 		m_map = new_ranges;
 		return this;
@@ -680,6 +722,34 @@ public class AnnotatedString
 			new_end = new Position(orig_source_range.getEnd().getLine() + line_offset, resized_key_range.getStart().getColumn());
 		}
 		return new Range(new_start, new_end);
+	}
+	
+	/**
+	 * Trims a line of the string from a given position
+	 * @param pos The position. All characters on the same line,
+	 * starting from this position on to the end of the string,
+	 * will be removed.
+	 * @return A new string trimmed accordingly
+	 */
+	public AnnotatedString trimFrom(/*@ non_null @*/ Position pos)
+	{
+		int line_pos = pos.getLine();
+		int col_pos = pos.getColumn();
+		if (line_pos < m_lines.size())
+		{
+			String line = m_lines.get(line_pos);
+			line = line.substring(0, col_pos);
+			m_lines.set(line_pos, line);
+		}
+		else if (line_pos == m_lines.size())
+		{
+			String line = m_builder.toString();
+			line = line.substring(0, col_pos);
+			m_builder = new StringBuilder();
+			m_builder.append(line);
+			m_currentColumn = col_pos;
+		}
+		return this;
 	}
 	
 	/**

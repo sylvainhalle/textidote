@@ -18,6 +18,7 @@
 package ca.uqac.lif.texlint;
 
 import ca.uqac.lif.texlint.as.AnnotatedString;
+import ca.uqac.lif.texlint.as.Position;
 import ca.uqac.lif.texlint.as.Range;
 
 /**
@@ -35,9 +36,10 @@ public class Detexer
 	 */
 	public AnnotatedString detex(AnnotatedString as)
 	{
-		as = removeEnvironments(as);
+		as = removeComments(as);
+		//as = removeEnvironments(as);
 		as = removeAllMarkup(as);
-		as = simplifySpaces(as);
+		//as = simplifySpaces(as);
 		return as;
 	}
 	
@@ -53,7 +55,7 @@ public class Detexer
 		for (int i = 0; i < as.lineCount(); i++)
 		{
 			String line = as.getLine(i);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting).*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*"))
 			{
 				in_environment++;
 			}
@@ -62,9 +64,45 @@ public class Detexer
 				as.removeLine(i);
 				i--; // Step counter back so next loop is at same index
 			}
-			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting).*"))
+			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*"))
 			{
 				in_environment--;
+			}
+		}
+		return as;
+	}
+	
+	/**
+	 * Remove comments from the file
+	 * @param as The string to clean
+	 * @return The string without comments
+	 */
+	protected AnnotatedString removeComments(AnnotatedString as)
+	{
+		for (int i = 0; i < as.lineCount(); i++)
+		{
+			String line = as.getLine(i);
+			if (line.trim().startsWith("%"))
+			{
+				as.removeLine(i);
+				i--; // Step counter back so next loop is at same index
+			}
+			else
+			{
+				/*for (int pos = 0; pos < line.length(); pos++)
+				{
+					pos = line.indexOf("%", pos);
+					if (pos < 0)
+					{
+						// No more % in the line
+						break;
+					}
+					if (line.substring(pos - 1, pos).compareTo("\\") != 0)
+					{
+						as = as.trimFrom(new Position(i, pos));
+						break;
+					}
+				}*/
 			}
 		}
 		return as;
@@ -130,10 +168,7 @@ public class Detexer
 		// Inputs and includes
 		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage).*$", "");
 		// Commands we can ignore
-		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|paragraph)\\{(.*?)\\}", "$2");
-		// Comments
-		as_out = as_out.replaceAll("%%.*$", "");
-		as_out = as_out.replaceAll("([^\\\\%])%.*$", "$1");
+		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)\\s*?\\{(.*?)\\}", "$2");
 		return as_out;
 	}
 	

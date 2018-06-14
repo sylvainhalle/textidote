@@ -43,7 +43,7 @@ public class DetexerTest
 	{
 		Detexer detexer = new Detexer();
 		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test1.tex"))));
-		assertEquals("Hello" + CRLF + "World", as.toString());
+		assertEquals("Hello " + CRLF + "World", as.toString());
 		Position p = as.getSourcePosition(new Position(1, 1));
 		assertEquals(2, p.getLine());
 		assertEquals(9, p.getColumn());

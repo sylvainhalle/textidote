@@ -351,4 +351,35 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
 	}
+	
+	@Test
+	public void testRemoveLine1()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Hello", Range.make(0, 0, 4)).appendNewLine();
+		as.append("world!", Range.make(1, 0, 5)).appendNewLine();
+		as.append("foo", Range.make(2, 0, 2));
+		as.removeLine(0);
+		assertEquals("world!" + CRLF + "foo", as.toString());
+		Position p = as.getSourcePosition(new Position(0, 0));
+		assertEquals(1, p.getLine());
+		assertEquals(0, p.getColumn());
+	}
+	
+	@Test
+	public void testRemoveLine2()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Hello", Range.make(0, 0, 4)).appendNewLine();
+		as.append("world!", Range.make(1, 0, 5)).appendNewLine();
+		as.append("foo", Range.make(2, 0, 2));
+		as.removeLine(1);
+		assertEquals("Hello" + CRLF + "foo", as.toString());
+		Position p = as.getSourcePosition(new Position(0, 0));
+		assertEquals(0, p.getLine());
+		assertEquals(0, p.getColumn());
+		p = as.getSourcePosition(new Position(1, 1));
+		assertEquals(2, p.getLine());
+		assertEquals(1, p.getColumn());
+	}
 }
