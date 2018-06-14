@@ -107,12 +107,14 @@ public class Linter
 	 */
 	/*@ non_null @*/ List<Advice> evaluateAll(/*@ non_null @*/ AnnotatedString s)
 	{
+		Detexer detexer = new Detexer();
 		List<Advice> out_list = new ArrayList<Advice>();
+		AnnotatedString s_decommented = detexer.removeComments(new AnnotatedString(s));
 		for (Rule r : m_rules)
 		{
-			out_list.addAll(r.evaluate(s, s));
+			out_list.addAll(r.evaluate(s_decommented, s));
 		}
-		AnnotatedString s_detexed = new Detexer().detex(s);
+		AnnotatedString s_detexed = detexer.detex(s);
 		for (Rule r : m_rulesDetexed)
 		{
 			out_list.addAll(r.evaluate(s_detexed, s));

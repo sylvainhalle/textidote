@@ -15,7 +15,22 @@ TeXLint is a tool that allows you to perform various checks on a source LaTeX fi
   spelliing: checking that every figure is referenced in the text and has a
   caption, enforce correct capitalization of titles, etc.
 
-## Installing TeXLint
+## Getting TeXLint
+
+Make sure you have the following installed:
+
+- Java version 6 or later (version 8 or later if you want to use
+  Language Tool)
+- (Optional): the Language Tool library. There is a [precompiled
+  bundle](https://github.com/sylvainhalle/languagetool/releases/latest) you
+  can download. Just unzip all the JAR files in your classpath. This is
+  necessary only if you want to use TeXLint with the `--check` option.
+
+Then, download the [latest
+release](https://github.com/sylvainhalle/texlint/releases/latest) of TeXLint; unzip and put in folder of
+your choice.
+
+## Using TeXLint
 
 
 

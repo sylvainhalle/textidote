@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.texlint;
+package ca.uqac.lif.texlint.languagetool;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +28,8 @@ import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.rules.RuleMatch;
 
+import ca.uqac.lif.texlint.Advice;
+import ca.uqac.lif.texlint.Rule;
 import ca.uqac.lif.texlint.as.AnnotatedString;
 import ca.uqac.lif.texlint.as.Position;
 import ca.uqac.lif.texlint.as.Range;
@@ -43,31 +45,51 @@ public class CheckLanguage extends Rule
 	/**
 	 * The language tool object used to check the language
 	 */
-	JLanguageTool m_languageTool;
+	/*@ non_null @*/ protected JLanguageTool m_languageTool;
 
 	/**
 	 * A set of words that should be ignored by spell checking
 	 */
-	Set<String> m_dictionary;
+	/*@ non_null @*/ protected Set<String> m_dictionary;
+	
+	/**
+	 * Whether to disable Language Tool's "whitespace rule". Since the detexed
+	 * string may contain extra spaces (due to the removal of markup), and
+	 * that LaTeX ignores multiple spaces anyway, it is advisable to
+	 *  turn it off.
+	 */
+	protected boolean m_disableWhitespace = true; 
 
 	/**
 	 * Creates a new rule for checking a specific language
-	 * @param lang The language to check
+	 * @param lang The language to check. If {@code null}, the
+	 * constructor will throw an exception
 	 * @param dictionary A set of words that should be ignored by
 	 * spell checking
+	 * @throws UnsupportedLanguageException If {@code lang} is null
 	 */
-	public CheckLanguage(/*@ non_null @*/ Language lang, /*@ non_null @*/ Set<String> dictionary)
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ Set<String> dictionary) throws UnsupportedLanguageException
 	{
-		super("lt:" + lang.getShortCode());
+		super("lt:");
+		if (lang == null)
+		{
+			throw new UnsupportedLanguageException();
+		}
+		setName("lt:" + lang.getShortCode());
 		m_languageTool = new MultiThreadedJLanguageTool(lang);
+		if (m_disableWhitespace)
+		{
+			m_languageTool.disableRule("WHITESPACE_RULE");
+		}
 		m_dictionary = dictionary;
 	}
 
 	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check
+	 * @throws UnsupportedLanguageException If {@code lang} is null
 	 */
-	public CheckLanguage(/*@ non_null @*/ Language lang)
+	public CheckLanguage(/*@ nullable @*/ Language lang) throws UnsupportedLanguageException
 	{
 		this(lang, new HashSet<String>());
 	}
@@ -132,23 +154,34 @@ public class CheckLanguage extends Rule
 				}
 			}
 			// Exception if spelling mistake and a dictionary is provided
-			int end_p = r.getEnd().getColumn();
+			String clean_line = s.getLine(start_pos.getLine());
+			int end_p = end_pos.getColumn();
+			if (end_p > 0)
+			{
+				if (end_p > clean_line.length() - 1)
+				{
+					end_p = clean_line.length() - 1;
+				}
+				if (rm.getRule().getId().startsWith("MORFOLOGIK"))
+				{
+					// This is a spelling mistake
+					int from = Math.min(clean_line.length() - 1, start_pos.getColumn());
+					String word = clean_line.substring(from, end_p);
+
+					word = cleanup(word);
+					if (m_dictionary.contains(word))
+					{
+						// Word is in dictionary: ignore
+						continue;
+					}
+				}
+			}
+			// Exception for false alarm regarding "smart quotes"
+			end_p = r.getEnd().getColumn();
 			if (end_p > line.length() - 1)
 			{
 				end_p = line.length() - 1;
 			}
-			if (rm.getRule().getId().startsWith("MORFOLOGIK"))
-			{
-				// This is a spelling mistake
-				String word = line.substring(Math.min(line.length() - 1, r.getStart().getColumn()), end_p);
-				word = cleanup(word);
-				if (m_dictionary.contains(word))
-				{
-					// Word is in dictionary: ignore
-					continue;
-				}
-			}
-			// Exception for false alarm regarding "smart quotes"
 			if (rm.getRule().getId().startsWith("EN_QUOTES") && rm.getMessage().contains("Use a smart opening quote"))
 			{
 				if (line.length() > 0)
@@ -199,5 +232,14 @@ public class CheckLanguage extends Rule
 		{
 			return CheckLanguage.this;
 		}
+	}
+
+	public static class UnsupportedLanguageException extends Exception
+	{
+		/**
+		 * Dummy UID
+		 */
+		private static final long serialVersionUID = 1L;
+
 	}
 }

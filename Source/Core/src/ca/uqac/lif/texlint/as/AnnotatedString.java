@@ -100,6 +100,8 @@ public class AnnotatedString
 		m_lines = new ArrayList<String>(s.m_lines.size());
 		m_lines.addAll(s.m_lines);
 		m_resourceName = s.m_resourceName;
+		m_currentLine = s.m_currentLine;
+		m_currentColumn = s.m_currentColumn;
 	}
 	
 	/**
@@ -109,6 +111,16 @@ public class AnnotatedString
 	public String getResourceName()
 	{
 		return m_resourceName;
+	}
+	
+	/**
+	 * Gets the associations between character ranges in the string and
+	 * character ranges in the source text
+	 * @return The map of associations
+	 */
+	/*@ pure non_null @*/ public Map<Range,Range> getMap()
+	{
+		return m_map;
 	}
 	
 	/**
@@ -341,7 +353,7 @@ public class AnnotatedString
 				{
 					if (start.getLine() == end.getLine())
 					{
-						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length() - 1, end.getColumn() + 1));
+						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length(), end.getColumn() + 1));
 						out_as.m_builder.append(truncated_line);
 					}
 					else
@@ -619,7 +631,10 @@ public class AnnotatedString
 			// Nothing to do
 			return this;
 		}
-		m_currentLine--;
+		if (m_currentLine > 0)
+		{
+			m_currentLine--;
+		}
 		if (line_nb < m_lines.size())
 		{
 			m_lines.remove(line_nb);

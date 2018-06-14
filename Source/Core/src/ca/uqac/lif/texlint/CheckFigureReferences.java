@@ -52,7 +52,7 @@ public class CheckFigureReferences extends Rule
 		List<Advice> out_list = new ArrayList<Advice>();
 		boolean in_figure = false;
 		Map<String,Position> figure_defs = new HashMap<String,Position>();
-		List<String> lines = original.getLines();
+		List<String> lines = s.getLines();
 		// Step 1: find all figure labels
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{

@@ -19,17 +19,21 @@ package ca.uqac.lif.texlint;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
-import org.languagetool.Language;
-
 import ca.uqac.lif.texlint.as.AnnotatedString;
+import ca.uqac.lif.texlint.as.Range;
+import ca.uqac.lif.texlint.languagetool.CheckLanguage;
+import ca.uqac.lif.texlint.languagetool.LanguageFactory;
 import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.util.CliParser;
 import ca.uqac.lif.util.CliParser.Argument;
@@ -55,6 +59,11 @@ public class Main
 	 * A version string
 	 */
 	protected static final String VERSION_STRING = "0.1";
+	
+	/**
+	 * The name of the Aspell dictionary file to look for in a folder
+	 */
+	protected static final String ASPELL_DICT_FILENAME = ".aspell.en.pws";
 
 	/**
 	 * Main method
@@ -70,6 +79,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
+		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
 		ArgumentMap map = cli_parser.parse(args);
 		boolean enable_colors = true;
 		if (map.hasOption("no-color"))
@@ -110,6 +120,14 @@ public class Main
 					s.setResourceName(filename);
 					AnnotatedString ds = detexer.detex(s);
 					stdout.println(ds);
+					if (map.hasOption("map"))
+					{
+						File map_file = new File(map.getOptionValue("map"));
+						FileOutputStream fos = new FileOutputStream(map_file);
+						PrintStream ps_fos = new PrintStream(fos);
+						printMap(ps_fos, ds.getMap());
+						ps_fos.close();
+					}
 				}
 				catch (FileNotFoundException e) 
 				{
@@ -133,18 +151,15 @@ public class Main
 		// Do we check the language?
 		if (map.hasOption("check"))
 		{
-			Language lang = LanguageFactory.getLanguageFromString(map.getOptionValue("check"));
-			if (lang == null)
-			{
-				stderr.println("Unknown language: " + map.getOptionValue("check"));
-				System.exit(-1);
-			}
+			String lang_s = map.getOptionValue("check");
 			// Try to read dictionary from an Aspell file
 			Set<String> dictionary = new HashSet<String>();
 			try
 			{
-				dictionary.addAll(readDictionary(".aspell.en.pws"));
-				stderr.println("Found local Aspell dictionary");
+				if (dictionary.addAll(readDictionary(ASPELL_DICT_FILENAME)))
+				{
+					stderr.println("Found local Aspell dictionary");
+				}
 			}
 			catch (FileNotFoundException e)
 			{
@@ -161,7 +176,15 @@ public class Main
 					stderr.println("Dictionary not found: " + map.getOptionValue("dict"));
 				}
 			}
-			linter.addDetexed(new CheckLanguage(lang, dictionary));
+			try
+			{
+				linter.addDetexed(new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary));
+			}
+			catch (CheckLanguage.UnsupportedLanguageException e)
+			{
+				stderr.println("Unknown language: " + map.getOptionValue("check"));
+				System.exit(-1);
+			}
 		}
 
 		// Process files
@@ -320,5 +343,24 @@ public class Main
 		} 
 		sc.close();
 		return dict;
+	}
+	
+	/**
+	 * Prints the contents of an associative map
+	 * @param ps The print stream to print to
+	 * @param map The associative map to print
+	 */
+	protected static void printMap(PrintStream ps, Map<Range,Range> map)
+	{
+		List<Range> keys = new ArrayList<Range>(map.size());
+		keys.addAll(map.keySet());
+		Collections.sort(keys);
+		for (Range key : keys)
+		{
+			ps.print(key);
+			ps.print("=");
+			ps.print(map.get(key));
+			ps.println();
+		}
 	}
 }

@@ -23,7 +23,7 @@
        script's default values -->
 
   <!-- The project's name -->
-  <name>TexLint</name>
+  <name>TeXLint</name>
   
   <!-- The project's author. Currently this only
   shows up in the footer of the Javadoc documentation. -->

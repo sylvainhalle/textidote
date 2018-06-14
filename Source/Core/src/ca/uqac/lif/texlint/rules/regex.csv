@@ -1,7 +1,7 @@
 sh:001		\\(sub)*section\{\s*[a-z].*?\}			A section title should start with a capital letter.
 sh:002		\\(sub)*section\{.*?[\.,;:]\s*\}		A section title should not end with a punctuation symbol.
 sh:003		\\(sub)*section\{[A-Z0-9\s,:;]*?\}		A section title should not be written in all caps. The LaTeX stylesheet takes care of rendering titles in caps if needed.
-sh:004		\\caption\{.*?[^\\.]\s*?\}				A figure caption should end with a period.
+sh:004		\\caption\{.*[^\.]\s*\}					A figure caption should end with a period.
 
 # Citations and references
 

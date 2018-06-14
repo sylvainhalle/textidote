@@ -19,12 +19,11 @@ package ca.uqac.lif.texlint;
 
 import ca.uqac.lif.texlint.as.AnnotatedString;
 import ca.uqac.lif.texlint.as.Position;
-import ca.uqac.lif.texlint.as.Range;
 
 /**
  * Removes LaTeX markup from an input string, and generates an annotated
  * string in return.
- * @author sylvain
+ * @author Sylvain Hallé
  *
  */
 public class Detexer
@@ -36,13 +35,14 @@ public class Detexer
 	 */
 	public AnnotatedString detex(AnnotatedString as)
 	{
-		as = removeComments(as);
-		//as = removeEnvironments(as);
-		as = removeAllMarkup(as);
-		//as = simplifySpaces(as);
-		return as;
+		AnnotatedString new_as = new AnnotatedString(as);
+		new_as = removeComments(new_as);
+		as = removeEnvironments(new_as);
+		new_as = removeAllMarkup(new_as);
+		//new_as = simplifySpaces(new_as);
+		return new_as;
 	}
-	
+
 	/**
 	 * Remove environments that are not likely to be interpreted as text
 	 * (tables, verbatim, equations, figures)
@@ -55,7 +55,7 @@ public class Detexer
 		for (int i = 0; i < as.lineCount(); i++)
 		{
 			String line = as.getLine(i);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\[.*"))
 			{
 				in_environment++;
 			}
@@ -64,14 +64,14 @@ public class Detexer
 				as.removeLine(i);
 				i--; // Step counter back so next loop is at same index
 			}
-			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*"))
+			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\].*"))
 			{
 				in_environment--;
 			}
 		}
 		return as;
 	}
-	
+
 	/**
 	 * Remove comments from the file
 	 * @param as The string to clean
@@ -89,7 +89,7 @@ public class Detexer
 			}
 			else
 			{
-				/*for (int pos = 0; pos < line.length(); pos++)
+				for (int pos = 0; pos < line.length(); pos++)
 				{
 					pos = line.indexOf("%", pos);
 					if (pos < 0)
@@ -102,12 +102,12 @@ public class Detexer
 						as = as.trimFrom(new Position(i, pos));
 						break;
 					}
-				}*/
+				}
 			}
 		}
 		return as;
 	}
-	
+
 	/**
 	 * 
 	 * @param as
@@ -119,11 +119,12 @@ public class Detexer
 		boolean first_line = true;
 		for (int line_pos = 0; line_pos < as.lineCount(); line_pos++)
 		{
-			String source_line = as.getLine(line_pos);
-			if (source_line.trim().isEmpty())
+			String orig_source_line = as.getLine(line_pos);
+			if (orig_source_line.trim().isEmpty())
 			{
 				continue;
 			}
+			AnnotatedString source_line = as.substring(new Position(line_pos, 0), new Position(line_pos, orig_source_line.length()));
 			AnnotatedString clean_line = removeMarkup(source_line, line_pos);
 			if (clean_line.toString().trim().isEmpty())
 			{
@@ -142,13 +143,11 @@ public class Detexer
 		}
 		return as_out;
 	}
-	
-	protected AnnotatedString removeMarkup(String line, int line_pos)
+
+	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
 	{
-		AnnotatedString as_out = new AnnotatedString();
-		as_out.append(line, Range.make(line_pos, 0, line.length() - 1));
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|document|thm|abstract)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|document|thm|abstract|eqnarray|compactitem|query)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
@@ -166,12 +165,18 @@ public class Detexer
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle", "");
 		// Inputs and includes
-		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage).*$", "");
+		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|rule).*$", "");
+		// Inline equations
+		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
+		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		// Commands we can ignore
-		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)\\s*?\\{(.*?)\\}", "$2");
+		as_out = as_out.replaceAll("\\\\\\w+\\{", "");
+		//as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)", "");
+		// Curly brackets
+		as_out = as_out.replaceAll("\\{|\\}", "");
 		return as_out;
 	}
-	
+
 	protected AnnotatedString simplifySpaces(AnnotatedString s)
 	{
 		s = s.replaceAll("\\t", " ");

@@ -33,7 +33,7 @@ public abstract class Rule
 	/**
 	 * A unique name given to the rule
 	 */
-	protected String m_name;
+	/*@ non_null @*/ protected String m_name;
 	
 	/**
 	 * Evaluates the rule on a string
@@ -63,8 +63,17 @@ public abstract class Rule
 		return m_name;
 	}
 	
+	/**
+	 * Sets the name given to the rule
+	 * @param name The name
+	 */
+	public void setName(/*@ non_null @*/ String name)
+	{
+		m_name = name;
+	}
+	
 	@Override
-	public String toString()
+	/*@ pure non_null @*/ public String toString()
 	{
 		return m_name;
 	}
