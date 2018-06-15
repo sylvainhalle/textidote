@@ -128,7 +128,7 @@ refer to [its website](https://languagetool.org).
 
 ### Using a dictionary
 
-If you have a list of words that you want TeXlint to ignore when checking
+If you have a list of words that you want TeXtidote to ignore when checking
 spelling, you can use the `--dict` parameter to specify the location of a
 text file:
 
@@ -143,7 +143,7 @@ saved a [local dictionary](http://aspell.net/0.50-doc/man-html/5_Working.html)
 [PaperShell](https://github.com/sylvainhalle/PaperShell) environment),
 TeXtidote can automatically load this dictionary when invoked. More
 specifically, it will look for a file called `.aspell.en.pws` in the folder
-where TeXlint is started (this is the filename Aspell gives to local
+where TeXtidote is started (this is the filename Aspell gives to local
 dictionaries). If such a file exists, TeXtidote will load it and mention it at
 the console:
 
