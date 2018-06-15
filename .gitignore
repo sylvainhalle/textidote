@@ -58,3 +58,4 @@ jacoco.exec
 
 # PDT-specific
 **/.buildpath
+/cache/

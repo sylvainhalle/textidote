@@ -39,6 +39,7 @@
   <srcdir>Source/Core/src</srcdir>
   <bindir>Source/Core/bin</bindir>
   <depdir>Source/Core/dep</depdir>
+  <docdir>docs/javadoc</docdir>
   <test>
     <srcdir>Source/CoreTest/src</srcdir>
     <bindir>Source/CoreTest/bin</bindir>
@@ -46,7 +47,7 @@
   
   <!-- Output jar -->
   <jar>
-    <filename>texlint.jar</filename>
+    <filename>textidote.jar</filename>
     <withdoc>false</withdoc>
     <withdeps>true</withdeps>
   </jar>
