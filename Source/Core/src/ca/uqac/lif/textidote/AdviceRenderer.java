@@ -27,8 +27,16 @@ import ca.uqac.lif.util.AnsiPrinter;
  */
 public abstract class AdviceRenderer 
 {
+	/**
+	 * The printer where the renderer will print its results
+	 */
 	/*@ non_null @*/ protected AnsiPrinter m_printer;
 	
+	/**
+	 * Creates a new advice renderer
+	 * @param printer The printer where the renderer will print its
+	 * results
+	 */
 	public AdviceRenderer(/*@ non_null @*/ AnsiPrinter printer)
 	{
 		super();
@@ -36,8 +44,7 @@ public abstract class AdviceRenderer
 	}
 	
 	/**
-	 * Renders the list of advice
-	 * @param out A print stream where to send the text
+	 * Renders the list of advice.
 	 * @param list The list of advice to render
 	 */
 	public abstract void render(/*@ non_null @*/ List<Advice> list);

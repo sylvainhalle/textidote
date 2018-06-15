@@ -47,7 +47,7 @@ public class Detexer
 	 * Remove environments that are not likely to be interpreted as text
 	 * (tables, verbatim, equations, figures)
 	 * @param as The string to clean
-	 * @return 
+	 * @return A string with the environments removed
 	 */
 	protected AnnotatedString removeEnvironments(AnnotatedString as)
 	{
@@ -109,9 +109,9 @@ public class Detexer
 	}
 
 	/**
-	 * 
-	 * @param as
-	 * @return
+	 * Removes LaTeX commands from a string 
+	 * @param as The string to clean
+	 * @return A string with the environments removed
 	 */
 	protected AnnotatedString removeAllMarkup(AnnotatedString as)
 	{

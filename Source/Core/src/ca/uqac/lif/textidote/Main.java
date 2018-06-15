@@ -83,6 +83,11 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		ArgumentMap map = cli_parser.parse(args);
+		if (map == null)
+		{
+			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
+			System.exit(-1);
+		}
 		boolean enable_colors = true;
 		if (map.hasOption("no-color"))
 		{
@@ -110,7 +115,7 @@ public class Main
 			{
 				System.err.println("No filename is specified");
 				System.err.println("");
-				cli_parser.printHelp("Usage: java -jar TeXtidote.jar [options] file1 [file2 ...]", System.err);
+				cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
 				System.exit(1);
 			}
 			for (String filename : filenames)
@@ -323,7 +328,8 @@ public class Main
 
 	/**
 	 * Reads a list of word from an Aspell-generated file
-	 * @return
+	 * @return A set of words read from the file
+	 * @throws FileNotFoundException Thrown if file not found
 	 */
 	/*@ non_null @*/ protected static Set<String> readDictionary(String filename) throws FileNotFoundException
 	{

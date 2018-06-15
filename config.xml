@@ -30,10 +30,10 @@
   <author>Sylvain Hall&#233;</author>
   
   <!-- The project's version number -->
-  <version>0.1</version>
+  <version>0.2</version>
   
   <!-- The project's main class -->
-  <mainclass>ca.uqac.lif.texlint.Main</mainclass>
+  <mainclass>ca.uqac.lif.textidote.Main</mainclass>
   
   <!-- Redefine directories -->
   <srcdir>Source/Core/src</srcdir>

@@ -47,6 +47,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 	{
 		Map<Integer,List<Advice>> map = groupAdviceByStartLine(list);
 		printFromInternalFile("preamble.html");
+		m_printer.println("<p>Found " + list.size() + " warning(s)</p>");
 		m_printer.println("<div class=\"original-file\">");
 		for (int cur_line_nb = 0; cur_line_nb < m_originalString.lineCount(); cur_line_nb++)
 		{
@@ -59,7 +60,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 				continue;
 			}
 			AnnotatedString a_cur_line = new AnnotatedString().append(cur_line, Range.make(cur_line_nb, 0, cur_line.length() - 1));
-			escape(a_cur_line);
+			a_cur_line = escape(a_cur_line);
 			List<Advice> ad_list = map.get(cur_line_nb);
 			//Collections.sort(ad_list, Collections.reverseOrder());
 			// Go through advice, starting from the end of the line
@@ -67,13 +68,28 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 			{
 				Range r = ad.getRange();
 				Position start_tgt_pos = a_cur_line.getTargetPosition(r.getStart());
+				if (start_tgt_pos == null)
+				{
+					// This is a corner case where the first character of the
+					// region to find is "&", "<" or ">"; since it has been escaped,
+					// the connection to the original location is lost. Hack:
+					// let's try to find the position of the character just before and
+					// increment it by 1.
+					start_tgt_pos = a_cur_line.getTargetPosition(r.getStart().moveBy(-1));
+					if (start_tgt_pos == null)
+					{
+						// Still no luck: give up
+						continue;
+					}
+					start_tgt_pos = start_tgt_pos.moveBy(1);
+				}
 				assert start_tgt_pos != null;
 				// Reset line nb to 0, as we operate on a line-by-line basis
 				start_tgt_pos = new Position(0, start_tgt_pos.getColumn());
 				Position end_tgt_pos = a_cur_line.getTargetPosition(r.getEnd());
 				if (end_tgt_pos == null)
 				{
-					end_tgt_pos = new Position(start_tgt_pos.getLine(), start_tgt_pos.getColumn());
+					end_tgt_pos = start_tgt_pos.moveBy(1);
 				}
 				assert end_tgt_pos != null;
 				// Reset line nb to 0, as we operate on a line-by-line basis
@@ -81,6 +97,14 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 				AnnotatedString as_left = a_cur_line.substring(Position.ZERO, start_tgt_pos.moveBy(-1));
 				AnnotatedString as_middle = a_cur_line.substring(start_tgt_pos, end_tgt_pos.moveBy(-1));
 				AnnotatedString as_right = a_cur_line.substring(end_tgt_pos);
+				if (as_middle.toString().startsWith("&"))
+				{
+					// This is an HTML entity; the first "character" spans up to the semicolon
+					int semicolon_index = as_right.toString().indexOf(";");
+					end_tgt_pos = end_tgt_pos.moveBy(semicolon_index);
+					as_middle = a_cur_line.substring(start_tgt_pos, end_tgt_pos);
+					as_right = a_cur_line.substring(end_tgt_pos.moveBy(1));
+				}
 				as_left.append(getOpeningSpan(ad));
 				as_left.append(as_middle);
 				as_left.append("</span>");
@@ -110,7 +134,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 		StringBuilder span = new StringBuilder();
 		span.append("<span class=\"highlight").append(category).append("\" ");
 		String message = ad.getMessage();
-		message = message.replaceAll("<suggestion>|</suggestion>", "'");
+		message = message.replaceAll("<suggestion>|</suggestion>|\"", "'");
 		span.append("title=\"").append(escape(message)).append("\"");
 		span.append(">");
 		return span.toString();

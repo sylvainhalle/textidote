@@ -39,7 +39,7 @@ public class LanguageFactory
 	/**
 	 * Instantiates a Language object based on a string
 	 * @param s The string
-	 * @return A Language object, or {@cde null} if no language could be
+	 * @return A Language object, or {@code null} if no language could be
 	 * instantiated from the string
 	 */
 	/*@ nullable @*/ public static Language getLanguageFromString(String s)

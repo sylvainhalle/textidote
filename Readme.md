@@ -163,7 +163,8 @@ save it to a file, use a redirection:
 
     java -jar textidote.jar --detex example.tex > clean.txt
 
-You will see that TeXtidote performs a very aggressive deletion of LaTeX markup:
+You will see that TeXtidote performs a very aggressive deletion of LaTeX
+markup:
 
 - All `figure`, `table` and `tabular` environments are removed
 - All equations are removed
@@ -173,6 +174,45 @@ You will see that TeXtidote performs a very aggressive deletion of LaTeX markup:
 - Commands that alter text (`\textbf`, `\emph`, `\uline`, `\footnote`)
   are removed (but the text is kept)
 - Virtually all other commands are simply deleted
+
+Surprisingly, the result of applying these modifications is a text that is
+clean and legible enough for a spelling or grammar checker to provide
+sensible advice.
+
+As was mentioned earlier, TeXtidote keeps a mapping between character ranges
+in the "detexed" file, and the same character ranges in the original LaTeX
+document. You can get this mapping by using the `--map` option:
+
+    java -jar textidote.jar --detex --map map.txt example.tex > clean.txt
+
+The `--map` parameter is given the name of a file. TeXtidote will put in this
+file the list correspondences between character ranges. This file is made of
+lines that look like this:
+
+```
+L1C1-L1C24=L1C5-L128
+L1C26-L1C28=L1C29-L1C31
+L2C1-L2C10=L3C1-L3C10
+...
+```
+
+The first entry indicates that characters 1 to 24 in the first line of the
+clean file correspond to characters 5 to 28 in the first line of the original
+LaTeX file --and so on. This mapping can have "holes": for example, character
+25 line 1 does not correspond to anything in the original file (this happens
+when the "cleaner" inserts new characters, or replaces characters from the
+original file by something else). Conversely, it is also possible that
+characters in the original file do not correspond to anything in the clean
+file (this happens when the cleaner deletes characters from the original).
+
+## Helping TeXtidote
+
+It order to get the best results when using TeXtidote, it is advisable that
+you follow a few formatting conventions when writing your LaTeX file:
+
+- Avoid putting multiple `\begin{envionment}` and/or `\end{environment}` on
+  the same line
+- Do not hard-wrap your paragraphs
 
 ## About the author
 
