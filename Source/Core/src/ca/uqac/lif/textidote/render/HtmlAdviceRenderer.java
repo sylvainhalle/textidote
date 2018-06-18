@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote;
+package ca.uqac.lif.textidote.render;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
+import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.textidote.AdviceRenderer;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.as.Range;
@@ -68,7 +70,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 			{
 				Range r = ad.getRange();
 				Position start_tgt_pos = a_cur_line.getTargetPosition(r.getStart());
-				if (start_tgt_pos == null)
+				if (start_tgt_pos.equals(Position.NOWHERE))
 				{
 					// This is a corner case where the first character of the
 					// region to find is "&", "<" or ">"; since it has been escaped,
@@ -76,7 +78,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 					// let's try to find the position of the character just before and
 					// increment it by 1.
 					start_tgt_pos = a_cur_line.getTargetPosition(r.getStart().moveBy(-1));
-					if (start_tgt_pos == null)
+					if (start_tgt_pos.equals(Position.NOWHERE))
 					{
 						// Still no luck: give up
 						continue;
@@ -87,7 +89,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 				// Reset line nb to 0, as we operate on a line-by-line basis
 				start_tgt_pos = new Position(0, start_tgt_pos.getColumn());
 				Position end_tgt_pos = a_cur_line.getTargetPosition(r.getEnd());
-				if (end_tgt_pos == null)
+				if (end_tgt_pos.equals(Position.NOWHERE))
 				{
 					end_tgt_pos = start_tgt_pos.moveBy(1);
 				}

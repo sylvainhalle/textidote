@@ -251,12 +251,12 @@ public class AnnotatedString
 		return lines;
 	}
 
-	/*@ pure @*/ public /*@ nullable @*/ Position getSourcePosition(/*@ non_null @*/ Position p)
+	/*@ pure @*/ public /*@ non_null @*/ Position getSourcePosition(/*@ non_null @*/ Position p)
 	{
 		Range r = findKeyRangeFor(p);
 		if (r == null)
 		{
-			return null;
+			return Position.NOWHERE;
 		}
 		Range r_source = m_map.get(r);
 		if (r_source.isMultiLine())
@@ -270,18 +270,18 @@ public class AnnotatedString
 		return out_p;
 	}
 	
-	/*@ pure @*/ public /*@ nullable @*/ Position getTargetPosition(/*@ non_null @*/ Position p)
+	/*@ pure @*/ public /*@ non_null @*/ Position getTargetPosition(/*@ non_null @*/ Position p)
 	{
 		Range key_r = findKeyRangeForValue(p);
 		if (key_r == null)
 		{
-			return null;
+			return Position.NOWHERE;
 		}
 		Range value_r = m_map.get(key_r);
 		if (key_r.isMultiLine())
 		{
 			// Cannot guess source position in a multi-line range
-			return null;
+			return Position.NOWHERE;
 		}
 		int col_offset = p.getColumn() - value_r.getStart().getColumn();
 		Position p_source_start = key_r.getStart();

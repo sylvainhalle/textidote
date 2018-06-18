@@ -32,8 +32,13 @@ import java.util.Set;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Range;
-import ca.uqac.lif.textidote.languagetool.CheckLanguage;
-import ca.uqac.lif.textidote.languagetool.LanguageFactory;
+import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
+import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
+import ca.uqac.lif.textidote.rules.CheckFigurePaths;
+import ca.uqac.lif.textidote.rules.CheckFigureReferences;
+import ca.uqac.lif.textidote.rules.CheckLanguage;
+import ca.uqac.lif.textidote.rules.LanguageFactory;
+import ca.uqac.lif.textidote.rules.RegexRule;
 import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.util.CliParser;
 import ca.uqac.lif.util.CliParser.Argument;
@@ -59,7 +64,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.2";
+	protected static final String VERSION_STRING = "0.2.1";
 	
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -292,6 +297,7 @@ public class Main
 		linter.add(readRules(REGEX_FILENAME));
 		linter.addDetexed(readRules(REGEX_FILENAME_DETEX));
 		linter.add(new CheckFigureReferences());
+		linter.add(new CheckFigurePaths());
 	}
 
 	protected static List<Rule> readRules(String filename)

@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote;
+package ca.uqac.lif.textidote.rules;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.as.Range;
@@ -31,6 +33,12 @@ import ca.uqac.lif.textidote.as.Range;
 /**
  * Checks that every figure with a label is mentioned in the text
  * at least once.
+ * <p>
+ * Formally, this rule checks that for every occurrence of <tt>\label{X}</tt>
+ * within a <tt>figure</tt> environment (that is not commented out), there
+ * exists a <tt>\ref{X}</tt> somewhere in the text (that is not commented
+ * out).
+ * 
  * @author Sylvain Hallé
  *
  */
@@ -43,7 +51,7 @@ public class CheckFigureReferences extends Rule
 	
 	public CheckFigureReferences()
 	{
-		super("sh:fig:001");
+		super("sh:figref");
 	}
 	
 	@Override
@@ -73,8 +81,16 @@ public class CheckFigureReferences extends Rule
 				if (mat.find())
 				{
 					String fig_name = mat.group(1).trim();
-					Position fig_pos = new Position(line_cnt, mat.start(1));
+					Position fig_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1)));
 					figure_defs.put(fig_name, fig_pos);
+				}
+				else
+				{
+					// This figure is missing a label
+					Position start_pos = s.getSourcePosition(new Position(line_cnt, 0));
+					Position end_pos = start_pos.moveBy(1);
+					Range r = new Range(start_pos, end_pos);
+					out_list.add(new Advice(this, r, "This figure is missing a label", original.getResourceName(), original.getLine(start_pos.getLine())));	
 				}
 			}
 		}
@@ -95,9 +111,9 @@ public class CheckFigureReferences extends Rule
 			if (!found)
 			{
 				Position start_pos = figure_defs.get(fig_name);
-				Position end_pos = new Position(start_pos.getLine(), start_pos.getColumn() + fig_name.length());
+				Position end_pos = s.getSourcePosition(new Position(start_pos.getLine(), start_pos.getColumn() + fig_name.length()));
 				Range r = new Range(start_pos, end_pos);
-				String original_line = lines.get(start_pos.getLine());
+				String original_line = original.getLine(start_pos.getLine());
 				out_list.add(new Advice(this, r, "Figure " + fig_name + " is never referenced in the text", original.getResourceName(), original_line));
 			}
 		}

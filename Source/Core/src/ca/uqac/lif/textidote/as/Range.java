@@ -124,7 +124,7 @@ public class Range implements Comparable<Range>
 	}
 	
 	@Override
-	public int compareTo(Range r)
+	public int compareTo(/*@ nullable @*/ Range r)
 	{
 		if (r == null)
 		{

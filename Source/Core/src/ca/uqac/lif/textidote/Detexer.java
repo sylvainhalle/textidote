@@ -79,10 +79,15 @@ public class Detexer
 	 */
 	protected AnnotatedString removeComments(AnnotatedString as)
 	{
+		boolean in_comment = false;
 		for (int i = 0; i < as.lineCount(); i++)
 		{
 			String line = as.getLine(i);
-			if (line.trim().startsWith("%"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*comment.*"))
+			{
+				in_comment = true;
+			}
+			if (in_comment || line.trim().startsWith("%"))
 			{
 				as.removeLine(i);
 				i--; // Step counter back so next loop is at same index
@@ -103,6 +108,10 @@ public class Detexer
 						break;
 					}
 				}
+			}
+			if (in_comment && line.matches(".*\\\\end\\s*\\{\\s*comment.*"))
+			{
+				in_comment = false;
 			}
 		}
 		return as;
@@ -147,7 +156,7 @@ public class Detexer
 	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
 	{
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|document|thm|abstract|eqnarray|compactitem|query)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
@@ -166,6 +175,8 @@ public class Detexer
 		as_out = as_out.replaceAll("\\\\maketitle", "");
 		// Inputs and includes
 		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|rule).*$", "");
+		// Conditional hyphens
+		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Inline equations
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");

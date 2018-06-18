@@ -39,6 +39,11 @@ public class Position implements Comparable<Position>
 	public static final Position ZERO = new Position(0, 0);
 	
 	/**
+	 * An instance of the {@link Nowhere} position
+	 */
+	public static final Nowhere NOWHERE = new Nowhere();
+	
+	/**
 	 * Creates a new position object.
 	 * @param line The line number in the file
 	 * @param column The column number in the file
@@ -113,5 +118,23 @@ public class Position implements Comparable<Position>
 	public Position moveBy(int offset)
 	{
 		return new Position(m_line, m_column + offset);
+	}
+	
+	/**
+	 * Position that refers to no specific location in a file
+	 *
+	 */
+	public static class Nowhere extends Position
+	{
+		private Nowhere()
+		{
+			super(-1, -1);
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "?";
+		}
 	}
 }
