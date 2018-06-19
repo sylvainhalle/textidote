@@ -61,6 +61,7 @@ public class CheckFigureReferences extends Rule
 		boolean in_figure = false;
 		Map<String,Position> figure_defs = new HashMap<String,Position>();
 		List<String> lines = s.getLines();
+		boolean found_label = false;
 		// Step 1: find all figure labels
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
@@ -68,11 +69,20 @@ public class CheckFigureReferences extends Rule
 			if (line.matches(".*\\\\begin\\s*\\{\\s*figure.*"))
 			{
 				in_figure = true;
+				found_label = false;
 				continue;
 			}
 			if (line.matches(".*\\\\end\\s*\\{\\s*figure.*"))
 			{
 				in_figure = false;
+				if (!found_label)
+				{
+					// This figure is missing a label
+					Position start_pos = s.getSourcePosition(new Position(line_cnt, 0));
+					Position end_pos = start_pos.moveBy(1);
+					Range r = new Range(start_pos, end_pos);
+					out_list.add(new Advice(this, r, "This figure is missing a label", original.getResourceName(), original.getLine(start_pos.getLine())));	
+				}
 				continue;
 			}
 			if (in_figure)
@@ -83,14 +93,7 @@ public class CheckFigureReferences extends Rule
 					String fig_name = mat.group(1).trim();
 					Position fig_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1)));
 					figure_defs.put(fig_name, fig_pos);
-				}
-				else
-				{
-					// This figure is missing a label
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, 0));
-					Position end_pos = start_pos.moveBy(1);
-					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "This figure is missing a label", original.getResourceName(), original.getLine(start_pos.getLine())));	
+					found_label = true;
 				}
 			}
 		}

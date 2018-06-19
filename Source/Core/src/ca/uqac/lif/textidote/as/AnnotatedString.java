@@ -559,7 +559,14 @@ public class AnnotatedString
 		}
 		for (int i = 1; i < m.groupCount(); i++)
 		{
-			to = to.replace("$" + i, m.group(i));
+			if (m.group(i) != null)
+			{
+				to = to.replace("$" + i, m.group(i));
+			}
+			else
+			{
+				to = to.replace("$" + i, "");
+			}
 		}
 		part_left.append(to);
 		AnnotatedString part_right = substring(new Position(found_pos.getLine(), found_pos.getColumn() + m.getMatch().length()));
@@ -576,19 +583,19 @@ public class AnnotatedString
 	{
 		int max_iterations = 1000;
 		AnnotatedString replaced = this;
+		Position last_pos = Position.ZERO;
 		for (int i = 0; i < max_iterations; i++)
 		{
-			AnnotatedString rep = replaced.replace(regex, to);
-			if (rep.toString().compareTo(replaced.toString()) != 0)
+			Match m = replaced.find(regex, last_pos);
+			if (m == null)
 			{
-				// Something changed
-				replaced = rep;
-			}
-			else
-			{
-				// No change: stop
+				// No cigarettes, no matches
 				break;
 			}
+			Position new_pos = m.getPosition();
+			AnnotatedString rep = replaced.replace(regex, to, last_pos);
+			replaced = rep;
+			last_pos = new_pos.moveBy(1);
 		}
 		return replaced;
 	}

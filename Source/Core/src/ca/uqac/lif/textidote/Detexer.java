@@ -156,7 +156,7 @@ public class Detexer
 	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
 	{
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
@@ -166,7 +166,7 @@ public class Detexer
 		// Footnotes (ignore)
 		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(cite|citep|citel)\\{.*?\\}", "[0]");
+		as_out = as_out.replaceAll("\\\\(cite|citep|citel)(\\[.*?\\])*\\{.*?\\}", "[0]");
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		// Replace references and URLs by dummy placeholder

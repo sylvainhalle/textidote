@@ -58,7 +58,14 @@ public class CheckLanguage extends Rule
 	 * that LaTeX ignores multiple spaces anyway, it is advisable to
 	 *  turn it off.
 	 */
-	protected boolean m_disableWhitespace = true; 
+	protected boolean m_disableWhitespace = true;
+	
+	/**
+	 * Whether to disable Language Tool's "unpaired symbol" rule. The detexing
+	 * of the string leaves a few unmatched "}", so we just ignore this rule
+	 * when it concerns this particular character.
+	 */
+	protected boolean m_disableUnpaired = true;
 
 	/**
 	 * Creates a new rule for checking a specific language
@@ -151,6 +158,15 @@ public class CheckLanguage extends Rule
 				else
 				{
 					r = new Range(start_src_pos, end_src_pos);
+				}
+			}
+			// Exception for the disable unpaired rule
+			if (m_disableUnpaired && rm.getRule().getId().startsWith("EN_UNPAIRED_BRACKETS"))
+			{
+				if (rm.getMessage().contains("{"))
+				{
+					// We ignore the unpaired symbol for this character
+					continue;
 				}
 			}
 			// Exception if spelling mistake and a dictionary is provided

@@ -37,6 +37,9 @@ import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckFigurePaths;
 import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
+import ca.uqac.lif.textidote.rules.CheckNoBreak;
+import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
+import ca.uqac.lif.textidote.rules.CheckSubsections;
 import ca.uqac.lif.textidote.rules.LanguageFactory;
 import ca.uqac.lif.textidote.rules.RegexRule;
 import ca.uqac.lif.util.AnsiPrinter;
@@ -214,7 +217,7 @@ public class Main
 		{
 			System.err.println("No filename is specified");
 			System.err.println("");
-			cli_parser.printHelp("Usage: java -jar TeXtidote.jar [options] file1 [file2 ...]", System.err);
+			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
 			System.exit(1);
 		}
 		AnnotatedString last_string = null;
@@ -298,6 +301,9 @@ public class Main
 		linter.addDetexed(readRules(REGEX_FILENAME_DETEX));
 		linter.add(new CheckFigureReferences());
 		linter.add(new CheckFigurePaths());
+		linter.add(new CheckSubsections());
+		linter.add(new CheckSubsectionSize());
+		linter.add(new CheckNoBreak());
 	}
 
 	protected static List<Rule> readRules(String filename)
