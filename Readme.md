@@ -1,7 +1,7 @@
 TeXtidote: a correction tool for LaTeX documents
 ================================================
 
-Have you ever dreamed of using a grammar checker on LaTeX files?
+Have you ever thought of using a grammar checker on LaTeX files?
 
 If so, you probably know that the process is far from simple. Since LaTeX
 documents contain special commands and keywords (the so-called "markup") that
@@ -21,6 +21,9 @@ What is unique to TeXtidote is that it keeps track of the relative position of
 words between the original and the "clean" text. This means that it can
 translate the messages from Language Tool back to their proper location
 **directly in your source file**.
+
+You can see the list of all the rules checked by TeXtidote at the end of this
+file.
 
 ## Getting TeXtidote
 
@@ -213,6 +216,52 @@ you follow a few formatting conventions when writing your LaTeX file:
 - Avoid putting multiple `\begin{envionment}` and/or `\end{environment}` on
   the same line
 - Do not hard-wrap your paragraphs
+- Put headings like `\section` or `\paragraph` alone on their line
+
+## Rules checked by TeXtidote
+
+Here is a list of the rules that are checked on your LaTeX file by TeXtidote.
+Each rule has a unique identifier, written between square brackets.
+
+### Language Tool
+
+In addition to all the rules below, the `--check xx` option activates all the
+[rules verified by Language Tool](https://community.languagetool.org/rule/list?sort=pattern&max=10&offset=0&lang=en)
+(more than 2,000 grammar and spelling errors).
+
+### Style
+
+- A section title should start with a capital letter. [sh:001]
+- A section title should not end with a punctuation symbol. [sh:002]
+- A section title should not be written in all caps. The LaTeX stylesheet
+  takes care of rendering titles in caps if needed. [sh:003]
+
+### Citations and references
+
+- There should be one space before a \cite or \ref command [sh:c:001], and
+  no space after [sh:c:002].
+
+### Figures
+
+- Every figure should have a label, and every figure should be referenced at
+  least once in the text. [sh:figref]
+- A figure caption should end with a period. [sh:004]
+- Figures should not refer to hard-coded local paths. [sh:relpath]
+
+### Typesetting
+
+- You should not break lines manually in a paragraph. Either start a new
+  paragraph or stay in the current one. [sh:nobreak]
+
+### Structure
+
+- A section should not contain a single sub-section. More generally, a division
+  of level n should not contain a single division of level n+1. [sh:nsubdiv]
+
+### Potentially suspicious
+
+- There should be at least N words between two section headings (currently
+  N=100). [sh:seclen]
 
 ## About the author
 
