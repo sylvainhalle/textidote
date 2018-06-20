@@ -30,7 +30,7 @@ file.
 Make sure you have Java version 8 or later installed on your system.
 Then, download the [latest
 release](https://github.com/sylvainhalle/textidote/releases/latest) of
-TeXtidote; unzip and put in the folder of your choice.
+TeXtidote; put the JAR in the folder of your choice.
 
 ## Using TeXtidote
 
@@ -45,7 +45,7 @@ file: an "HTML" report (viewable in a web browser) and a "console" report.
 
 To run TeXtidote and perform a basic verification of the file, run:
 
-    java -jar textidote.jar --html example.tex > report.html
+    $ java -jar textidote.jar --html example.tex > report.html
 
 Here, the `--html` option tells TeXtidote to produce a report in HTML format;
 the `>` symbol indicates that the output should be saved to a file, whose name
@@ -74,7 +74,7 @@ colored regions; a tooltip will show a message that describes the problem.
 To run TeXtidote and display the results directly in the console, simply omit
 the `--html` option, and do not redirect the output to a file:
 
-    java -jar textidote.jar example.tex
+    $ java -jar textidote.jar example.tex
 
 TeXtidote will analyze the file like before, but produce a report that looks
 like this:
@@ -106,7 +106,7 @@ If the Language Tool library is installed on your system, you can perform
 further checks on spelling and grammar, by passing the `--check` option at
 the command line. For example, to check text in English, you run:
 
-    java -jar textidote.jar --check en example.tex
+    $ java -jar textidote.jar --check en example.tex
 
 The `--check` parameter must be accompanied by a two-letter code indicating
 the language to be used. The code `en` stands for English; TeXtidote also
@@ -151,12 +151,12 @@ Found local Aspell dictionary
 You can also use TeXtidote just to remove the markup from your original LaTeX
 file. This is done with the option `--detex`:
 
-    java -jar textidote.jar --detex example.tex
+    $ java -jar textidote.jar --detex example.tex
 
 By default, the resulting "clean" file is printed directly at the console. To
 save it to a file, use a redirection:
 
-    java -jar textidote.jar --detex example.tex > clean.txt
+    $ java -jar textidote.jar --detex example.tex > clean.txt
 
 You will see that TeXtidote performs a very aggressive deletion of LaTeX
 markup:
@@ -178,7 +178,7 @@ As was mentioned earlier, TeXtidote keeps a mapping between character ranges
 in the "detexed" file, and the same character ranges in the original LaTeX
 document. You can get this mapping by using the `--map` option:
 
-    java -jar textidote.jar --detex --map map.txt example.tex > clean.txt
+    $ java -jar textidote.jar --detex --map map.txt example.tex > clean.txt
 
 The `--map` parameter is given the name of a file. TeXtidote will put in this
 file the list correspondences between character ranges. This file is made of
@@ -210,6 +210,76 @@ you follow a few formatting conventions when writing your LaTeX file:
 - Do not hard-wrap your paragraphs
 - Put headings like `\section` or `\paragraph` alone on their line
 
+## Creating shortcuts
+
+To make using TeXtidote easier, you can create shortcuts on your system. Here
+are a few recommended tips.
+
+### In Linux
+
+We recommend you create a folder called `/opt/textidote` and put the big
+`textidote.jar` file there (this requires root privileges).
+
+#### Command line shortcut
+
+In`/usr/local/bin`, create a file called `textidote` with the following
+contents:
+
+```
+#! /bin/bash
+java -jar /opt/textidote/textidote.jar "$@"
+```
+
+Make this file executable by typing at the command line:
+
+    $ sudo chmod +x /usr/local/bin/textidote
+
+(These two operations also require root previliges.) From then on, you can
+invoke TeXtidote on the command line from any folder by simply typing
+`textidote`, e.g.:
+
+    $ textidote somefile.tex
+
+#### Desktop shortcut
+
+If you use a desktop environment such as Gnome or Xfce, you can automate
+this even further by creating a TeXtidote icon on your desktop. First,
+create a file called `/opt/textidote/textidote.sh` with the following
+contents, and make this file executable:
+
+```
+#! /bin/bash
+dir=$(dirname "$1")
+pushd $dir
+java -jar /opt/textidote/textidote.jar --check en --html "$@" > /tmp/textidote.html
+popd
+sensible-browser /tmp/textidote.html &
+```
+
+This script enters into the directory of the file passed as an argument,
+calls TeXtidote, sends the HTML report to a temporary file, and opens the
+default web browser to show that report.
+
+Then, on your desktop (typically in your `~/Desktop` folder), create another
+file called `TeXtidote.desktop` with the following contents:
+
+```
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=TeXtidote
+Comment=Check file with TeXtidote
+Exec=/opt/textidote/textidote-desktop.sh %F
+Path=
+Terminal=false
+StartupNotify=false
+```
+
+This will create a new desktop shortcut; make this file executable. From then
+on, you can drag LaTeX files from your file manager with your mouse and drop
+them on the TeXtidote icon. After the analysis, the report will automatically
+pop up in your web browser. Voilà!
+
 ## Rules checked by TeXtidote
 
 Here is a list of the rules that are checked on your LaTeX file by TeXtidote.
@@ -219,7 +289,8 @@ Each rule has a unique identifier, written between square brackets.
 
 In addition to all the rules below, the `--check xx` option activates all the
 [rules verified by Language Tool](https://community.languagetool.org/rule/list?sort=pattern&max=10&offset=0&lang=en)
-(more than 2,000 grammar and spelling errors).
+(more than 2,000 grammar and spelling errors). Note that the verification time
+is considerably longer when using that option.
 
 ### Style
 
@@ -227,18 +298,23 @@ In addition to all the rules below, the `--check xx` option activates all the
 - A section title should not end with a punctuation symbol. [sh:002]
 - A section title should not be written in all caps. The LaTeX stylesheet
   takes care of rendering titles in caps if needed. [sh:003]
+- Use a capital letter when referring to a specific section, chapter
+  or table: 'Section X'. [sh:secmag, sh:chamag, sh:tabmag]
 
 ### Citations and references
 
 - There should be one space before a \cite or \ref command [sh:c:001], and
   no space after [sh:c:002].
+- Do not use 'in [X]' or 'from [X]': the syntax of a sentence should not be
+  changed by the removal of a citation. [sh:c:noin]
 
 ### Figures
 
 - Every figure should have a label, and every figure should be referenced at
   least once in the text. [sh:figref]
 - A figure caption should end with a period. [sh:004]
-- Figures should not refer to hard-coded local paths. [sh:relpath]
+- Use a capital letter when referring to a specific figure: 'Figure X'.
+  [sh:figmag]
 
 ### Typesetting
 
@@ -247,8 +323,15 @@ In addition to all the rules below, the `--check xx` option activates all the
 
 ### Structure
 
-- A section should not contain a single sub-section. More generally, a division
-  of level n should not contain a single division of level n+1. [sh:nsubdiv]
+- A section should not contain a single sub-section. More generally, a
+  division of level n should not contain a single division of level n+1.
+  [sh:nsubdiv]
+
+### Hard-coding
+
+- Figures should not refer to hard-coded local paths. [sh:relpath]
+- Do not refer to sections, figures and tables using a hard-coded number.
+  Use \ref instead. [sh:hcfig, sh:hctab, sh:hcsec, sh:hccha]
 
 ### Potentially suspicious
 
