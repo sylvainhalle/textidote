@@ -27,15 +27,7 @@ file.
 
 ## Getting TeXtidote
 
-Make sure you have the following installed:
-
-- Java version 6 or later (version 8 or later if you want to use
-  Language Tool)
-- (Optional): the Language Tool library. There is a [precompiled
-  bundle](https://github.com/sylvainhalle/languagetool/releases/latest) you
-  can download. Just unzip all the JAR files in your classpath. This is
-  necessary only if you want to use TeXtidote with the `--check` option.
-
+Make sure you have Java version 8 or later installed on your system.
 Then, download the [latest
 release](https://github.com/sylvainhalle/textidote/releases/latest) of
 TeXtidote; unzip and put in the folder of your choice.

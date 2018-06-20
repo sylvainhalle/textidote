@@ -74,7 +74,7 @@
       <name>Language Tool</name>
       <classname>org.languagetool.JLanguageTool</classname>
       <files>
-        <zip>https://github.com/languagetool-org/languagetool/archive/v4.1.zip</zip>
+        <jar>https://github.com/sylvainhalle/languagetool/releases/download/v4.1-standalone/languagetool-bundle-4.1.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
