@@ -60,3 +60,6 @@ jacoco.exec
 # PDT-specific
 **/.buildpath
 /cache/
+
+
+textidote.sh
