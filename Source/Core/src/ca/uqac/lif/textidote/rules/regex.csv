@@ -7,3 +7,18 @@ sh:004		\\caption\{.*[^\.]\s*\}					A figure caption should end with a period.
 
 sh:c:001	\w\\(cite|ref)							Add a space before citation or reference.
 sh:c:002	\\(cite|ref)\{.*?\}\s+[\.,;:]			Remove space between citation/reference and punctuation.
+sh:c:noin	(In|in|by|from)\s+\\cite				Do not use 'in [X]': the syntax of a sentence should not be changed by the removal of a citation.
+
+# Style
+
+sh:figmag	figure\s+\\ref							Use a capital letter when referring to a specific figure: 'Figure X'
+sh:secmag	section\s+\\ref							Use a capital letter when referring to a specific section: 'Section X'
+sh:chamag	chapter\s+\\ref							Use a capital letter when referring to a specific chapter: 'Chapter X'
+sh:tabmag	table\s+\\ref							Use a capital letter when referring to a specific table: 'Table X'
+
+# Hard-coding
+
+sh:hcfig	(F|f)igure\s+\d							Do not refer to figures using hard-coded numbers. Use \ref instead.
+sh:hcsec	(S|s)section\s+\d						Do not refer to sections using hard-coded numbers. Use \ref instead.
+sh:hccha	(C|c)chapter\s+\d						Do not refer to chapters using hard-coded numbers. Use \ref instead.
+sh:hctab	(T|t)able\s+\d							Do not refer to tables using hard-coded numbers. Use \ref instead.
