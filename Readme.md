@@ -27,8 +27,23 @@ file.
 
 ## Getting TeXtidote
 
-Make sure you have Java version 8 or later installed on your system.
-Then, download the [latest
+You can either install TeXtidote by downloading it manually, or by installing
+it using a package.
+
+### Under Debian systems: install package
+
+Under Debian systems (Ubuntu and derivatives), you can install TeXtidote using
+`dpkg`. Download the latest `.deb` file in the
+[Releases](https://github.com/sylvainhalle/textidote/releases) page; suppose
+it is called `textidote_X.Y.Z_all.deb`. You can install TeXtidote by typing:
+
+    $ sudo dpkg -i textidote_X.Y.Z_all.deb
+
+### Manual download
+
+You can also download the TeXtidote executable manually: this works on all
+operating systems. Simply make sure you have Java version 8 or later installed
+on your system. Then, download the [latest
 release](https://github.com/sylvainhalle/textidote/releases/latest) of
 TeXtidote; put the JAR in the folder of your choice.
 
@@ -47,12 +62,17 @@ To run TeXtidote and perform a basic verification of the file, run:
 
     $ java -jar textidote.jar --html example.tex > report.html
 
+In Linux, if you installed TeXtidote using `apt-get`, you can also call it
+directly by typing:
+
+    $ textidote --html example.tex > report.html
+
 Here, the `--html` option tells TeXtidote to produce a report in HTML format;
 the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
 ```
-TeXtidote v0.2 - A linter for LaTeX documents
+TeXtidote v0.2.2 - A linter for LaTeX documents
 (C) 2018 Sylvain Hallé - All rights reserved
 
 Found 23 warnings(s)
@@ -218,10 +238,12 @@ are a few recommended tips.
 ### In Linux
 
 We recommend you create a folder called `/opt/textidote` and put the big
-`textidote.jar` file there (this requires root privileges).
+`textidote.jar` file there (this requires root privileges). This step is
+already taken care of if you install the TeXtidote package using `apt-get`.
 
 #### Command line shortcut
 
+(This step is not necessary if TeXtidote has been installed with `apt-get`.)
 In`/usr/local/bin`, create a file called `textidote` with the following
 contents:
 
