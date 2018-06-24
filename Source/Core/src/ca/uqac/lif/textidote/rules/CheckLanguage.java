@@ -136,7 +136,7 @@ public class CheckLanguage extends Rule
 			}
 			Range r = null;
 			boolean original_range = true;
-			if (start_src_pos == null)
+			if (start_src_pos.equals(Position.NOWHERE))
 			{
 				original_range = false;
 				if (start_pos != null)
@@ -151,7 +151,7 @@ public class CheckLanguage extends Rule
 			else
 			{
 				line = original.getLine(start_src_pos.getLine());
-				if (end_src_pos == null)
+				if (end_src_pos.equals(Position.NOWHERE))
 				{
 					r = Range.make(start_src_pos.getLine(), start_src_pos.getColumn(), start_src_pos.getColumn());
 				}
@@ -163,7 +163,7 @@ public class CheckLanguage extends Rule
 			// Exception for the disable unpaired rule
 			if (m_disableUnpaired && rm.getRule().getId().startsWith("EN_UNPAIRED_BRACKETS"))
 			{
-				if (rm.getMessage().contains("{"))
+				if (rm.getMessage().contains("{") || rm.getMessage().contains("}"))
 				{
 					// We ignore the unpaired symbol for this character
 					continue;
@@ -171,7 +171,11 @@ public class CheckLanguage extends Rule
 			}
 			// Exception if spelling mistake and a dictionary is provided
 			String clean_line = s.getLine(start_pos.getLine());
-			int end_p = end_pos.getColumn();
+			int end_p = 0;
+			if (end_pos != null)
+			{
+				end_p = end_pos.getColumn();
+			}
 			if (end_p > 0)
 			{
 				if (end_p > clean_line.length() - 1)

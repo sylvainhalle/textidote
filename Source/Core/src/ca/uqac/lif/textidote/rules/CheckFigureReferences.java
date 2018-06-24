@@ -66,13 +66,13 @@ public class CheckFigureReferences extends Rule
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
 			String line = lines.get(line_cnt);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*figure.*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*(figure|wrapfigure).*"))
 			{
 				in_figure = true;
 				found_label = false;
 				continue;
 			}
-			if (line.matches(".*\\\\end\\s*\\{\\s*figure.*"))
+			if (line.matches(".*\\\\end\\s*\\{\\s*(figure|wrapfigure).*"))
 			{
 				in_figure = false;
 				if (!found_label)

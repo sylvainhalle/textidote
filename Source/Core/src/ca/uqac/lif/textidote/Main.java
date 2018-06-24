@@ -34,6 +34,7 @@ import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
+import ca.uqac.lif.textidote.rules.CheckCaptions;
 import ca.uqac.lif.textidote.rules.CheckFigurePaths;
 import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
@@ -67,19 +68,29 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.2.1";
+	protected static final String VERSION_STRING = "0.3";
 	
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
 	 */
-	protected static final String ASPELL_DICT_FILENAME = ".aspell.en.pws";
-
+	protected static final String ASPELL_DICT_FILENAME = ".aspell.XX.pws";
+	
 	/**
 	 * Main method
 	 * @param args Command-line arguments
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException
+	{
+		System.exit(mainLoop(args));
+	}
+
+	/**
+	 * Main method
+	 * @param args Command-line arguments
+	 * @throws IOException 
+	 */
+	public static int mainLoop(String[] args) throws IOException
 	{
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
@@ -89,12 +100,19 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
+		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
+		cli_parser.addArgument(new Argument().withLongName("help").withDescription("Show command line usage"));
 		ArgumentMap map = cli_parser.parse(args);
 		if (map == null)
 		{
 			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
-			System.exit(-1);
+			return -1;
+		}
+		boolean read_all = false;
+		if (map.hasOption("read-all"))
+		{
+			read_all = true;
 		}
 		boolean enable_colors = true;
 		if (map.hasOption("no-color"))
@@ -113,18 +131,26 @@ public class Main
 		}
 		assert stderr != null;
 		printGreeting(stderr, enable_colors);
+		if (map.hasOption("help"))
+		{
+			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", stderr);
+			stdout.close();
+			return 0;
+		}
 		
 		// Only detex input
 		if (map.hasOption("detex"))
 		{
 			Detexer detexer = new Detexer();
+			detexer.setIgnoreBeforeDocument(!read_all);
 			List<String> filenames = map.getOthers();
 			if (filenames.isEmpty())
 			{
 				System.err.println("No filename is specified");
 				System.err.println("");
 				cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
-				System.exit(1);
+				stdout.close();
+				return 1;
 			}
 			for (String filename : filenames)
 			{
@@ -163,13 +189,15 @@ public class Main
 					}
 				}
 			}
-			System.exit(0);
+			stdout.close();
+			return 0;
 		}
 
 		// Create a linter
 		long start_time = System.currentTimeMillis();
 		Linter linter = new Linter();
 		populateRules(linter);
+		linter.getDetexer().setIgnoreBeforeDocument(!read_all);
 
 		// Do we check the language?
 		if (map.hasOption("check"))
@@ -179,7 +207,8 @@ public class Main
 			Set<String> dictionary = new HashSet<String>();
 			try
 			{
-				if (dictionary.addAll(readDictionary(ASPELL_DICT_FILENAME)))
+				String dict_filename = ASPELL_DICT_FILENAME.replace("XX", lang_s);
+				if (dictionary.addAll(readDictionary(dict_filename)))
 				{
 					stderr.println("Found local Aspell dictionary");
 				}
@@ -206,7 +235,8 @@ public class Main
 			catch (CheckLanguage.UnsupportedLanguageException e)
 			{
 				stderr.println("Unknown language: " + map.getOptionValue("check"));
-				System.exit(-1);
+				stdout.close();
+				return -1;
 			}
 		}
 
@@ -218,7 +248,8 @@ public class Main
 			System.err.println("No filename is specified");
 			System.err.println("");
 			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
-			System.exit(1);
+			stdout.close();
+			return 1;
 		}
 		AnnotatedString last_string = null;
 		for (String filename : filenames)
@@ -252,7 +283,8 @@ public class Main
 		if (last_string == null)
 		{
 			// No file was processed
-			System.exit(-1);
+			stdout.close();
+			return -1;
 		}
 		long end_time = System.currentTimeMillis();
 		stderr.println("Found " + all_advice.size() + " warning(s)");
@@ -281,7 +313,7 @@ public class Main
 		renderer.render(all_advice);
 
 		// The exit code is the number of warnings raised
-		System.exit(all_advice.size());
+		return all_advice.size();
 	}
 
 	protected static void printGreeting(AnsiPrinter out, boolean enable_colors)
@@ -301,6 +333,7 @@ public class Main
 		linter.addDetexed(readRules(REGEX_FILENAME_DETEX));
 		linter.add(new CheckFigureReferences());
 		linter.add(new CheckFigurePaths());
+		linter.add(new CheckCaptions());
 		linter.add(new CheckSubsections());
 		linter.add(new CheckSubsectionSize());
 		linter.add(new CheckNoBreak());

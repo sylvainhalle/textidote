@@ -72,7 +72,7 @@ the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
 ```
-TeXtidote v0.2.2 - A linter for LaTeX documents
+TeXtidote v0.3 - A linter for LaTeX documents
 (C) 2018 Sylvain Hallé - All rights reserved
 
 Found 23 warnings(s)
@@ -157,14 +157,24 @@ saved a [local dictionary](http://aspell.net/0.50-doc/man-html/5_Working.html)
 (as is done for example by the
 [PaperShell](https://github.com/sylvainhalle/PaperShell) environment),
 TeXtidote can automatically load this dictionary when invoked. More
-specifically, it will look for a file called `.aspell.en.pws` in the folder
+specifically, it will look for a file called `.aspell.XX.pws` in the folder
 where TeXtidote is started (this is the filename Aspell gives to local
-dictionaries). If such a file exists, TeXtidote will load it and mention it at
+dictionaries). The characters `XX` are to be replaced with the two-letter
+language code. If such a file exists, TeXtidote will load it and mention it at
 the console:
 
 ```
 Found local Aspell dictionary
 ```
+
+### Reading a sub-file
+
+By default, TeXtidote ignores everything before the `\begin{document}`
+command. If you have a large document that consists of multiple included LaTeX
+"sub-files", and you want to check one such file that does not contain a
+`\begin{document}`, you must tell TeXtidote to read all the file using the
+`--read-all` command line option. Otherwise, TeXtidote will ignore the whole
+file and give you no advice.
 
 ### Removing markup
 
@@ -227,8 +237,32 @@ you follow a few formatting conventions when writing your LaTeX file:
 
 - Avoid putting multiple `\begin{envionment}` and/or `\end{environment}` on
   the same line
-- Do not hard-wrap your paragraphs
+- Keep the arguments of a command on a single line. Commands (such as
+  `\title{}`) that have their opening and closing braces on different lines
+  are not recognized by TeXtidote and will result in garbled output and
+  nonsensical warnings.
+- Do not hard-wrap your paragraphs. It is easier for TeXtidote to detect
+  paragraphs if they have no hard carriage returns inside. (If you need word
+  wrapping, it is preferrable to enable it in your text editor.)
 - Put headings like `\section` or `\paragraph` alone on their line
+
+As a rule, it is advisable to first see what your text looks like using the
+`--detex` option, to make sure that TeXtidote is performing checks on
+something that makes sense.
+
+If you realize that a portion of LaTeX markup is not handled properly and
+messes up the rest of the file, you can tell TeXtidote to ignore a region
+using a special LaTeX comment:
+
+```
+% textidote: ignore begin
+Some weird LaTeX markup that TeXtidote does not
+understand...
+% textidote: ignore end
+```
+
+The lines between `textidote: ignore begin` and `textidote: ignore end` will
+be handled by TeXtidote as if they were comment lines.
 
 ## Creating shortcuts
 
@@ -322,6 +356,7 @@ is considerably longer when using that option.
   takes care of rendering titles in caps if needed. [sh:003]
 - Use a capital letter when referring to a specific section, chapter
   or table: 'Section X'. [sh:secmag, sh:chamag, sh:tabmag]
+- A (figure, table) caption should end with a period. [sh:capperiod]
 
 ### Citations and references
 
@@ -334,7 +369,6 @@ is considerably longer when using that option.
 
 - Every figure should have a label, and every figure should be referenced at
   least once in the text. [sh:figref]
-- A figure caption should end with a period. [sh:004]
 - Use a capital letter when referring to a specific figure: 'Figure X'.
   [sh:figmag]
 

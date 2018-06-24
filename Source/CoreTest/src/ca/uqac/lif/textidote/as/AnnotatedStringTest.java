@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.as;
-
+                                   
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_SIZE;
 import static org.junit.Assert.*;
@@ -56,15 +56,15 @@ public class AnnotatedStringTest
 		as.append("world!", Range.make(1, 10, 15));
 		assertEquals("Hello world!", as.toString());
 		Position p = as.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 7));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -76,17 +76,17 @@ public class AnnotatedStringTest
 		as.append("world!", Range.make(1, 10, 15));
 		assertEquals("Hello" + CRLF + "world!", as.toString());
 		Position p = as.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 7));
-		assertNull(p); // There is no 7th column on line 0
+		assertEquals(Position.NOWHERE, p); // There is no 7th column on line 0
 		p = as.getSourcePosition(new Position(1, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -98,17 +98,17 @@ public class AnnotatedStringTest
 		as.append("world!", Range.make(1, 10, 15));
 		assertEquals("Hello world!", as.toString());
 		Position p = as.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 5));
-		assertNull(p); // No association registered for the space between hello and world
+		assertEquals(Position.NOWHERE, p); // No association registered for the space between hello and world
 		p = as.getSourcePosition(new Position(0, 7));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -122,17 +122,17 @@ public class AnnotatedStringTest
 		as.append(as_orig);
 		assertEquals("Hello world!", as.toString());
 		Position p = as.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 5));
-		assertNull(p); // No association registered for the space between hello and world
+		assertEquals(Position.NOWHERE, p); // No association registered for the space between hello and world
 		p = as.getSourcePosition(new Position(0, 7));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -150,17 +150,17 @@ public class AnnotatedStringTest
 		assertEquals(10, p.getLine());
 		assertEquals(5, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 8));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 12));
-		assertNull(p); // No association registered for the space between hello and world
+		assertEquals(Position.NOWHERE, p); // No association registered for the space between hello and world
 		p = as.getSourcePosition(new Position(0, 14));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -178,15 +178,15 @@ public class AnnotatedStringTest
 		assertEquals(10, p.getLine());
 		assertEquals(5, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 8));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 0));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(10, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -199,17 +199,17 @@ public class AnnotatedStringTest
 		as.append(as2);
 		assertEquals("Hello world!", as.toString());
 		Position p = as.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as.getSourcePosition(new Position(0, 5));
-		assertNull(p); // No association registered for the space between hello and world
+		assertEquals(Position.NOWHERE, p); // No association registered for the space between hello and world
 		p = as.getSourcePosition(new Position(0, 7));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(1, p.getLine());
 		assertEquals(11, p.getColumn());
 		p = as.getSourcePosition(new Position(1, 7));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -220,11 +220,11 @@ public class AnnotatedStringTest
 		AnnotatedString as_sub = as_orig.substring(Range.make(0, 0, 3));
 		assertEquals("Hell", as_sub.toString());
 		Position p = as_sub.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_sub.getSourcePosition(new Position(0, 4));
-		assertNull(p);
+		assertEquals(Position.NOWHERE, p);
 	}
 	
 	@Test
@@ -235,11 +235,11 @@ public class AnnotatedStringTest
 		AnnotatedString as_sub = as_orig.substring(Range.make(0, 0, 1, 2));
 		assertEquals("Hello" + CRLF + "wor", as_sub.toString());
 		Position p = as_sub.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_sub.getSourcePosition(new Position(1, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(7, p.getColumn());
 	}
@@ -252,11 +252,11 @@ public class AnnotatedStringTest
 		AnnotatedString as_sub = as_orig.substring(Range.make(0, 2, 1, 2));
 		assertEquals("llo" + CRLF + "wor", as_sub.toString());
 		Position p = as_sub.getSourcePosition(new Position(0, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(3, p.getColumn());
 		p = as_sub.getSourcePosition(new Position(1, 1));
-		assertNotNull(p);
+		assertFalse(p.equals(Position.NOWHERE));
 		assertEquals(0, p.getLine());
 		assertEquals(7, p.getColumn());
 	}
@@ -292,7 +292,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
-		assertNull(p); // p is a replacement string
+		assertEquals(Position.NOWHERE, p); // p is a replacement string
 	}
 	
 	@Test
@@ -304,7 +304,7 @@ public class AnnotatedStringTest
 		assertNotNull(as_rep);
 		assertEquals("Alllo" + CRLF + "world!", as_rep.toString());
 		Position p = as_rep.getSourcePosition(new Position(0, 1));
-		assertNull(p); // p is a replacement string
+		assertEquals(Position.NOWHERE, p); // p is a replacement string
 		p = as_rep.getSourcePosition(new Position(0, 2));
 		assertEquals(0, p.getLine());
 		assertEquals(2, p.getColumn());
@@ -322,7 +322,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
-		assertNull(p); // p is a replacement string
+		assertEquals(Position.NOWHERE, p); // p is a replacement string
 	}
 	
 	@Test
@@ -393,7 +393,7 @@ public class AnnotatedStringTest
 		Position p = as.getTargetPosition(new Position(1, 1));
 		assertEquals(2, p.getLine());
 		assertEquals(1, p.getColumn());
-		assertNull(as.getTargetPosition(new Position(3, 1)));
+		assertEquals(Position.NOWHERE, as.getTargetPosition(new Position(3, 1)));
 	}
 	
 	@Test

@@ -42,6 +42,11 @@ public class Linter
 	protected List<Rule> m_rulesDetexed;
 	
 	/**
+	 * The detexer used to clean the document
+	 */
+	protected Detexer m_detexer;
+	
+	/**
 	 * Creates a new empty linter object
 	 */
 	public Linter()
@@ -49,6 +54,7 @@ public class Linter
 		super();
 		m_rules = new ArrayList<Rule>();
 		m_rulesDetexed = new ArrayList<Rule>();
+		m_detexer = new Detexer();
 	}
 	
 	/**
@@ -107,18 +113,26 @@ public class Linter
 	 */
 	/*@ non_null @*/ List<Advice> evaluateAll(/*@ non_null @*/ AnnotatedString s)
 	{
-		Detexer detexer = new Detexer();
 		List<Advice> out_list = new ArrayList<Advice>();
-		AnnotatedString s_decommented = detexer.removeComments(new AnnotatedString(s));
+		AnnotatedString s_decommented = m_detexer.removeComments(new AnnotatedString(s));
 		for (Rule r : m_rules)
 		{
 			out_list.addAll(r.evaluate(s_decommented, s));
 		}
-		AnnotatedString s_detexed = detexer.detex(s);
+		AnnotatedString s_detexed = m_detexer.detex(s);
 		for (Rule r : m_rulesDetexed)
 		{
 			out_list.addAll(r.evaluate(s_detexed, s));
 		}
 		return out_list;
+	}
+	
+	/**
+	 * Gets the instance of detexer used by this linter.
+	 * @return The detexer
+	 */
+	/*@ pure non_null */ public Detexer getDetexer()
+	{
+		return m_detexer;
 	}
 }

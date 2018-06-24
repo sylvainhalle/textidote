@@ -68,8 +68,7 @@ public class CheckSubsections extends Rule
 				SectionInfo si_last = sections.peek();
 				if (SectionInfo.isMoveDown(si_last, si))
 				{
-					SectionInfo si_parent = sections.peek();
-					si_parent.m_size++;
+					si_last.m_size++;
 					sections.push(si);
 				}
 				else
@@ -86,7 +85,7 @@ public class CheckSubsections extends Rule
 					else
 					{
 						// Move up
-						while (!sections.isEmpty() && si_last.m_sectionName.compareTo(si.m_sectionName) != 0)
+						while (!sections.isEmpty() && si_last.m_sectionName.compareTo(heading) != 0)
 						{
 							si_last = sections.pop();
 							if (si_last.m_size == 1)
@@ -97,7 +96,6 @@ public class CheckSubsections extends Rule
 						}
 						SectionInfo si_parent = sections.peek();
 						si_parent.m_size++;
-						sections.push(si);
 						sections.push(si);
 					}
 				}

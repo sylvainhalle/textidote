@@ -107,7 +107,7 @@ public class RegexRule extends Rule
 			}
 			String message = createMessage(match);
 			Position start_pos = match.getPosition();
-			Position end_pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length() - 1);
+			Position end_pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length());
 			Position source_start_pos = s.getSourcePosition(start_pos);
 			Position source_end_pos = s.getSourcePosition(end_pos);
 			Range r = null;

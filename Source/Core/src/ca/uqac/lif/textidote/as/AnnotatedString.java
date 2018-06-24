@@ -57,7 +57,7 @@ public class AnnotatedString
 	 * A list of lines contained in the string
 	 */
 	/*@ non_null @*/ protected List<String> m_lines;
-	
+
 	/**
 	 * The name of the resource (e.g. filename) this string comes from
 	 */
@@ -84,7 +84,7 @@ public class AnnotatedString
 		m_lines = new ArrayList<String>();
 		m_resourceName = "";
 	}
-	
+
 	/**
 	 * Creates a new annotated string by copying the contents of
 	 * another
@@ -103,7 +103,7 @@ public class AnnotatedString
 		m_currentLine = s.m_currentLine;
 		m_currentColumn = s.m_currentColumn;
 	}
-	
+
 	/**
 	 * Gets the name of the resource (e.g. filename) this string comes from
 	 * @return The name
@@ -112,7 +112,7 @@ public class AnnotatedString
 	{
 		return m_resourceName;
 	}
-	
+
 	/**
 	 * Gets the associations between character ranges in the string and
 	 * character ranges in the source text
@@ -122,7 +122,7 @@ public class AnnotatedString
 	{
 		return m_map;
 	}
-	
+
 	/**
 	 * Sets the name of the resource (e.g. filename) this string comes from
 	 * @param name The name
@@ -269,7 +269,7 @@ public class AnnotatedString
 		Position out_p = new Position(p_source_start.getLine(), p_source_start.getColumn() + col_offset);
 		return out_p;
 	}
-	
+
 	/*@ pure @*/ public /*@ non_null @*/ Position getTargetPosition(/*@ non_null @*/ Position p)
 	{
 		Range key_r = findKeyRangeForValue(p);
@@ -307,7 +307,7 @@ public class AnnotatedString
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Retrieves the range in the map's keys, whose corresponding value
 	 * contains the given position
@@ -432,7 +432,7 @@ public class AnnotatedString
 		}
 		return out_as;
 	}
-	
+
 	/**
 	 * Returns a substring of the current annotated string.
 	 * @param start The start position of the portion of the current
@@ -472,6 +472,7 @@ public class AnnotatedString
 	public Match find(/* @non_null @*/ String regex, /* @non_null @*/ Position start)
 	{
 		/*@ nullable @*/ String line_to_find = null;
+		int col = start.getColumn();
 		for (int start_l = start.getLine(); start_l <= m_lines.size(); start_l++)
 		{
 			if (start_l < m_lines.size())
@@ -488,14 +489,15 @@ public class AnnotatedString
 			}
 			Pattern pat = Pattern.compile(regex);
 			Matcher mat = pat.matcher(line_to_find);
-			int col = start.getColumn();
 			if (col >= line_to_find.length())
 			{
 				// Beyond end of line: move to next line
+				col = 0;
 				continue;
 			}
 			if (!mat.find(col))
 			{
+				col = 0;
 				continue;
 			}
 			Match m = new Match(mat.group(0), new Position(start_l, mat.start()));
@@ -573,12 +575,12 @@ public class AnnotatedString
 		part_left.append(part_right);
 		return part_left;
 	}
-	
+
 	public /*@ non_null @*/ AnnotatedString replace(String regex, String to)
 	{
 		return replace(regex, to, Position.ZERO);
 	}
-	
+
 	public /*@ non_null @*/ AnnotatedString replaceAll(String regex, String to)
 	{
 		int max_iterations = 1000;
@@ -599,7 +601,7 @@ public class AnnotatedString
 		}
 		return replaced;
 	}
-	
+
 	/**
 	 * Gets the number of lines in this string
 	 * @return The number of lines
@@ -608,7 +610,7 @@ public class AnnotatedString
 	{
 		return m_lines.size() + 1;
 	}
-	
+
 	/**
 	 * Gets the n-th line of the string
 	 * @param line_nb The number of the line
@@ -627,7 +629,7 @@ public class AnnotatedString
 		}
 		throw new ArrayIndexOutOfBoundsException("Line " + line_nb + " does not exist");
 	}
-	
+
 	/**
 	 * Computes the position (line/column) of the n-th character in the
 	 * string. If the string contains multiple
@@ -662,7 +664,7 @@ public class AnnotatedString
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Removes a complete line from the string.
 	 * @param line_nb The line number
@@ -687,9 +689,18 @@ public class AnnotatedString
 		else if (line_nb == m_lines.size())
 		{
 			m_builder = new StringBuilder();
-			String l = m_lines.remove(line_nb - 1);
-			m_builder.append(l);
-			m_currentColumn = l.length();
+			if (line_nb > 0)
+			{
+				String l = m_lines.remove(line_nb - 1);
+				m_builder.append(l);
+				m_currentColumn = l.length();
+			}
+			else
+			{
+				// line_nb == 0
+				m_builder = new StringBuilder();
+				m_currentColumn = 0;
+			}
 		}
 		// Step 2: adjust all positions on lines below line_nb
 		Map<Range,Range> new_ranges = new HashMap<Range,Range>();
@@ -783,7 +794,7 @@ public class AnnotatedString
 		}
 		return new Range(new_start, new_end);
 	}
-	
+
 	/**
 	 * Trims a line of the string from a given position
 	 * @param pos The position. All characters on the same line,
@@ -811,7 +822,7 @@ public class AnnotatedString
 		}
 		return this;
 	}
-	
+
 	/**
 	 * Creates an annotated string from a scanner
 	 * @param scanner The scanner
@@ -832,5 +843,15 @@ public class AnnotatedString
 			as.append(line, Range.make(line_pos, 0, line.length() - 1));
 		}
 		return as;
+	}
+	
+	/**
+	 * Determines if the string is empty, i.e. contains no characters.
+	 * @return {@code true} if the string is empty, {@code false}
+	 * otherwise
+	 */
+	public boolean isEmpty()
+	{
+		return m_lines.isEmpty() && m_builder.toString().isEmpty();
 	}
 }

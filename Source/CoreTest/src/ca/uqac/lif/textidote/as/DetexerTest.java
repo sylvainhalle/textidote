@@ -33,7 +33,7 @@ public class DetexerTest
 	@Test
 	public void testRemoveMarkup1()
 	{
-		Detexer detexer = new Detexer();
+		Detexer detexer = new Detexer().setIgnoreBeforeDocument(false);
 		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner("abc" + CRLF + "def")));
 		assertEquals("abc" + CRLF + "def", as.toString());
 	}
@@ -41,7 +41,7 @@ public class DetexerTest
 	@Test
 	public void testRemoveMarkup2()
 	{
-		Detexer detexer = new Detexer();
+		Detexer detexer = new Detexer().setIgnoreBeforeDocument(false);
 		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test1.tex"))));
 		assertEquals("Hello " + CRLF + "World", as.toString());
 		Position p = as.getSourcePosition(new Position(1, 1));
@@ -54,8 +54,16 @@ public class DetexerTest
 	{
 		Detexer detexer = new Detexer();
 		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test2.tex"))));
-		System.out.println(as);
 		Position p = as.getSourcePosition(new Position(5, 1));
-		System.out.println(p);
+		assertEquals(22, p.getLine());
+		assertEquals(9, p.getColumn());
+	}
+	
+	@Test
+	public void testRemoveEnvironments1()
+	{
+		Detexer detexer = new Detexer();
+		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test3.tex"))));
+		assertTrue(as.isEmpty());
 	}
 }

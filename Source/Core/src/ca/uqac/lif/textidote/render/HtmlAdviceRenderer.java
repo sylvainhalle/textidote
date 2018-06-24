@@ -133,9 +133,13 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 		{
 			category = "-sh";
 		}
+		if (rule_name.contains("MORFOLOGIK"))
+		{
+			category = "-spelling";
+		}
 		StringBuilder span = new StringBuilder();
 		span.append("<span class=\"highlight").append(category).append("\" ");
-		String message = ad.getMessage();
+		String message = ad.getMessage() + " [" + ad.getRule().getName() + "]";
 		message = message.replaceAll("<suggestion>|</suggestion>|\"", "'");
 		span.append("title=\"").append(escape(message)).append("\"");
 		span.append(">");

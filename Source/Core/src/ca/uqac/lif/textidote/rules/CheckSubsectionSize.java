@@ -45,6 +45,11 @@ public class CheckSubsectionSize extends Rule
 	 * The minimum number of words in a subdivision
 	 */
 	protected int m_minNumWords = 150;
+	
+	/**
+	 * Ignore this rule for sections named "Conclusion"
+	 */
+	protected boolean m_ignoreConclusion = true;
 
 	/**
 	 * Creates a new instance of the rule
@@ -135,6 +140,4 @@ public class CheckSubsectionSize extends Rule
 	{
 		return line.split("\\s+").length;
 	}
-
-
 }

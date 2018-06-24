@@ -29,6 +29,22 @@ import ca.uqac.lif.textidote.as.Position;
 public class Detexer
 {
 	/**
+	 * The string to look for to tell TeXtidote to start ignoring lines
+	 */
+	public static final String IGNORE_BEGIN = "textidote: ignore begin";
+
+	/**
+	 * The string to look for to tell TeXtidote to stop ignoring lines
+	 */
+	public static final String IGNORE_END = "textidote: ignore end";
+
+	/**
+	 * Whether the detexer will remove all lines before seeing
+	 * <tt>\begin{document}</tt>
+	 */
+	protected boolean m_ignoreBeforeDocument = true;
+
+	/**
 	 * Removes LaTeX markup from the annotated string
 	 * @param as The annotated string
 	 * @return A string without markup
@@ -52,21 +68,41 @@ public class Detexer
 	protected AnnotatedString removeEnvironments(AnnotatedString as)
 	{
 		int in_environment = 0;
-		for (int i = 0; i < as.lineCount(); i++)
+		boolean in_document = false;
+		for (int i = 0; i < as.lineCount() && i >= 0; i++)
 		{
-			String line = as.getLine(i);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\[.*"))
+			// If we keep removing line 0, eventually we'll come to an empty string
+			if (as.isEmpty())
 			{
-				in_environment++;
+				break;
 			}
-			if (in_environment > 0)
+			String line = as.getLine(i);
+			if (m_ignoreBeforeDocument && !in_document)
 			{
+				if (line.matches("[^%]*\\\\begin\\s*\\{\\s*document.*"))
+				{
+					// We have seen the beginning of the document
+					in_document = true;
+				}
+				// All the lines up to the one that has \begin{document} are removed
 				as.removeLine(i);
 				i--; // Step counter back so next loop is at same index
 			}
-			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\].*"))
+			else
 			{
-				in_environment--;
+				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+				{
+					in_environment++;
+				}
+				if (in_environment > 0)
+				{
+					as.removeLine(i);
+					i--; // Step counter back so next loop is at same index
+				}
+				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+				{
+					in_environment--;
+				}
 			}
 		}
 		return as;
@@ -83,7 +119,7 @@ public class Detexer
 		for (int i = 0; i < as.lineCount(); i++)
 		{
 			String line = as.getLine(i);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*comment.*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*comment.*") || line.matches("\\s*%+.*" + IGNORE_BEGIN + ".*"))
 			{
 				in_comment = true;
 			}
@@ -109,7 +145,7 @@ public class Detexer
 					}
 				}
 			}
-			if (in_comment && line.matches(".*\\\\end\\s*\\{\\s*comment.*"))
+			if (in_comment && line.matches(".*\\\\end\\s*\\{\\s*comment.*") || line.matches("\\s*%+.*" + IGNORE_END + ".*"))
 			{
 				in_comment = false;
 			}
@@ -169,14 +205,17 @@ public class Detexer
 		as_out = as_out.replaceAll("\\\\(cite|citep|citel)(\\[.*?\\])*\\{.*?\\}", "[0]");
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
+		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
 		as_out = as_out.replaceAll("\\\\(ref|url)\\{.*?\\}", "X");
 		// Titles
-		as_out = as_out.replaceAll("\\\\maketitle", "");
+		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
 		// Inputs and includes
-		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|rule).*$", "");
+		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox).*$", "");
 		// Conditional hyphens
 		as_out = as_out.replaceAll("\\\\\\-", "");
+		// Non-breaking spaces
+		as_out = as_out.replaceAll("~", " ");
 		// Inline equations
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
@@ -193,5 +232,19 @@ public class Detexer
 		s = s.replaceAll("\\t", " ");
 		s = s.replaceAll("[ ]+", " ");
 		return s;
+	}
+
+	/**
+	 * Sets whether the detexer will remove all lines before seeing
+	 * <tt>\begin{document}</tt>, without even attempting to interpret
+	 * them
+	 * @param b Set to {@code true} to remove the lines (the default),
+	 * {@code false} otherwise
+	 * @return This detexer
+	 */
+	public Detexer setIgnoreBeforeDocument(boolean b)
+	{
+		m_ignoreBeforeDocument = b;
+		return this;
 	}
 }

@@ -7,7 +7,7 @@
 body {
   font-family: sans-serif;
 }
-.highlight, .highlight-sh {
+.highlight, .highlight-sh, .highlight-spelling {
   padding: 2pt;
   border-radius: 4pt;
   cursor: help;
@@ -15,12 +15,16 @@ body {
   border: dashed 1px;
 }
 .highlight {
-  background-color: red;
-  color: white;
+  background-color: orange;
+  color: black;
 }
 .highlight-sh {
   background-color: yellow;
   color: black;
+}
+.highlight-spelling {
+  background-color: red;
+  color: white;
 }
 div.original-file {
   font-family: monospace;
@@ -56,4 +60,4 @@ h1.textidote {
 </head>
 <body>
 <a href="https://sylvainhalle.github.io/textidote"><h1 class="textidote"><span class="no-text">Results of TeXtidote analysis</span></h1></a>
-<p>Here is the result of analyzing your LaTeX file with TeXtidote.</p>
+<p>Here is the result of analyzing your LaTeX file with TeXtidote. Hover the mouse over highlighted portions of the document to read a tooltip that gives you some writing advice.</p>
