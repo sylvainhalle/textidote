@@ -129,17 +129,24 @@ the command line. For example, to check text in English, you run:
     $ java -jar textidote.jar --check en example.tex
 
 The `--check` parameter must be accompanied by a two-letter code indicating
-the language to be used. The code `en` stands for English; TeXtidote also
-supports `fr` (French), `nl` (Dutch), `de` (German), `es` (Spanish) and
-`pt` (Portuguese).
+the language to be used. Language Tool is a powerful library that can verify
+spelling, grammar, and even provide suggestions regarding style. TeXtidote
+simply passes a cleaned-up version of the LaTeX file to Language Tool,
+retrieves the messages it generates, and coverts the line and column numbers
+associated to each message back into line/column numbers of the original
+source file. For more information about the kind of verifications made by
+Language Tool, please refer to [its website](https://languagetool.org).
 
-Language Tool is a powerful library that can verify spelling, grammar, and
-even provide suggestions regarding style. TeXtidote simply passes a cleaned-up
-version of the LaTeX file to Language Tool, retrieves the messages it
-generates, and coverts the line and column numbers associated to each message
-back into line/column numbers of the original source file. For more
-information about the kind of verifications made by Language Tool, please
-refer to [its website](https://languagetool.org).
+The language codes you can use are:
+
+- `de`: (Germany) German, and the variants `de_AT` (Austrian) and `de_CH`
+  (Swiss)
+- `en`: (US) English, and the variants `en_CA` (Canadian) and `en_UK`
+  (British)
+- `es`: Spanish
+- `fr`: French
+- `nl`: Dutch
+- `pt` (Portuguese)
 
 ### Using a dictionary
 
@@ -150,7 +157,7 @@ text file:
     java -jar textidote.jar --check en --dict dico.txt example.tex
 
 The file `dico.txt` must be a plain text file contain a list of words to be
-ignored, with each word on a separate line.
+ignored, with each word on a separate line. (The list is case sensitive.)
 
 If you already spell checked you file using [Aspell](https://aspell.net) and
 saved a [local dictionary](http://aspell.net/0.50-doc/man-html/5_Working.html)
@@ -372,11 +379,6 @@ is considerably longer when using that option.
 - Use a capital letter when referring to a specific figure: 'Figure X'.
   [sh:figmag]
 
-### Typesetting
-
-- You should not break lines manually in a paragraph. Either start a new
-  paragraph or stay in the current one. [sh:nobreak]
-
 ### Structure
 
 - A section should not contain a single sub-section. More generally, a
@@ -388,6 +390,18 @@ is considerably longer when using that option.
 - Figures should not refer to hard-coded local paths. [sh:relpath]
 - Do not refer to sections, figures and tables using a hard-coded number.
   Use \ref instead. [sh:hcfig, sh:hctab, sh:hcsec, sh:hccha]
+- You should not break lines manually in a paragraph with `\\`. Either start a
+  new paragraph or stay in the current one. [sh:nobreak]
+- If you are writing a research paper, do not force page breaks with
+  `\newline`. [sh:nonp]
+
+### LaTeX subtleties
+
+- Use a backslash after the last period in "i.e." and "et al."; otherwise
+  LaTeX will think it is a full stop ending a sentence. [sh:010, sh:011]
+- There should not be a space before a semicolon or a colon. If in your
+  language, typographic rules require a space here, LaTeX takes care of
+  inserting it without your intervention. [sh:d:005, sh:d:006]
 
 ### Potentially suspicious
 
@@ -399,5 +413,24 @@ is considerably longer when using that option.
 TeXtidote was written by [Sylvain Hallé](https://leduotang.ca/sylvain), Full
 Professor in the Department of Computer Science and Mathematics at
 [Université du Québec à Chicoutimi](http://www.uqac.ca), Canada.
+
+## Like TeXtidote?
+
+TeXtidote is free software licensed under the GNU [General Public License
+3](https://www.gnu.org/licenses/gpl-3.0.en.html). It is released as
+[postcardware](https://en.wikipedia.org/wiki/Postcardware): if you use and
+like the software, please tell the author by sending a postcard of your town
+at the following address:
+
+Sylvain Hallé
+Department of Computer Science and Mathematics
+Univerité du Québec à Chicoutimi
+555, boulevard de l'Université
+Chicoutimi, QC
+G7H 2B1 Canada
+
+If you like TeXtidote, you might also want to look at
+[PaperShell](https://github.com/sylvainhalle/PaperShell), a template
+environment for writing scientific papers in LaTeX.
 
 %% :maxLineLen=78:wrap=soft:
