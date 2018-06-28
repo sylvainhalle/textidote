@@ -19,14 +19,13 @@ package ca.uqac.lif.textidote.rules;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.rules.RuleMatch;
+import org.languagetool.rules.spelling.SpellingCheckRule;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
@@ -48,10 +47,10 @@ public class CheckLanguage extends Rule
 	/*@ non_null @*/ protected JLanguageTool m_languageTool;
 
 	/**
-	 * A set of words that should be ignored by spell checking
+	 * A list of words that should be ignored by spell checking
 	 */
-	/*@ non_null @*/ protected Set<String> m_dictionary;
-	
+	/*@ non_null @*/ protected List<String> m_dictionary;
+
 	/**
 	 * Whether to disable Language Tool's "whitespace rule". Since the detexed
 	 * string may contain extra spaces (due to the removal of markup), and
@@ -59,7 +58,7 @@ public class CheckLanguage extends Rule
 	 *  turn it off.
 	 */
 	protected boolean m_disableWhitespace = true;
-	
+
 	/**
 	 * Whether to disable Language Tool's "unpaired symbol" rule. The detexing
 	 * of the string leaves a few unmatched "}", so we just ignore this rule
@@ -75,7 +74,7 @@ public class CheckLanguage extends Rule
 	 * spell checking
 	 * @throws UnsupportedLanguageException If {@code lang} is null
 	 */
-	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ Set<String> dictionary) throws UnsupportedLanguageException
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary) throws UnsupportedLanguageException
 	{
 		super("lt:");
 		if (lang == null)
@@ -88,6 +87,13 @@ public class CheckLanguage extends Rule
 		{
 			m_languageTool.disableRule("WHITESPACE_RULE");
 		}
+		for (org.languagetool.rules.Rule rule : m_languageTool.getAllActiveRules())
+		{
+			if (rule instanceof SpellingCheckRule)
+			{
+				((SpellingCheckRule) rule).addIgnoreTokens(dictionary);
+			}
+		}
 		m_dictionary = dictionary;
 	}
 
@@ -98,7 +104,7 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang) throws UnsupportedLanguageException
 	{
-		this(lang, new HashSet<String>());
+		this(lang, new ArrayList<String>(0));
 	}
 
 	@Override
@@ -182,25 +188,17 @@ public class CheckLanguage extends Rule
 				{
 					end_p = clean_line.length() - 1;
 				}
-				if (rm.getRule().getId().startsWith("MORFOLOGIK"))
-				{
-					// This is a spelling mistake
-					int from = Math.min(clean_line.length() - 1, start_pos.getColumn());
-					String word = clean_line.substring(from, end_p);
-
-					word = cleanup(word);
-					if (m_dictionary.contains(word))
-					{
-						// Word is in dictionary: ignore
-						continue;
-					}
-				}
 			}
 			// Exception for false alarm regarding "smart quotes"
 			end_p = r.getEnd().getColumn();
 			if (end_p > line.length() - 1)
 			{
 				end_p = line.length() - 1;
+			}
+			if (rm.getRule().getId().startsWith("FRENCH_WHITESPACE"))
+			{
+				// LaTeX takes care of whitespace, so ignore LT's advice
+				continue;
 			}
 			if (rm.getRule().getId().startsWith("EN_QUOTES") && rm.getMessage().contains("Use a smart opening quote"))
 			{

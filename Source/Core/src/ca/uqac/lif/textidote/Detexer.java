@@ -191,6 +191,9 @@ public class Detexer
 
 	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
 	{
+		// French quotes
+		as_out = as_out.replaceAll("\\\\og\\{\\}", "«");
+		as_out = as_out.replaceAll("\\\\fg\\{\\}", "»");
 		// Common environments
 		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
 		// List items

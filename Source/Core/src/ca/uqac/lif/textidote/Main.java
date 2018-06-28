@@ -68,7 +68,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.3";
+	protected static final String VERSION_STRING = "0.4";
 	
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -204,13 +204,13 @@ public class Main
 		{
 			String lang_s = map.getOptionValue("check");
 			// Try to read dictionary from an Aspell file
-			Set<String> dictionary = new HashSet<String>();
+			List<String> dictionary = new ArrayList<String>();
 			try
 			{
 				String dict_filename = ASPELL_DICT_FILENAME.replace("XX", lang_s);
 				if (dictionary.addAll(readDictionary(dict_filename)))
 				{
-					stderr.println("Found local Aspell dictionary");
+					stderr.println("Found local Aspell dictionary in " + dict_filename);
 				}
 			}
 			catch (FileNotFoundException e)

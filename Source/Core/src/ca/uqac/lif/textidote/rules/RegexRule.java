@@ -112,14 +112,14 @@ public class RegexRule extends Rule
 			Position source_end_pos = s.getSourcePosition(end_pos);
 			Range r = null;
 			String original_line = "";
-			if (source_start_pos == null)
+			if (source_start_pos.equals(Position.NOWHERE))
 			{
 				r = Range.make(0, 0, 0);
 			}
 			else
 			{
 				original_line = original.getLine(source_start_pos.getLine());
-				if (source_end_pos == null)
+				if (source_end_pos.equals(Position.NOWHERE))
 				{
 					source_end_pos = source_start_pos;
 				}
