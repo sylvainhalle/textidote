@@ -391,7 +391,12 @@ public class AnnotatedString
 				{
 					if (start.getLine() == end.getLine())
 					{
-						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length(), end.getColumn() + 1));
+						int end_p = end.getColumn() + 1;
+						if (end_p < 0 || start.getColumn() < 0)
+						{
+							System.out.println("HE");
+						}
+						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length(), end_p));
 						out_as.m_builder.append(truncated_line);
 					}
 					else
@@ -404,6 +409,10 @@ public class AnnotatedString
 				{
 					if (i == end.getLine())
 					{
+						if (end.getColumn() + 1 < 0)
+						{
+							System.out.println("HE");
+						}
 						String truncated_line = line.substring(0, Math.min(line.length(), end.getColumn() + 1));
 						out_as.m_lines.add(truncated_line);
 					}
@@ -552,7 +561,7 @@ public class AnnotatedString
 		{
 			if (found_pos.getColumn() == 0)
 			{
-				part_left = substring(Position.ZERO, new Position(found_pos.getLine() - 1, Integer.MAX_VALUE));
+				part_left = substring(Position.ZERO, new Position(found_pos.getLine() - 1, getLine(found_pos.getLine() - 1).length()));
 			}
 			else
 			{
@@ -583,7 +592,7 @@ public class AnnotatedString
 
 	public /*@ non_null @*/ AnnotatedString replaceAll(String regex, String to)
 	{
-		int max_iterations = 1000;
+		int max_iterations = 10000;
 		AnnotatedString replaced = this;
 		Position last_pos = Position.ZERO;
 		for (int i = 0; i < max_iterations; i++)

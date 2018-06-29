@@ -24,25 +24,25 @@ import java.util.Scanner;
 
 import org.junit.Test;
 
-import ca.uqac.lif.textidote.Detexer;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 
 public class DetexerTest
 {
 	@Test
 	public void testRemoveMarkup1()
 	{
-		Detexer detexer = new Detexer().setIgnoreBeforeDocument(false);
-		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner("abc" + CRLF + "def")));
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("abc" + CRLF + "def")));
 		assertEquals("abc" + CRLF + "def", as.toString());
 	}
 	
 	@Test
 	public void testRemoveMarkup2()
 	{
-		Detexer detexer = new Detexer().setIgnoreBeforeDocument(false);
-		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test1.tex"))));
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test1.tex"))));
 		assertEquals("Hello " + CRLF + "World", as.toString());
 		Position p = as.getSourcePosition(new Position(1, 1));
 		assertEquals(2, p.getLine());
@@ -52,8 +52,8 @@ public class DetexerTest
 	@Test
 	public void testRemoveMarkup3()
 	{
-		Detexer detexer = new Detexer();
-		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test2.tex"))));
+		LatexCleaner detexer = new LatexCleaner();
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test2.tex"))));
 		Position p = as.getSourcePosition(new Position(5, 1));
 		assertEquals(22, p.getLine());
 		assertEquals(9, p.getColumn());
@@ -62,8 +62,8 @@ public class DetexerTest
 	@Test
 	public void testRemoveEnvironments1()
 	{
-		Detexer detexer = new Detexer();
-		AnnotatedString as = detexer.detex(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test3.tex"))));
+		LatexCleaner detexer = new LatexCleaner();
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test3.tex"))));
 		assertTrue(as.isEmpty());
 	}
 }

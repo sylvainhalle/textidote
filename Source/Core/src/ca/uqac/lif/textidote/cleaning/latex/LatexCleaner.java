@@ -15,10 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote;
+package ca.uqac.lif.textidote.cleaning.latex;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.cleaning.TextCleaner;
 
 /**
  * Removes LaTeX markup from an input string, and generates an annotated
@@ -26,7 +27,7 @@ import ca.uqac.lif.textidote.as.Position;
  * @author Sylvain Hallé
  *
  */
-public class Detexer
+public class LatexCleaner extends TextCleaner
 {
 	/**
 	 * The string to look for to tell TeXtidote to start ignoring lines
@@ -44,15 +45,11 @@ public class Detexer
 	 */
 	protected boolean m_ignoreBeforeDocument = true;
 
-	/**
-	 * Removes LaTeX markup from the annotated string
-	 * @param as The annotated string
-	 * @return A string without markup
-	 */
-	public AnnotatedString detex(AnnotatedString as)
+	@Override
+	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as)
 	{
 		AnnotatedString new_as = new AnnotatedString(as);
-		new_as = removeComments(new_as);
+		new_as = cleanComments(new_as);
 		as = removeEnvironments(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
@@ -108,12 +105,8 @@ public class Detexer
 		return as;
 	}
 
-	/**
-	 * Remove comments from the file
-	 * @param as The string to clean
-	 * @return The string without comments
-	 */
-	protected AnnotatedString removeComments(AnnotatedString as)
+	@Override
+	public AnnotatedString cleanComments(AnnotatedString as)
 	{
 		boolean in_comment = false;
 		for (int i = 0; i < as.lineCount(); i++)
@@ -194,6 +187,9 @@ public class Detexer
 		// French quotes
 		as_out = as_out.replaceAll("\\\\og\\{\\}", "«");
 		as_out = as_out.replaceAll("\\\\fg\\{\\}", "»");
+		// Ligatures
+		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
+		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
 		// Common environments
 		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
 		// List items
@@ -245,7 +241,7 @@ public class Detexer
 	 * {@code false} otherwise
 	 * @return This detexer
 	 */
-	public Detexer setIgnoreBeforeDocument(boolean b)
+	public LatexCleaner setIgnoreBeforeDocument(boolean b)
 	{
 		m_ignoreBeforeDocument = b;
 		return this;

@@ -32,6 +32,10 @@ import java.util.Set;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.cleaning.CompositeCleaner;
+import ca.uqac.lif.textidote.cleaning.ReplacementCleaner;
+import ca.uqac.lif.textidote.cleaning.TextCleanerException;
+import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
@@ -94,15 +98,16 @@ public class Main
 	{
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
-		cli_parser.addArgument(new Argument().withLongName("html").withDescription("Formats the report as HTML"));
+		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
+		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
-		cli_parser.addArgument(new Argument().withLongName("help").withDescription("Show command line usage"));
+		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
 		ArgumentMap map = cli_parser.parse(args);
 		if (map == null)
 		{
@@ -141,8 +146,25 @@ public class Main
 		// Only detex input
 		if (map.hasOption("detex"))
 		{
-			Detexer detexer = new Detexer();
-			detexer.setIgnoreBeforeDocument(!read_all);
+			CompositeCleaner cleaner = new CompositeCleaner();
+			if (map.hasOption("replace"))
+			{
+				String replacement_filename = map.getOptionValue("replace");
+				File f = new File(replacement_filename);
+				if (!f.exists())
+				{
+					stderr.println("Replacement file " + replacement_filename + " not found");
+				}
+				else
+				{
+					Scanner scanner = new Scanner(f);
+					cleaner.add(ReplacementCleaner.create(scanner));
+					stderr.println("Using replacement file " + replacement_filename);
+				}
+			}
+			LatexCleaner latex_cleaner = new LatexCleaner();
+			latex_cleaner.setIgnoreBeforeDocument(!read_all);
+			cleaner.add(latex_cleaner);
 			List<String> filenames = map.getOthers();
 			if (filenames.isEmpty())
 			{
@@ -166,7 +188,7 @@ public class Main
 					scanner = new Scanner(f);
 					AnnotatedString s = AnnotatedString.read(scanner);
 					s.setResourceName(filename);
-					AnnotatedString ds = detexer.detex(s);
+					AnnotatedString ds = cleaner.clean(s);
 					stdout.println(ds);
 					if (map.hasOption("map"))
 					{
@@ -176,6 +198,11 @@ public class Main
 						printMap(ps_fos, ds.getMap());
 						ps_fos.close();
 					}
+				}
+				catch (TextCleanerException e) 
+				{
+					stderr.print(e.getMessage());
+					return -1;
 				}
 				catch (FileNotFoundException e) 
 				{
@@ -195,9 +222,27 @@ public class Main
 
 		// Create a linter
 		long start_time = System.currentTimeMillis();
-		Linter linter = new Linter();
+		CompositeCleaner cleaner = new CompositeCleaner();
+		if (map.hasOption("replace"))
+		{
+			String replacement_filename = map.getOptionValue("replace");
+			File f = new File(replacement_filename);
+			if (!f.exists())
+			{
+				stderr.println("Replacement file " + replacement_filename + " not found");
+			}
+			else
+			{
+				Scanner scanner = new Scanner(f);
+				cleaner.add(ReplacementCleaner.create(scanner));
+				stderr.println("Using replacement file " + replacement_filename);
+			}
+		}
+		LatexCleaner latex_cleaner = new LatexCleaner();
+		latex_cleaner.setIgnoreBeforeDocument(!read_all);
+		cleaner.add(latex_cleaner);
+		Linter linter = new Linter(cleaner);
 		populateRules(linter);
-		linter.getDetexer().setIgnoreBeforeDocument(!read_all);
 
 		// Do we check the language?
 		if (map.hasOption("check"))
@@ -267,6 +312,11 @@ public class Main
 				last_string = AnnotatedString.read(scanner);
 				last_string.setResourceName(filename);
 				all_advice.addAll(linter.evaluateAll(last_string));
+			}
+			catch (LinterException e) 
+			{
+				stderr.print(e.getMessage());
+				return -1;
 			}
 			catch (FileNotFoundException e) 
 			{
