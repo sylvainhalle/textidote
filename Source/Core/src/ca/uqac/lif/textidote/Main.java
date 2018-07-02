@@ -80,7 +80,8 @@ public class Main
 	protected static final String ASPELL_DICT_FILENAME = ".aspell.XX.pws";
 	
 	/**
-	 * Main method. This method simply calls the static method {@link #mainLoop()},
+	 * Main method. This method simply calls the static method
+	 * {@link #main(String[]) mainLoop()},
 	 * and exits with the return value of that method. The reason for this is
 	 * is that we can test the main loop, and the test is not interrupted
 	 * by calls to {@code System.exit}.
