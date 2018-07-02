@@ -129,14 +129,14 @@ public class CheckLanguage extends Rule
 		for (RuleMatch rm : matches)
 		{
 			String line = "";
-			Position start_src_pos = null, end_src_pos = null;
+			Position start_src_pos = Position.NOWHERE, end_src_pos = Position.NOWHERE;
 			Position start_pos = s.getPosition(rm.getFromPos());
-			if (start_pos != null)
+			if (!start_pos.equals(Position.NOWHERE))
 			{
 				start_src_pos = s.getSourcePosition(start_pos);				
 			}
 			Position end_pos = s.getPosition(rm.getToPos());
-			if (end_pos != null)
+			if (!end_pos.equals(Position.NOWHERE))
 			{
 				end_src_pos = s.getSourcePosition(end_pos);
 			}

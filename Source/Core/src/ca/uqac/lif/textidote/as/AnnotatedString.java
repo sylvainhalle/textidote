@@ -645,14 +645,14 @@ public class AnnotatedString
 	 * lines, the size of each line separator is also included in the count.
 	 * @param nb_chars The number of characters from the beginning of the
 	 * string
-	 * @return The position, or {@code null} if {@code nb_chars} lies beyond
-	 * the string boundaries
+	 * @return The position; you get {@link Position#NOWHERE}
+	 * if {@code nb_chars} lies beyond the string boundaries
 	 */
-	/*@ pure nullable @*/ public Position getPosition(int nb_chars)
+	/*@ pure non_null @*/ public Position getPosition(int nb_chars)
 	{
 		if (nb_chars < 0)
 		{
-			return null;
+			return Position.NOWHERE;
 		}
 		int char_count = 0, line_count = 0;
 		for (String line : m_lines)
@@ -671,7 +671,7 @@ public class AnnotatedString
 			// It's on the last line
 			return new Position(line_count, nb_chars - char_count);
 		}
-		return null;
+		return Position.NOWHERE;
 	}
 
 	/**

@@ -210,7 +210,7 @@ public class LatexCleaner extends TextCleaner
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
 		// Inputs and includes
-		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox).*$", "");
+		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox|printbibliography).*$", "");
 		// Conditional hyphens
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces

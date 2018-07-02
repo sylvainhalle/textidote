@@ -26,8 +26,8 @@ import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.util.AnsiPrinter.Color;
 
 /**
- * Renders a list of advice to a terminal (such as stdin), using colored
- * output.
+ * Renders a list of advice to a terminal (such as {@code stdin}), using
+ * colored output.
  * @author Sylvain Hallé
  */
 public class AnsiAdviceRenderer extends AdviceRenderer 
@@ -38,8 +38,15 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 	 */
 	protected int m_lineWidth = 50;
 	
+	/**
+	 * The width of the line in the terminal (in number of characters)
+	 */
 	protected int m_terminalLineWidth = 78;
 	
+	/**
+	 * Creates a new advice renderer
+	 * @param printer The printer to which the advice will be printed
+	 */
 	public AnsiAdviceRenderer(AnsiPrinter printer)
 	{
 		super(printer);
@@ -68,7 +75,17 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 		}
 	}
 	
-	protected void renderExcerpt(String line, Range range)
+	/**
+	 * Renders a line of text and "highlights" a portion of it. The highlight
+	 * here is simulated with a series of "^" characters, like this:
+	 * <pre>
+	 * the quick brown fox jumps over the lazy dog
+	 *     ^^^^^^^^^^^^^^^
+	 * </pre>
+	 * @param line The line of text
+	 * @param range The range to highlight
+	 */
+	protected void renderExcerpt(/*@ non_null @*/ String line, /*@ non_null @*/ Range range)
 	{
 		int indent = 2;
 		int left = range.getStart().getColumn();
@@ -102,6 +119,10 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 		m_printer.println();
 	}
 	
+	/**
+	 * Prints some spaces
+	 * @param n The number of spaces to print
+	 */
 	protected void printSpaces(int n)
 	{
 		for (int i = 0; i < n; i++)
@@ -110,7 +131,16 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 		}	
 	}
 	
-	/*@ pure @*/ protected void wrap(/*@ non_null @*/ String message, String indent, int start_pos)
+	/**
+	 * Prints a sequence of words, using word wrapping and indenting each
+	 * new line
+	 * @param message The sequence of words to print
+	 * @param indent The indent (a sequence of spaces) to append at the
+	 * beginning of each new line
+	 * @param start_pos The start position on the first line (set to greater
+	 * than 0 to append text to an existing line)
+	 */
+	protected void wrap(/*@ non_null @*/ String message, /*@ non_null @*/ String indent, int start_pos)
 	{
 		int cur_width = start_pos;
 		String[] words = message.split(" ");
