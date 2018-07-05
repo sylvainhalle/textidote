@@ -1,0 +1,12 @@
+Package: textidote
+Version: 0.4
+Maintainer: Sylvain Hallé <shalle@acm.org>
+Section: tex
+Priority: optional
+Homepage: https://sylvainhalle.github.io/textidote
+Architecture: all
+Depends: bash
+Recommends: java (>= 1.8)
+Description: Spelling and grammar checker for LaTeX documents.
+ Created by Sylvain Hallé.
+ TeXtidote is a tool for proof-reading LaTeX files such as research papers. The program can remove markup from the file and send it to the Language Tool library, which performs a verification of both spelling and grammar in a dozen languages. What is special about TeXtidote is that it keeps track of the relative position of words between the original and the "clean" text. This means that it can translate the messages from Language Tool back to their proper location directly in your source file. By default, TeXtidote produces an HTML report that shows your original sources, with the errors found by Language Tool highlighted at the correct location.

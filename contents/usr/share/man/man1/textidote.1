@@ -1,0 +1,81 @@
+.TH TEXTIDOTE 1 "2018-06-24" "GNU" "TeXtidote Abbreviated User's Manual"
+.SH NAME
+textidote \- proof reader for LaTeX files
+.SH SYNOPSIS
+.B textidote
+.I "[options] file1 [file2 ...]"
+.br
+.SH "DESCRIPTION"
+.B TeXtidote
+is a proof reader, spelling and grammar checker for LaTeX documents. The process
+of checking LaTeX documents (especially grammar) is far from simple. Since LaTeX
+documents contain special commands and keywords (the so-called "markup") that
+are not part of the "real" text, you cannot run a grammar checker directly on
+these files: it cannot tell the difference between markup and text. The other
+option is to remove all this markup, leaving only the "clear" text; however,
+when a grammar tool points to a problem at a specific line in this clear text,
+it becomes hard to retrace that location in the original LaTeX file.
+.PP
+TeXtidote solves this problem; it can read your original LaTeX file and
+perform various sanity checks on it: for example, making sure that every
+figure is referenced in the text, enforcing the correct capitalization of
+titles, etc. In addition, TeXtidote can remove markup from the file and send
+it to the Language Tool library, which performs a verification of
+.B both spelling and grammar
+in a dozen languages.
+What is unique to TeXtidote is that it keeps track of the relative position of
+words between the original and the "clean" text. This means that it can
+translate the messages from Language Tool back to their proper location
+.B directly in your source file.
+.SS OPTIONS
+When launched with no option, TeXtidote analyzes the input file(s) and produces
+a report of all errors and warnings found; this report is printed on the
+standard output.
+.TP
+\fB--html\fP
+Produce a report in HTML format and print it to the standard output. The
+report shows the input LaTeX source file, and the errors found are highlighted
+directly in the source at the corresponding location. This report can be saved
+to a file and opened in a web browser.
+.TP
+\fB--check\fR \fIlang\fR
+Run spelling and grammar checks on language \fIlang\fR. The parameter \fIlang\fR
+is a two-letter code indicating the language of the input text. The code
+\fIen\fR stands for English; TeXtidote also supports \fIfr\fR (French), \fInl\fR
+(Dutch), \fIde\fR (German), \fIes\fR (Spanish) and \fIpt\fR (Portuguese).
+.TP
+\fB--dict\fP \fIfile\fR
+Use \fIfile\fR as a dictionary. This option only has an effect when used with
+\fB--check\fR. Parameter \fIfile\fR should point to a text file containing a
+list of words that will be ignored by the spell checker.
+.TP
+\fB--replace\fP \fIfile\fR
+Apply find/replace patterns described in \fIfile\fR.
+.TP
+\fB--detex\fP
+Remove LaTeX markup from the file and print the result to the
+standard output.
+.TP
+\fB--read-all\fP
+By default, TeXtidote ignores everything before the \fI\\begin{document}\fR
+command. Use this option to force TeXtidote to read all the file. This is
+useful if you are analyzing a file that is a fragment of a larger document.
+.TP
+\fB--map\fP \fIfile\fR
+Output correspondences between character ranges in \fIfile\fR. This option only
+has an effect when used with \fB--detex\fR. TeXtidote keeps a mapping between
+character ranges in the "detexed" file, and the same character ranges in the
+original LaTeX document. This parameter can output the mapping to a text file.
+.TP
+\fB--no-color\fP
+Disable the use of ANSI escape codes when printing reports to the standard
+output (only has an effect when the \fB--html\fP option is not used).
+.TP
+\fB--help\fP
+Show the command line usage.
+.SH SUPPORT
+Support for TeXtidote can be found on the GitHub repository at
+<https://github.com/sylvainhalle/textidote>.
+Bug reports and suggestions should be submitted via the issue tracker.
+.SH AUTHOR
+This manual page was written by Sylvain Hallé <shalle@acm.org>.
