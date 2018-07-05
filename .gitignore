@@ -3,6 +3,10 @@
 # --------------------------------------
 
 *~
+Source/
+lib/
+docs/
+*.deb
 contents/DEBIAN/md5sums
 contents/opt/textidote/*
 contents/etc/bash.completion.d/*
