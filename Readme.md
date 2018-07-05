@@ -37,7 +37,9 @@ Under Debian systems (Ubuntu and derivatives), you can install TeXtidote using
 [Releases](https://github.com/sylvainhalle/textidote/releases) page; suppose
 it is called `textidote_X.Y.Z_all.deb`. You can install TeXtidote by typing:
 
-    $ sudo dpkg -i textidote_X.Y.Z_all.deb
+    $ sudo apt-get install ./textidote_X.Y.Z_all.deb
+
+The `./` is mandatory; otherwise the command won't work.
 
 ### Manual download
 
@@ -72,7 +74,7 @@ the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
 ```
-TeXtidote v0.3 - A linter for LaTeX documents
+TeXtidote v0.4 - A linter for LaTeX documents
 (C) 2018 Sylvain Hallé - All rights reserved
 
 Found 23 warnings(s)
@@ -146,7 +148,7 @@ The language codes you can use are:
 - `es`: Spanish
 - `fr`: French
 - `nl`: Dutch
-- `pt` (Portuguese)
+- `pt`: Portuguese
 
 ### Using a dictionary
 
@@ -271,18 +273,16 @@ understand...
 The lines between `textidote: ignore begin` and `textidote: ignore end` will
 be handled by TeXtidote as if they were comment lines.
 
-## Creating shortcuts
+## Linux shortcuts
 
 To make using TeXtidote easier, you can create shortcuts on your system. Here
 are a few recommended tips.
 
-### In Linux
+First, we recommend you create a folder called `/opt/textidote` and put the
+big `textidote.jar` file there (this requires root privileges). This step is
+already taken care of if you installed the TeXtidote package using `apt-get`.
 
-We recommend you create a folder called `/opt/textidote` and put the big
-`textidote.jar` file there (this requires root privileges). This step is
-already taken care of if you install the TeXtidote package using `apt-get`.
-
-#### Command line shortcut
+### Command line shortcut
 
 (This step is not necessary if TeXtidote has been installed with `apt-get`.)
 In`/usr/local/bin`, create a file called `textidote` with the following
@@ -303,7 +303,7 @@ invoke TeXtidote on the command line from any folder by simply typing
 
     $ textidote somefile.tex
 
-#### Desktop shortcut
+### Desktop shortcut
 
 If you use a desktop environment such as Gnome or Xfce, you can automate
 this even further by creating a TeXtidote icon on your desktop. First,
@@ -343,6 +343,23 @@ on, you can drag LaTeX files from your file manager with your mouse and drop
 them on the TeXtidote icon. After the analysis, the report will automatically
 pop up in your web browser. Voilà!
 
+### Tab completions
+
+You can auto-complete the commands you type at the command-line using the TAB
+key (as you are probably used to). If you installed TeXtidote using `apt-get`,
+auto-completion for [Bash](https://www.gnu.org/software/bash/) comes built-in.
+You can also enable auto-completion for other shells as follows.
+
+#### Zsh
+
+Users of [Zsh](https://zsh.org) can also enable auto-completion; in your
+`~/.zshrc` file, add the line
+
+    source /opt/textidote/textidote.zsh
+
+(Create the file if it does not exist.) You must then restart your Zsh shell
+for the changes to take effect.
+
 ## Rules checked by TeXtidote
 
 Here is a list of the rules that are checked on your LaTeX file by TeXtidote.
@@ -380,7 +397,7 @@ is considerably longer when using that option.
   [sh:figmag]
 
 ### Structure
-
+                                        
 - A section should not contain a single sub-section. More generally, a
   division of level n should not contain a single division of level n+1.
   [sh:nsubdiv]
@@ -395,7 +412,7 @@ is considerably longer when using that option.
 - If you are writing a research paper, do not force page breaks with
   `\newline`. [sh:nonp]
 
-### LaTeX subtleties
+### LaTeX subtleties 
 
 - Use a backslash after the last period in "i.e." and "et al."; otherwise
   LaTeX will think it is a full stop ending a sentence. [sh:010, sh:011]
@@ -408,13 +425,58 @@ is considerably longer when using that option.
 - There should be at least N words between two section headings (currently
   N=100). [sh:seclen]
 
-## About the author
+## Building TeXtidote
+
+First make sure you have the following installed:
+
+- The Java Development Kit (JDK) to compile. TeXtidote requires version 8
+  of the JDK (and probably works with later versions).
+- [Ant](http://ant.apache.org) to automate the compilation and build process
+
+Download the sources for TeXtidote from
+[GitHub](http://github.com/sylvainhalle/Bullwinkle) or clone the repository
+using Git:
+
+    git clone git@github.com:sylvainhalle/textidote.git
+
+### Compiling
+
+First, download the dependencies by typing:
+
+    ant download-deps
+
+Then, compile the sources by simply typing:
+
+    ant
+
+This will produce a file called `textidote.jar` in the folder. This
+file is runnable and stand-alone, or can be used as a library, so it can be
+moved around to the location of your choice.
+
+In addition, the script generates in the `docs/doc` folder the Javadoc
+documentation for using Bullwinkle.
+
+### Testing
+
+TeXtidote can test itself by running:
+
+    ant test
+
+Unit tests are run with [jUnit](http://junit.org); a detailed report of
+these tests in HTML format is availble in the folder `tests/junit`, which
+is automatically created. Code coverage is also computed with
+[JaCoCo](http://www.eclemma.org/jacoco/); a detailed report is available
+in the folder `tests/coverage`.
+
+About the author
+----------------
 
 TeXtidote was written by [Sylvain Hallé](https://leduotang.ca/sylvain), Full
 Professor in the Department of Computer Science and Mathematics at
 [Université du Québec à Chicoutimi](http://www.uqac.ca), Canada.
 
-## Like TeXtidote?
+Like TeXtidote?
+---------------
 
 TeXtidote is free software licensed under the GNU [General Public License
 3](https://www.gnu.org/licenses/gpl-3.0.en.html). It is released as
@@ -422,15 +484,15 @@ TeXtidote is free software licensed under the GNU [General Public License
 like the software, please tell the author by sending a postcard of your town
 at the following address:
 
-Sylvain Hallé
-Department of Computer Science and Mathematics
-Univerité du Québec à Chicoutimi
-555, boulevard de l'Université
-Chicoutimi, QC
-G7H 2B1 Canada
+    Sylvain Hallé
+    Department of Computer Science and Mathematics
+    Univerité du Québec à Chicoutimi
+    555, boulevard de l'Université
+    Chicoutimi, QC
+    G7H 2B1 Canada
 
 If you like TeXtidote, you might also want to look at
 [PaperShell](https://github.com/sylvainhalle/PaperShell), a template
 environment for writing scientific papers in LaTeX.
 
-%% :maxLineLen=78:wrap=soft:
+<!-- :maxLineLen=78:wrap=soft: -->
