@@ -94,9 +94,17 @@ public class CheckSubsections extends Rule
 								out_list.add(new Advice(this, r2, "If a section has sub-sections, it should have more than one such sub-section.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
 							}
 						}
-						SectionInfo si_parent = sections.peek();
-						si_parent.m_size++;
-						sections.push(si);
+						if (sections.isEmpty())
+						{
+							Range r2 = new Range(original.getSourcePosition(si.m_range.getStart()), original.getSourcePosition(si.m_range.getEnd()));
+							out_list.add(new Advice(CheckSubsectionOrder.instance, r2, "The first heading of a document should be the one with the highest level. For example, if a document contains sections, the first section cannot be preceded by a sub-section.", original.getResourceName(), original.getLine(r2.getStart().getLine())));
+						}
+						else
+						{
+							SectionInfo si_parent = sections.peek();
+							si_parent.m_size++;
+							sections.push(si);
+						}
 					}
 				}
 			}
@@ -126,5 +134,27 @@ public class CheckSubsections extends Rule
 		return line.split("\\s+").length;
 	}
 
-
+	/**
+	 * A placeholder class for a sub-rule checked by {@link CheckSubsections}.
+	 * This class exists only to have a different rule ID.
+	 */
+	public static class CheckSubsectionOrder extends Rule
+	{
+		/**
+		 * Reference to a single instance of this class
+		 */
+		protected static final CheckSubsectionOrder instance = new CheckSubsectionOrder();
+		
+		private CheckSubsectionOrder()
+		{
+			super("sh:secorder");
+		}
+		
+		@Override
+		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
+		{
+			// Do nothing; this is a placeholder
+			return null;
+		}		
+	}
 }

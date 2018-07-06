@@ -401,6 +401,9 @@ is considerably longer when using that option.
 - A section should not contain a single sub-section. More generally, a
   division of level n should not contain a single division of level n+1.
   [sh:nsubdiv]
+- The first heading of a document should be the one with the highest level.
+  For example, if a document contains sections, the first section cannot be
+  preceded by a sub-section. [sh:secorder]
 
 ### Hard-coding
 

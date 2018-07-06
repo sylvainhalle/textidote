@@ -98,7 +98,7 @@ public class CheckSubsectionSize extends Rule
 						while (!sections.isEmpty() && si_last.m_sectionName.compareTo(si.m_sectionName) != 0)
 						{
 							si_last = sections.pop();
-							if (si_last.m_size < m_minNumWords)
+							if (si_last.m_size < m_minNumWords && !si_last.m_sectionName.isEmpty())
 							{
 								Range r2 = si_last.m_range;
 								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
