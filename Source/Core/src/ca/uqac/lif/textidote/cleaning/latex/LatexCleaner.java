@@ -185,6 +185,7 @@ public class LatexCleaner extends TextCleaner
 	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
 	{
 		// French quotes
+		as_out = replaceAccents(as_out, line_pos);
 		as_out = as_out.replaceAll("\\\\og\\{\\}", "«");
 		as_out = as_out.replaceAll("\\\\fg\\{\\}", "»");
 		// Ligatures
@@ -223,6 +224,57 @@ public class LatexCleaner extends TextCleaner
 		//as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)", "");
 		// Curly brackets
 		as_out = as_out.replaceAll("\\{|\\}", "");
+		return as_out;
+	}
+	
+	/**
+	 * Replaces escaped accented character sequences by their proper character
+	 * @param as_out The string to replace from
+	 * @param line_pos The line number of the line to process
+	 * @return The replaced string
+	 */
+	protected AnnotatedString replaceAccents(AnnotatedString as_out, int line_pos)
+	{
+		as_out = as_out.replaceAll("\\\\`\\{A\\}", "À");
+		as_out = as_out.replaceAll("\\\\'\\{A\\}", "Á");
+		as_out = as_out.replaceAll("\\\\^\\{A\\}", "Â");
+		as_out = as_out.replaceAll("\\\\~\\{A\\}", "Ã");
+		as_out = as_out.replaceAll("\\\\`\\{a\\}", "à");
+		as_out = as_out.replaceAll("\\\\'\\{a\\}", "à");
+		as_out = as_out.replaceAll("\\\\^\\{a\\}", "â");
+		as_out = as_out.replaceAll("\\\\~\\{a\\}", "ã");
+		as_out = as_out.replaceAll("\\\\`\\{E\\}", "È");
+		as_out = as_out.replaceAll("\\\\'\\{E\\}", "É");
+		as_out = as_out.replaceAll("\\\\^\\{E\\}", "Ê");
+		as_out = as_out.replaceAll("\\\\~\\{E\\}", "Ẽ");
+		as_out = as_out.replaceAll("\\\\`\\{e\\}", "è");
+		as_out = as_out.replaceAll("\\\\'\\{e\\}", "é");
+		as_out = as_out.replaceAll("\\\\^\\{e\\}", "ê");
+		as_out = as_out.replaceAll("\\\\~\\{e\\}", "ẽ");
+		as_out = as_out.replaceAll("\\\\`\\{I\\}", "Ì");
+		as_out = as_out.replaceAll("\\\\'\\{I\\}", "Í");
+		as_out = as_out.replaceAll("\\\\^\\{I\\}", "Î");
+		as_out = as_out.replaceAll("\\\\~\\{I\\}", "Ĩ");
+		as_out = as_out.replaceAll("\\\\`\\{i\\}", "ì");
+		as_out = as_out.replaceAll("\\\\'\\{i\\}", "í");
+		as_out = as_out.replaceAll("\\\\^\\{i\\}", "î");
+		as_out = as_out.replaceAll("\\\\~\\{i\\}", "ĩ");
+		as_out = as_out.replaceAll("\\\\`\\{O\\}", "Ò");
+		as_out = as_out.replaceAll("\\\\'\\{O\\}", "Ó");
+		as_out = as_out.replaceAll("\\\\^\\{O\\}", "ô");
+		as_out = as_out.replaceAll("\\\\~\\{O\\}", "Õ");
+		as_out = as_out.replaceAll("\\\\`\\{o\\}", "ò");
+		as_out = as_out.replaceAll("\\\\'\\{o\\}", "ó");
+		as_out = as_out.replaceAll("\\\\^\\{o\\}", "ô");
+		as_out = as_out.replaceAll("\\\\~\\{o\\}", "õ");
+		as_out = as_out.replaceAll("\\\\`\\{U\\}", "Ù");
+		as_out = as_out.replaceAll("\\\\'\\{U\\}", "Ú");
+		as_out = as_out.replaceAll("\\\\^\\{U\\}", "Û");
+		as_out = as_out.replaceAll("\\\\~\\{U\\}", "Ũ");
+		as_out = as_out.replaceAll("\\\\`\\{u\\}", "ù");
+		as_out = as_out.replaceAll("\\\\'\\{u\\}", "ú");
+		as_out = as_out.replaceAll("\\\\^\\{u\\}", "û");
+		as_out = as_out.replaceAll("\\\\~\\{u\\}", "ũ");
 		return as_out;
 	}
 

@@ -66,4 +66,22 @@ public class DetexerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(DetexerTest.class.getResourceAsStream("data/test3.tex"))));
 		assertTrue(as.isEmpty());
 	}
+	
+	@Test
+	public void testRemoveAccents1()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Blabla")));
+		assertEquals("Blabla", as.toString());
+	}
+	
+	@Test
+	public void testRemoveAccents2()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Fr\\'{e}chet")));
+		assertEquals("Fréchet", as.toString());
+	}
 }
