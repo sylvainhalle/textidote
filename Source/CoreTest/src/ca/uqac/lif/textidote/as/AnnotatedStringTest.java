@@ -333,8 +333,8 @@ public class AnnotatedStringTest
 		Position p = as.getPosition(3);
 		assertEquals(0, p.getLine());
 		assertEquals(3, p.getColumn());
-		assertNull(as.getPosition(-1));
-		assertNull(as.getPosition(20));
+		assertEquals(Position.NOWHERE, as.getPosition(-1));
+		assertEquals(Position.NOWHERE, as.getPosition(20));
 	}
 	
 	@Test
@@ -345,8 +345,8 @@ public class AnnotatedStringTest
 		Position p = as.getPosition(3);
 		assertEquals(0, p.getLine());
 		assertEquals(3, p.getColumn());
-		assertNull(as.getPosition(-1));
-		assertNull(as.getPosition(20));
+		assertEquals(Position.NOWHERE, as.getPosition(-1));
+		assertEquals(Position.NOWHERE, as.getPosition(20));
 		p = as.getPosition(5 + CRLF_SIZE);
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
