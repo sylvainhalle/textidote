@@ -72,7 +72,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.4";
+	protected static final String VERSION_STRING = "0.5";
 	
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -112,11 +112,18 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
+		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
+		cli_parser.addArgument(new Argument().withLongName("name").withArgument("n").withDescription("Use n as app name when printing usage"));
 		ArgumentMap map = cli_parser.parse(args);
+		String app_name = "java -jar textidote.jar";
 		if (map == null)
 		{
-			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
+			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", System.err);
 			return -1;
+		}
+		if (map.hasOption("name"))
+		{
+			app_name = map.getOptionValue("name");
 		}
 		boolean read_all = false;
 		if (map.hasOption("read-all"))
@@ -130,6 +137,11 @@ public class Main
 		}
 		AnsiPrinter stdout = new AnsiPrinter(System.out);
 		AnsiPrinter stderr = null;
+		if (map.hasOption("version"))
+		{
+			printGreeting(stdout, enable_colors);
+			return 0;
+		}
 		if (map.hasOption("quiet"))
 		{
 			stderr = new AnsiPrinter(new NullPrintStream());
@@ -142,7 +154,7 @@ public class Main
 		printGreeting(stderr, enable_colors);
 		if (map.hasOption("help"))
 		{
-			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", stderr);
+			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", stderr);
 			stdout.close();
 			return 0;
 		}
@@ -174,7 +186,7 @@ public class Main
 			{
 				System.err.println("No filename is specified");
 				System.err.println("");
-				cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
+				cli_parser.printHelp("Usage: " + app_name + " textidote.jar [options] file1 [file2 ...]", System.err);
 				stdout.close();
 				return 1;
 			}
