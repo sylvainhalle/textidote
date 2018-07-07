@@ -59,7 +59,7 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {}, in, out, System.err);
+		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, System.err);
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
@@ -71,9 +71,19 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {}, in, out, System.err);
+		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, System.err);
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertTrue(ret_code > 0);
+	}
+	
+	@Test//(timeout = 2000)
+	public void test7() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, System.err);
+		assertEquals(0, ret_code);
 	}
 }

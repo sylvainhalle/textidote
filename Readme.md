@@ -179,6 +179,20 @@ the console:
 Found local Aspell dictionary
 ```
 
+### Ignoring rules
+
+You may want to ignore some of TeXtidote's advice. You can do so by specifying
+rule IDs to ignore with the `--ignore` command line parameter. For example,
+the ID of the rule "A section title should start with a capital letter" is
+`sh:001` (rule IDs are shown between brackets in the reports given by
+TeXtidote); to ignore warnings triggered by this rule, you call TeXtidote as
+follows:
+
+    $ java -jar textidote.jar --ignore sh:001 myfile.tex
+
+If you want to ignore multiple rules, separate their IDs with a comma (but no
+space).
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`
@@ -334,8 +348,9 @@ file called `TeXtidote.desktop` with the following contents:
 Version=1.0
 Type=Application
 Name=TeXtidote
-Comment=Check file with TeXtidote
+Comment=Check text with TeXtidote
 Exec=/opt/textidote/textidote-desktop.sh %F
+Icon=/opt/textidote/textidote-icon.svg
 Path=
 Terminal=false
 StartupNotify=false
@@ -416,7 +431,7 @@ is considerably longer when using that option.
 - You should not break lines manually in a paragraph with `\\`. Either start a
   new paragraph or stay in the current one. [sh:nobreak]
 - If you are writing a research paper, do not force page breaks with
-  `\newline`. [sh:nonp]
+  `\newpage`. [sh:nonp]
 
 ### LaTeX subtleties 
 
@@ -429,7 +444,7 @@ is considerably longer when using that option.
 ### Potentially suspicious
 
 - There should be at least N words between two section headings (currently
-  N=100). [sh:seclen]
+  N=150). [sh:seclen]
 
 ## Building TeXtidote
 

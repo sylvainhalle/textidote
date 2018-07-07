@@ -106,6 +106,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
+		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
@@ -152,6 +153,16 @@ public class Main
 			stderr = new AnsiPrinter(err);
 		}
 		assert stderr != null;
+		// Use has specified rules to ignore
+		List<String> rule_blacklist = new ArrayList<String>();
+		if (map.hasOption("ignore"))
+		{
+			String[] ids = map.getOptionValue("ignore").split(",");
+			for (String id : ids)
+			{
+				rule_blacklist.add(id);
+			}
+		}
 		printGreeting(stderr, enable_colors);
 		if (map.hasOption("help"))
 		{
@@ -260,6 +271,7 @@ public class Main
 		cleaner.add(latex_cleaner);
 		Linter linter = new Linter(cleaner);
 		populateRules(linter);
+		linter.addToBlacklist(rule_blacklist);
 
 		// Do we check the language?
 		if (map.hasOption("check"))

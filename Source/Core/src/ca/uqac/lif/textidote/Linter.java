@@ -49,6 +49,11 @@ public class Linter
 	protected TextCleaner m_cleaner;
 	
 	/**
+	 * A list of rules to ignore
+	 */
+	protected List<String> m_blacklist;
+	
+	/**
 	 * Creates a new empty linter object
 	 */
 	public Linter(/*@ non_null @*/ TextCleaner cleaner)
@@ -57,6 +62,7 @@ public class Linter
 		m_rules = new ArrayList<Rule>();
 		m_rulesDetexed = new ArrayList<Rule>();
 		m_cleaner = cleaner;
+		m_blacklist = new ArrayList<String>();
 	}
 	
 	/**
@@ -77,7 +83,7 @@ public class Linter
 	 * @param r The rules to add
 	 * @return This linter
 	 */
-	public Linter add(/*@ non_null @*/ Collection<Rule> r)
+	/*@ non_null @*/ public Linter add(/*@ non_null @*/ Collection<Rule> r)
 	{
 		m_rules.addAll(r);
 		return this;
@@ -89,7 +95,7 @@ public class Linter
 	 * @param r The rule to add
 	 * @return This linter
 	 */
-	public Linter addDetexed(/*@ non_null @*/ Rule r)
+	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Rule r)
 	{
 		m_rulesDetexed.add(r);
 		return this;
@@ -101,9 +107,20 @@ public class Linter
 	 * @param r The rules to add
 	 * @return This linter
 	 */
-	public Linter addDetexed(/*@ non_null @*/ Collection<Rule> r)
+	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Collection<Rule> r)
 	{
 		m_rulesDetexed.addAll(r);
+		return this;
+	}
+	
+	/**
+	 * Adds a list of rule IDs to ignore
+	 * @param list The list of rule IDs to ignore
+	 * @return This linter
+	 */
+	/*@ non_null @*/ public Linter addToBlacklist(/*@ non_null @*/ List<String> list)
+	{
+		m_blacklist.addAll(list);
 		return this;
 	}
 	
@@ -123,12 +140,12 @@ public class Linter
 			AnnotatedString s_decommented = m_cleaner.cleanComments(new AnnotatedString(s));
 			for (Rule r : m_rules)
 			{
-				out_list.addAll(r.evaluate(s_decommented, s));
+				filterAdvice(out_list, r.evaluate(s_decommented, s));
 			}
 			AnnotatedString s_detexed = m_cleaner.clean(s);
 			for (Rule r : m_rulesDetexed)
 			{
-				out_list.addAll(r.evaluate(s_detexed, s));
+				filterAdvice(out_list, r.evaluate(s_detexed, s));
 			}
 			return out_list;
 		}
@@ -136,6 +153,23 @@ public class Linter
 		{
 			// Abort
 			throw new LinterException(e);
+		}
+	}
+	
+	/**
+	 * Adds to a list of advice only those that don't match a blacklist
+	 * @param out_list The list to add to
+	 * @param advice The list of advice to add
+	 */
+	protected void filterAdvice(List<Advice> out_list, List<Advice> advice)
+	{
+		for (Advice ad : advice)
+		{
+			String rule_name = ad.getRule().getName();
+			if (!m_blacklist.contains(rule_name))
+			{
+				out_list.add(ad);
+			}
 		}
 	}
 	
