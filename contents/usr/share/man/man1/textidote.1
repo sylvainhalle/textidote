@@ -1,4 +1,4 @@
-.TH TEXTIDOTE 1 "2018-06-24" "GNU" "TeXtidote Abbreviated User's Manual"
+.TH TEXTIDOTE 1 "2018-07-07" "GNU" "TeXtidote Abbreviated User's Manual"
 .SH NAME
 textidote \- proof reader for LaTeX files
 .SH SYNOPSIS
@@ -30,7 +30,8 @@ translate the messages from Language Tool back to their proper location
 .SS OPTIONS
 When launched with no option, TeXtidote analyzes the input file(s) and produces
 a report of all errors and warnings found; this report is printed on the
-standard output.
+standard output. If no input file is specified, TeXtidote reads from the
+standard input.
 .TP
 \fB--html\fP
 Produce a report in HTML format and print it to the standard output. The
@@ -43,6 +44,10 @@ Run spelling and grammar checks on language \fIlang\fR. The parameter \fIlang\fR
 is a two-letter code indicating the language of the input text. The code
 \fIen\fR stands for English; TeXtidote also supports \fIfr\fR (French), \fInl\fR
 (Dutch), \fIde\fR (German), \fIes\fR (Spanish) and \fIpt\fR (Portuguese).
+.TP
+\fB--ignore\fR \fIlist\fR
+Ignore advice produced by some rules. The list is a comma-separated list of
+rule IDs (with no spaces).
 .TP
 \fB--dict\fP \fIfile\fR
 Use \fIfile\fR as a dictionary. This option only has an effect when used with
@@ -73,6 +78,9 @@ output (only has an effect when the \fB--html\fP option is not used).
 .TP
 \fB--help\fP
 Show the command line usage.
+.TP
+\fB--version\fP
+Show version number.
 .SH SUPPORT
 Support for TeXtidote can be found on the GitHub repository at
 <https://github.com/sylvainhalle/textidote>.
