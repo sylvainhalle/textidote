@@ -8,5 +8,5 @@ lib/
 docs/
 *.deb
 contents/DEBIAN/md5sums
-contents/opt/textidote/*
+contents/opt/textidote/textidote.jar
 contents/etc/bash.completion.d/*
