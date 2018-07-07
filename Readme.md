@@ -91,6 +91,9 @@ portions have been highlighted in various colors. These correpond to regions
 in the file where an issue was found. You can hover your mouse over these
 colored regions; a tooltip will show a message that describes the problem.
 
+If you don't write any filename (or write `--` as the filename), TeXtidote
+will attempt to read one from the standard input.
+
 ### Plain report
 
 To run TeXtidote and display the results directly in the console, simply omit
