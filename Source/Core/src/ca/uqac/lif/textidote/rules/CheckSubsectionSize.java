@@ -58,6 +58,17 @@ public class CheckSubsectionSize extends Rule
 	{
 		super("sh:seclen");
 	}
+	
+	/**
+	 * Sets the minimum number of words a section requires to avoid a
+	 * warning.
+	 * @param n The minimum number of words
+	 */
+	/*@ requires n > 0 @*/
+	public void setMinNumWords(int n)
+	{
+		m_minNumWords = n;
+	}
 
 	@Override
 	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 

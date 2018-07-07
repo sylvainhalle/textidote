@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,12 +74,12 @@ public class Main
 	 * A version string
 	 */
 	protected static final String VERSION_STRING = "0.5";
-	
+
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
 	 */
 	protected static final String ASPELL_DICT_FILENAME = ".aspell.XX.pws";
-	
+
 	/**
 	 * Main method. This method simply calls the static method
 	 * {@link #main(String[]) mainLoop()},
@@ -90,7 +91,7 @@ public class Main
 	 */
 	public static void main(String[] args) throws IOException
 	{
-		System.exit(mainLoop(args));
+		System.exit(mainLoop(args, System.in, System.out, System.err));
 	}
 
 	/**
@@ -98,7 +99,7 @@ public class Main
 	 * @param args Command-line arguments
 	 * @throws IOException 
 	 */
-	public static int mainLoop(String[] args) throws IOException
+	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
 	{
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
@@ -118,7 +119,7 @@ public class Main
 		String app_name = "java -jar textidote.jar";
 		if (map == null)
 		{
-			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", System.err);
+			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", err);
 			return -1;
 		}
 		if (map.hasOption("name"))
@@ -135,7 +136,7 @@ public class Main
 		{
 			enable_colors = false;
 		}
-		AnsiPrinter stdout = new AnsiPrinter(System.out);
+		AnsiPrinter stdout = new AnsiPrinter(out);
 		AnsiPrinter stderr = null;
 		if (map.hasOption("version"))
 		{
@@ -148,7 +149,7 @@ public class Main
 		}
 		else
 		{
-			stderr = new AnsiPrinter(System.err);
+			stderr = new AnsiPrinter(err);
 		}
 		assert stderr != null;
 		printGreeting(stderr, enable_colors);
@@ -158,7 +159,7 @@ public class Main
 			stdout.close();
 			return 0;
 		}
-		
+
 		// Only detex input
 		if (map.hasOption("detex"))
 		{
@@ -184,9 +185,9 @@ public class Main
 			List<String> filenames = map.getOthers();
 			if (filenames.isEmpty())
 			{
-				System.err.println("No filename is specified");
-				System.err.println("");
-				cli_parser.printHelp("Usage: " + app_name + " textidote.jar [options] file1 [file2 ...]", System.err);
+				stderr.println("No filename is specified");
+				stderr.println("");
+				cli_parser.printHelp("Usage: " + app_name + " textidote.jar [options] file1 [file2 ...]", stderr);
 				stdout.close();
 				return 1;
 			}
@@ -306,28 +307,31 @@ public class Main
 		List<String> filenames = map.getOthers();
 		if (filenames.isEmpty())
 		{
-			System.err.println("No filename is specified");
-			System.err.println("");
-			cli_parser.printHelp("Usage: java -jar textidote.jar [options] file1 [file2 ...]", System.err);
-			stdout.close();
-			return 1;
+			filenames.add("--"); // This indicates: read from stdin
 		}
 		AnnotatedString last_string = null;
 		for (String filename : filenames)
 		{
-			File f = new File(filename);
-			if (!f.exists())
-			{
-				stderr.println("File " + filename + " not found (skipping)");
-				continue;
-			}
 			Scanner scanner = null;
 			try 
 			{
-				scanner = new Scanner(f);
-				last_string = AnnotatedString.read(scanner);
-				last_string.setResourceName(filename);
-				all_advice.addAll(linter.evaluateAll(last_string));
+				if (filename.compareTo("--") == 0)
+				{
+					// Open scanner on stdin
+					scanner = new Scanner(in);
+				}
+				else
+				{
+					File f = new File(filename);
+					if (!f.exists())
+					{
+						stderr.println("File " + filename + " not found (skipping)");
+						continue;
+					}
+
+					scanner = new Scanner(f);
+				}
+				last_string = processDocument(scanner, filename, linter, all_advice);
 			}
 			catch (LinterException e) 
 			{
@@ -388,7 +392,7 @@ public class Main
 		out.println("(C) 2018 Sylvain Hallé - All rights reserved");
 		out.println();
 	}
-	
+
 	/**
 	 * Adds the rules to the linter
 	 * @param linter The linter to configure
@@ -403,6 +407,14 @@ public class Main
 		linter.add(new CheckSubsections());
 		linter.add(new CheckSubsectionSize());
 		linter.add(new CheckNoBreak());
+	}
+
+	protected static AnnotatedString processDocument(Scanner scanner, String filename, Linter linter, List<Advice> all_advice) throws LinterException
+	{
+		AnnotatedString last_string = AnnotatedString.read(scanner);
+		last_string.setResourceName(filename);
+		all_advice.addAll(linter.evaluateAll(last_string));
+		return last_string;
 	}
 
 	protected static List<Rule> readRules(String filename)
@@ -456,7 +468,7 @@ public class Main
 		sc.close();
 		return dict;
 	}
-	
+
 	/**
 	 * Prints the contents of an associative map
 	 * @param ps The print stream to print to

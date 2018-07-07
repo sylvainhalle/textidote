@@ -100,7 +100,7 @@ public class CheckFigureReferences extends Rule
 		// Step 2: find references to these figures
 		for (String fig_name : figure_defs.keySet())
 		{
-			Pattern ref_pat = Pattern.compile("\\\\ref\\s*\\{.*" + fig_name + ".*?\\}");
+			Pattern ref_pat = Pattern.compile("\\\\(C|c){0,1}ref\\s*\\{.*" + fig_name + ".*?\\}");
 			boolean found = false;
 			for (String line : lines)
 			{

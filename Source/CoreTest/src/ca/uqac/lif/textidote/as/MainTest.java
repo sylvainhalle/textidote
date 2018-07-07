@@ -17,8 +17,12 @@
  */
 package ca.uqac.lif.textidote.as;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 
+import static org.junit.Assert.*;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Main;
@@ -28,12 +32,48 @@ public class MainTest
 	@Test(timeout = 1000)
 	public void test1() throws IOException
 	{
-		Main.mainLoop(new String[] {"--help"});
+		Main.mainLoop(new String[] {"--help"}, System.in, System.out, System.err);
 	}
 	
 	@Test(timeout = 1000)
 	public void test2() throws IOException
 	{
-		Main.mainLoop(new String[] {"--help", "--quiet"});
+		Main.mainLoop(new String[] {"--help", "--quiet"}, System.in, System.out, System.err);
+	}
+	
+	@Test(timeout = 1000)
+	public void test3() throws IOException
+	{
+		Main.mainLoop(new String[] {"--help", "--quiet"}, System.in, System.out, System.err);
+	}
+	
+	@Test(timeout = 1000)
+	public void test4() throws IOException
+	{
+		Main.mainLoop(new String[] {"--version"}, System.in, System.out, System.err);
+	}
+	
+	@Test(timeout = 2000)
+	public void test5() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {}, in, out, System.err);
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
+	
+	@Test(timeout = 2000)
+	public void test6() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {}, in, out, System.err);
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertTrue(ret_code > 0);
 	}
 }
