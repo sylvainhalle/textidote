@@ -1,2 +1,2 @@
 #! /bin/bash
-java -jar /opt/textidote/textidote.jar "$@"
+java -jar /opt/textidote/textidote.jar --name textidote "$@"
