@@ -66,6 +66,11 @@ public class CheckSubsections extends Rule
 				String heading = mat.group(1).trim();
 				SectionInfo si = new SectionInfo(heading, new Range(start_pos, end_pos));
 				SectionInfo si_last = sections.peek();
+				if (!si_last.m_sectionName.isEmpty() && SectionInfo.distance(si_last.m_sectionName, si.m_sectionName) < -1)
+				{
+					// Moving down more than one level
+					out_list.add(new Advice(CheckLevelSkip.instance, si.m_range, "A heading of level n should not be followed by a heading of level n+2 or more.", original.getResourceName(), original.getLine(si.m_range.getStart().getLine())));
+				}
 				if (SectionInfo.isMoveDown(si_last, si))
 				{
 					si_last.m_size++;
@@ -154,7 +159,31 @@ public class CheckSubsections extends Rule
 		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
 		{
 			// Do nothing; this is a placeholder
-			return null;
+			return new ArrayList<Advice>(0);
+		}		
+	}
+	
+	/**
+	 * A placeholder class for a sub-rule checked by {@link CheckSubsections}.
+	 * This class exists only to have a different rule ID.
+	 */
+	public static class CheckLevelSkip extends Rule
+	{
+		/**
+		 * Reference to a single instance of this class
+		 */
+		protected static final CheckLevelSkip instance = new CheckLevelSkip();
+		
+		private CheckLevelSkip()
+		{
+			super("sh:secskip");
+		}
+		
+		@Override
+		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
+		{
+			// Do nothing; this is a placeholder
+			return new ArrayList<Advice>(0);
 		}		
 	}
 }

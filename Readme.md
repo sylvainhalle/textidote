@@ -426,15 +426,18 @@ is considerably longer when using that option.
 - The first heading of a document should be the one with the highest level.
   For example, if a document contains sections, the first section cannot be
   preceded by a sub-section. [sh:secorder]
+- There should not be a jump down between two non-successive section
+  levels (e.g. a `\section` followed by a `\subsubsection` without a
+  `\subsection` in between). [sh:secskip]
 
 ### Hard-coding
 
 - Figures should not refer to hard-coded local paths. [sh:relpath]
 - Do not refer to sections, figures and tables using a hard-coded number.
-  Use \ref instead. [sh:hcfig, sh:hctab, sh:hcsec, sh:hccha]
+  Use `\ref` instead. [sh:hcfig, sh:hctab, sh:hcsec, sh:hccha]
 - You should not break lines manually in a paragraph with `\\`. Either start a
   new paragraph or stay in the current one. [sh:nobreak]
-- If you are writing a research paper, do not force page breaks with
+- If you are writing a research paper, do not hard-code page breaks with
   `\newpage`. [sh:nonp]
 
 ### LaTeX subtleties 
@@ -448,7 +451,7 @@ is considerably longer when using that option.
 ### Potentially suspicious
 
 - There should be at least N words between two section headings (currently
-  N=150). [sh:seclen]
+  N=100). [sh:seclen]
 
 ## Building TeXtidote
 
