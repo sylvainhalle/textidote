@@ -1,5 +1,12 @@
 language: java
 dist: trusty
+git:
+  depth: false
+  quiet: true
+# Only build master branch
+branches:
+  only:
+  - master
 install: ant download-deps
 notifications:
   # Email notifications are disabled to not annoy anybody.
