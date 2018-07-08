@@ -49,7 +49,7 @@ public class CheckCiteMix extends Rule
 
 	public CheckCiteMix()
 	{
-		super("sh:citemix");
+		super("sh:c:itemix");
 	}
 
 	@Override

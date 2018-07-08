@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,12 +65,12 @@ public class Main
 	/**
 	 * Filename where the regex rules are stored
 	 */
-	protected static final String REGEX_FILENAME = "rules/regex.csv";
+	public static final String REGEX_FILENAME = "rules/regex.csv";
 
 	/**
 	 * Filename where the regex rules are stored
 	 */
-	protected static final String REGEX_FILENAME_DETEX = "rules/regex-detex.csv";
+	public static final String REGEX_FILENAME_DETEX = "rules/regex-detex.csv";
 
 	/**
 	 * A version string
@@ -416,8 +417,8 @@ public class Main
 	 */
 	protected static void populateRules(Linter linter)
 	{
-		linter.add(readRules(REGEX_FILENAME));
-		linter.addDetexed(readRules(REGEX_FILENAME_DETEX));
+		linter.add(readRules(REGEX_FILENAME).values());
+		linter.addDetexed(readRules(REGEX_FILENAME_DETEX).values());
 		linter.add(new CheckFigureReferences());
 		linter.add(new CheckFigurePaths());
 		linter.add(new CheckCaptions());
@@ -450,11 +451,11 @@ public class Main
 	/**
 	 * Reads a list of regex rules from a file
 	 * @param filename The filename to read from
-	 * @return A list of regex rules 
+	 * @return A map of rule names to regex rules 
 	 */
-	/*@ non_null @*/ protected static List<RegexRule> readRules(/*@ non_null @*/ String filename)
+	/*@ non_null @*/ public static Map<String,RegexRule> readRules(/*@ non_null @*/ String filename)
 	{
-		List<RegexRule> list = new ArrayList<RegexRule>();
+		Map<String,RegexRule> list = new HashMap<String,RegexRule>();
 		Scanner scanner = new Scanner(Main.class.getResourceAsStream(filename));
 		while (scanner.hasNextLine())
 		{
@@ -472,12 +473,12 @@ public class Main
 			if (parts.length == 3)
 			{
 				RegexRule rr = new RegexRule(parts[0], parts[1], parts[2]);
-				list.add(rr);
+				list.put(parts[0], rr);
 			}
 			if (parts.length == 4)
 			{
 				RegexRule rr = new RegexRule(parts[0], parts[1], parts[2], parts[3]);
-				list.add(rr);
+				list.put(parts[0], rr);
 			}
 		}
 		scanner.close();

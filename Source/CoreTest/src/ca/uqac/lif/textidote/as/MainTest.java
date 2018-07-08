@@ -26,31 +26,32 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Main;
+import ca.uqac.lif.util.NullPrintStream;
 
 public class MainTest 
 {
 	@Test(timeout = 1000)
 	public void test1() throws IOException
 	{
-		Main.mainLoop(new String[] {"--help"}, System.in, System.out, System.err);
+		Main.mainLoop(new String[] {"--help"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 	
 	@Test(timeout = 1000)
 	public void test2() throws IOException
 	{
-		Main.mainLoop(new String[] {"--help", "--quiet"}, System.in, System.out, System.err);
+		Main.mainLoop(new String[] {"--help", "--quiet"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 	
 	@Test(timeout = 1000)
 	public void test3() throws IOException
 	{
-		Main.mainLoop(new String[] {"--help", "--quiet"}, System.in, System.out, System.err);
+		Main.mainLoop(new String[] {"--help", "--quiet"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 	
 	@Test(timeout = 1000)
 	public void test4() throws IOException
 	{
-		Main.mainLoop(new String[] {"--version"}, System.in, System.out, System.err);
+		Main.mainLoop(new String[] {"--version"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 	
 	@Test(timeout = 2000)
@@ -59,7 +60,19 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, System.err);
+		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
+	
+	@Test(timeout = 2000)
+	public void test5Html() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--html"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
@@ -71,7 +84,7 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, System.err);
+		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertTrue(ret_code > 0);
@@ -83,7 +96,19 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, System.err);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, new NullPrintStream());
+		assertEquals(0, ret_code);
+	}
+	
+	@Test(timeout = 5000)
+	public void test8() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", "en"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
 }

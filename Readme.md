@@ -406,6 +406,10 @@ is considerably longer when using that option.
   no space after [sh:c:002].
 - Do not use 'in [X]' or 'from [X]': the syntax of a sentence should not be
   changed by the removal of a citation. [sh:c:noin]
+- Do not mix `\cite` and `\citep` or `\citet` in the same document.
+  [sh:c:mix]
+- When citing more than one reference, do not use multiple `\cite` commands;
+  put all references in the same `\cite`. [sh:c:mul, sh:c:mulp]
 
 ### Figures
 
@@ -475,7 +479,7 @@ file is runnable and stand-alone, or can be used as a library, so it can be
 moved around to the location of your choice.
 
 In addition, the script generates in the `docs/doc` folder the Javadoc
-documentation for using Bullwinkle.
+documentation for using TeXtidote.
 
 ### Testing
 
