@@ -1,6 +1,9 @@
 TeXtidote: a correction tool for LaTeX documents
 ================================================
 
+[![Travis](https://img.shields.io/travis/sylvainhalle/textidote.svg?style=flat-square)](https://travis-ci.org/sylvainhalle/textidote)
+[![SonarQube Coverage](https://sonarcloud.io/api/project_badges/measure?project=sylvainhalle%3Atextidote&metric=coverage)](https://sonarcloud.io/dashboard?id=sylvainhalle%3Atextidote)
+
 Have you ever thought of using a grammar checker on LaTeX files?
 
 If so, you probably know that the process is far from simple. Since LaTeX
