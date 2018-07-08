@@ -40,6 +40,7 @@ import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
+import ca.uqac.lif.textidote.rules.CheckCiteMix;
 import ca.uqac.lif.textidote.rules.CheckFigurePaths;
 import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
@@ -141,7 +142,7 @@ public class Main
 		AnsiPrinter stderr = null;
 		if (map.hasOption("version"))
 		{
-			printGreeting(stdout, enable_colors);
+			printGreeting(stdout);
 			return 0;
 		}
 		if (map.hasOption("quiet"))
@@ -163,7 +164,7 @@ public class Main
 				rule_blacklist.add(id);
 			}
 		}
-		printGreeting(stderr, enable_colors);
+		printGreeting(stderr);
 		if (map.hasOption("help"))
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", stderr);
@@ -398,7 +399,11 @@ public class Main
 		return all_advice.size();
 	}
 
-	protected static void printGreeting(AnsiPrinter out, boolean enable_colors)
+	/**
+	 * Prints a simple greeting on a command line
+	 * @param out The print stream to print on
+	 */
+	protected static void printGreeting(AnsiPrinter out)
 	{
 		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents");
 		out.println("(C) 2018 Sylvain Hallé - All rights reserved");
@@ -419,8 +424,21 @@ public class Main
 		linter.add(new CheckSubsections());
 		linter.add(new CheckSubsectionSize());
 		linter.add(new CheckNoBreak());
+		linter.add(new CheckCiteMix());
 	}
 
+	/**
+	 * Applies the linter on a document.
+	 * @param scanner A scanner open on the document to read
+	 * @param filename The name of the file for this document
+	 * @param linter The linter to apply on the document
+	 * @param all_advice A list of advice. Any new advice produced by the
+	 * execution of the linter on the document will be added to this list.
+	 * @return The annotated string corresponding to the document that was
+	 * read. Can be null.
+	 * @throws LinterException Thrown if reading the file produces
+	 * an exception
+	 */
 	protected static AnnotatedString processDocument(Scanner scanner, String filename, Linter linter, List<Advice> all_advice) throws LinterException
 	{
 		AnnotatedString last_string = AnnotatedString.read(scanner);
@@ -429,9 +447,14 @@ public class Main
 		return last_string;
 	}
 
-	protected static List<Rule> readRules(String filename)
+	/**
+	 * Reads a list of regex rules from a file
+	 * @param filename The filename to read from
+	 * @return A list of regex rules 
+	 */
+	/*@ non_null @*/ protected static List<RegexRule> readRules(/*@ non_null @*/ String filename)
 	{
-		List<Rule> list = new ArrayList<Rule>();
+		List<RegexRule> list = new ArrayList<RegexRule>();
 		Scanner scanner = new Scanner(Main.class.getResourceAsStream(filename));
 		while (scanner.hasNextLine())
 		{

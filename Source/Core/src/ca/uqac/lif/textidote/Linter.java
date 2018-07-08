@@ -83,7 +83,7 @@ public class Linter
 	 * @param r The rules to add
 	 * @return This linter
 	 */
-	/*@ non_null @*/ public Linter add(/*@ non_null @*/ Collection<Rule> r)
+	/*@ non_null @*/ public Linter add(/*@ non_null @*/ Collection<? extends Rule> r)
 	{
 		m_rules.addAll(r);
 		return this;
@@ -107,7 +107,7 @@ public class Linter
 	 * @param r The rules to add
 	 * @return This linter
 	 */
-	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Collection<Rule> r)
+	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Collection<? extends Rule> r)
 	{
 		m_rulesDetexed.addAll(r);
 		return this;
