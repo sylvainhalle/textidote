@@ -112,6 +112,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
+<<<<<<< HEAD:Source/CoreTest/src/ca/uqac/lif/textidote/MainTest.java
 
 	@Test(timeout = 2000)
 	public void testClean1() throws IOException
@@ -132,10 +133,21 @@ public class MainTest
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--type", "md"}, in, out, new NullPrintStream());
+=======
+	
+	@Test(timeout = 2000)
+	public void testDetex1() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--detex"}, in, out, new NullPrintStream());
+>>>>>>> More unit tests:Source/CoreTest/src/ca/uqac/lif/textidote/as/MainTest.java
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
+<<<<<<< HEAD:Source/CoreTest/src/ca/uqac/lif/textidote/MainTest.java
 
 	@Test
 	public void testReadArguments1()
@@ -203,4 +215,6 @@ public class MainTest
 		assertEquals("--foo", args[0]);
 		assertEquals("Some Thing", args[1]);
 	}
+=======
+>>>>>>> More unit tests:Source/CoreTest/src/ca/uqac/lif/textidote/as/MainTest.java
 }

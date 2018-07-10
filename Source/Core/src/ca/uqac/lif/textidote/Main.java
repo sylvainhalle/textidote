@@ -277,6 +277,7 @@ public class Main
 					{
 						scanner = new Scanner(f);
 					}
+<<<<<<< HEAD
 					// Create cleaner based on file extension
 					CompositeCleaner c_file = new CompositeCleaner(cleaner);
 					if (input_type == Linter.Language.LATEX || (filename.compareTo("--") == 0 && input_type == Linter.Language.UNSPECIFIED) || filename.endsWith(".tex"))
@@ -291,6 +292,8 @@ public class Main
 						MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
 						c_file.add(markdown_cleaner);
 					}
+=======
+>>>>>>> More unit tests
 					AnnotatedString s = AnnotatedString.read(scanner);
 					s.setResourceName(filename);
 					AnnotatedString ds = c_file.clean(s);
