@@ -88,7 +88,7 @@ public class LatexCleaner extends TextCleaner
 			}
 			else
 			{
-				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[\\*"))
 				{
 					in_environment++;
 				}
@@ -97,7 +97,7 @@ public class LatexCleaner extends TextCleaner
 					as.removeLine(i);
 					i--; // Step counter back so next loop is at same index
 				}
-				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches("\\s*\\\\\\].*"))
 				{
 					in_environment--;
 				}
@@ -208,9 +208,11 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|cref|Cref)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
+		// Font commands
+		as_out = as_out.replaceAll("\\\\(tiny|scriptsize|footnotesize|small|normalsize|large|Large|LARGE|huge|Huge)", "");
 		// Inputs and includes
 		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox|printbibliography).*$", "");
 		// Conditional hyphens

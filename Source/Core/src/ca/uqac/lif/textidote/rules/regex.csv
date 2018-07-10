@@ -30,4 +30,4 @@ sh:hcsec	(S|s)ection(\s+|~)\d					Do not refer to sections using hard-coded numb
 sh:hccha	(C|c)hapter(\s+|~)\d					Do not refer to chapters using hard-coded numbers. Use \ref instead.
 sh:hctab	(T|t)able(\s+|~)\d						Do not refer to tables using hard-coded numbers. Use \ref instead.
 sh:nonp		\\newpage								If you are writing a research paper, do not force page breaks.
-sh:nbsp		~[;:]									N'utilisez pas d'espace insécable; c'est plutôt une espace fine qui doit être utilisée, et LaTeX se charge de l'insérer par lui-même.
+sh:nbsp		~[;:!\?]								N'utilisez pas d'espace insécable; c'est plutôt une espace fine qui doit être utilisée, et LaTeX se charge de l'insérer par lui-même.
