@@ -198,24 +198,28 @@ public class Main
 			List<String> filenames = map.getOthers();
 			if (filenames.isEmpty())
 			{
-				stderr.println("No filename is specified");
-				stderr.println("");
-				cli_parser.printHelp("Usage: " + app_name + " textidote.jar [options] file1 [file2 ...]", stderr);
-				stdout.close();
-				return 1;
+				filenames.add("--"); // This indicates: read from stdin
 			}
 			for (String filename : filenames)
 			{
-				File f = new File(filename);
-				if (!f.exists())
-				{
-					stderr.println("File " + filename + " not found (skipping)");
-					continue;
-				}
 				Scanner scanner = null;
 				try 
 				{
-					scanner = new Scanner(f);
+					File f = new File(filename);
+					if (filename.compareTo("--") == 0)
+					{
+						// Open scanner on stdin
+						scanner = new Scanner(in);
+					}
+					if (!f.exists())
+					{
+						stderr.println("File " + filename + " not found (skipping)");
+						continue;
+					}
+					else
+					{
+						scanner = new Scanner(f);
+					}
 					AnnotatedString s = AnnotatedString.read(scanner);
 					s.setResourceName(filename);
 					AnnotatedString ds = cleaner.clean(s);
