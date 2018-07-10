@@ -38,7 +38,7 @@ public class CheckSubsections extends Rule
 	/**
 	 * The pattern to detect a new section heading.
 	 */
-	protected Pattern m_headingPattern = Pattern.compile("\\\\(chapter|section|subsection|subsubsection|paragraph)");
+	protected Pattern m_headingPattern = Pattern.compile("\\\\(part|chapter|section|subsection|subsubsection|paragraph)");
 
 	/**
 	 * Creates a new instance of the rule
@@ -52,9 +52,10 @@ public class CheckSubsections extends Rule
 	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
 	{
 		Stack<SectionInfo> sections = new Stack<SectionInfo>();
+		SectionInfo doc_head = new SectionInfo("", new Range(Position.ZERO, Position.ZERO));
 		List<Advice> out_list = new ArrayList<Advice>();
 		List<String> lines = s.getLines();
-		sections.push(new SectionInfo("", new Range(Position.ZERO, Position.ZERO)));
+		sections.push(doc_head);
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
 			String line = lines.get(line_cnt);
@@ -103,6 +104,7 @@ public class CheckSubsections extends Rule
 						{
 							Range r2 = new Range(original.getSourcePosition(si.m_range.getStart()), original.getSourcePosition(si.m_range.getEnd()));
 							out_list.add(new Advice(CheckSubsectionOrder.instance, r2, "The first heading of a document should be the one with the highest level. For example, if a document contains sections, the first section cannot be preceded by a sub-section.", original.getResourceName(), original.getLine(r2.getStart().getLine())));
+							sections.push(doc_head);
 						}
 						else
 						{
@@ -125,18 +127,6 @@ public class CheckSubsections extends Rule
 			}
 		}
 		return out_list;
-	}
-
-	/**
-	 * Counts the words in a line. This performs a very crude estimation of
-	 * the number of words, by simply counting the number of character
-	 * blobs that are separated by spaces. That's good enough for the "size"
-	 * rule we are evaluating here.
-	 * @param line The line to count words in
-	 */
-	protected static int countWords(/*@ non_null @*/ String line)
-	{
-		return line.split("\\s+").length;
 	}
 
 	/**

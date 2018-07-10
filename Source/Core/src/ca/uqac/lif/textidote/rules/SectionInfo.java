@@ -87,21 +87,25 @@ class SectionInfo
 	// TODO: eventually, this method could be replaced with a call to distance()
 	public static boolean isMoveDown(String last_heading, String heading)
 	{
+		if (heading.compareTo("chapter") == 0)
+		{
+			return last_heading.isEmpty() || last_heading.compareTo("part") == 0;
+		}
 		if (heading.compareTo("section") == 0)
 		{
-			return last_heading.isEmpty() || last_heading.compareTo("chapter") == 0;
+			return last_heading.isEmpty() || last_heading.compareTo("part") == 0 || last_heading.compareTo("chapter") == 0;
 		}
 		if (heading.compareTo("subsection") == 0)
 		{
-			return last_heading.isEmpty() || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0;
+			return last_heading.isEmpty() || last_heading.compareTo("part") == 0 || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0;
 		}
 		if (heading.compareTo("subsubsection") == 0)
 		{
-			return last_heading.isEmpty() || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0 || last_heading.compareTo("subsection") == 0;
+			return last_heading.isEmpty() || last_heading.compareTo("part") == 0 || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0 || last_heading.compareTo("subsection") == 0;
 		}
 		if (heading.compareTo("paragraph") == 0)
 		{
-			return last_heading.isEmpty() || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0 || last_heading.compareTo("subsection") == 0 || last_heading.compareTo("subsubsection") == 0;
+			return last_heading.isEmpty() || last_heading.compareTo("part") == 0 || last_heading.compareTo("chapter") == 0 || last_heading.compareTo("section") == 0 || last_heading.compareTo("subsection") == 0 || last_heading.compareTo("subsubsection") == 0;
 		}
 		return last_heading.compareTo("") == 0;
 	}
