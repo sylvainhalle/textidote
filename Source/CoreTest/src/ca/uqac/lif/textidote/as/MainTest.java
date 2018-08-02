@@ -111,4 +111,16 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
+	
+	@Test(timeout = 2000)
+	public void testDetex1() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--detex"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
 }

@@ -20,6 +20,7 @@ package ca.uqac.lif.textidote.cleaning.latex;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
+import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 
 /**
  * Removes LaTeX markup from an input string, and generates an annotated
@@ -46,7 +47,7 @@ public class LatexCleaner extends TextCleaner
 	protected boolean m_ignoreBeforeDocument = true;
 
 	@Override
-	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as)
+	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
 	{
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
@@ -207,9 +208,11 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url|eqref)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
+		// Font commands
+		as_out = as_out.replaceAll("\\\\(tiny|scriptsize|footnotesize|small|normalsize|large|Large|LARGE|huge|Huge)", "");
 		// Inputs and includes
 		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox|printbibliography).*$", "");
 		// Conditional hyphens
@@ -238,6 +241,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected AnnotatedString replaceAccents(AnnotatedString as_out, int line_pos)
 	{
+		// With braces
 		as_out = as_out.replaceAll("\\\\`\\{A\\}", "À");
 		as_out = as_out.replaceAll("\\\\'\\{A\\}", "Á");
 		as_out = as_out.replaceAll("\\\\^\\{A\\}", "Â");
@@ -278,6 +282,48 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\'\\{u\\}", "ú");
 		as_out = as_out.replaceAll("\\\\^\\{u\\}", "û");
 		as_out = as_out.replaceAll("\\\\~\\{u\\}", "ũ");
+		
+		// Without braces
+		as_out = as_out.replaceAll("\\\\`A", "À");
+		as_out = as_out.replaceAll("\\\\'A", "Á");
+		as_out = as_out.replaceAll("\\\\^A", "Â");
+		as_out = as_out.replaceAll("\\\\~A", "Ã");
+		as_out = as_out.replaceAll("\\\\`a", "à");
+		as_out = as_out.replaceAll("\\\\'a", "à");
+		as_out = as_out.replaceAll("\\\\^a", "â");
+		as_out = as_out.replaceAll("\\\\~a", "ã");
+		as_out = as_out.replaceAll("\\\\`E", "È");
+		as_out = as_out.replaceAll("\\\\'E", "É");
+		as_out = as_out.replaceAll("\\\\^E", "Ê");
+		as_out = as_out.replaceAll("\\\\~E", "Ẽ");
+		as_out = as_out.replaceAll("\\\\`e", "è");
+		as_out = as_out.replaceAll("\\\\'e", "é");
+		as_out = as_out.replaceAll("\\\\^e", "ê");
+		as_out = as_out.replaceAll("\\\\~e", "ẽ");
+		as_out = as_out.replaceAll("\\\\`I", "Ì");
+		as_out = as_out.replaceAll("\\\\'I", "Í");
+		as_out = as_out.replaceAll("\\\\^I", "Î");
+		as_out = as_out.replaceAll("\\\\~I", "Ĩ");
+		as_out = as_out.replaceAll("\\\\`i", "ì");
+		as_out = as_out.replaceAll("\\\\'i", "í");
+		as_out = as_out.replaceAll("\\\\^i", "î");
+		as_out = as_out.replaceAll("\\\\~i", "ĩ");
+		as_out = as_out.replaceAll("\\\\`O", "Ò");
+		as_out = as_out.replaceAll("\\\\'O", "Ó");
+		as_out = as_out.replaceAll("\\\\^O", "ô");
+		as_out = as_out.replaceAll("\\\\~O", "Õ");
+		as_out = as_out.replaceAll("\\\\`o", "ò");
+		as_out = as_out.replaceAll("\\\\'o", "ó");
+		as_out = as_out.replaceAll("\\\\^o", "ô");
+		as_out = as_out.replaceAll("\\\\~o", "õ");
+		as_out = as_out.replaceAll("\\\\`U", "Ù");
+		as_out = as_out.replaceAll("\\\\'U", "Ú");
+		as_out = as_out.replaceAll("\\\\^U", "Û");
+		as_out = as_out.replaceAll("\\\\~U", "Ũ");
+		as_out = as_out.replaceAll("\\\\`u", "ù");
+		as_out = as_out.replaceAll("\\\\'u", "ú");
+		as_out = as_out.replaceAll("\\\\^u", "û");
+		as_out = as_out.replaceAll("\\\\~u", "ũ");
 		return as_out;
 	}
 

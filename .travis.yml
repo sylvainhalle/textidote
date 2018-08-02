@@ -1,0 +1,22 @@
+language: java
+dist: trusty
+git:
+  depth: false
+  quiet: true
+# Only build master branch
+branches:
+  only:
+  - master
+install: ant download-deps
+notifications:
+  # Email notifications are disabled to not annoy anybody.
+  email: false 
+# Run SonarQube on code
+addons:
+  sonarqube:
+    token:
+      secure: c11f78b32f6c5a83c760c5b6d6ea388e166b07f7 # encrypted value of your token
+script:
+  # other script steps might be done before running the actual SonarQube analysis
+  - ant test
+  - sonar-scanner

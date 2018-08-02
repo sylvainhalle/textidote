@@ -33,12 +33,30 @@ import ca.uqac.lif.textidote.rules.RegexRule;
 /**
  * Unit tests on regex rules
  */
-public class CheckRegex
+public class CheckRegexTest
 {
 	/**
 	 * A map of all regex rule names to rule instances
 	 */
 	protected final Map<String,RegexRule> m_rules = Main.readRules(Main.REGEX_FILENAME);
+	
+	@Test
+	public void testGeneric1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet"));
+		Rule r = new RegexRule("name:foo", "foo", "Message foo");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testGeneric2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem foo ipsum dolor foo sit amet"));
+		Rule r = new RegexRule("name:foo", "foo", "Message foo");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(2, ad_list.size());
+	}
 	
 	@Test
 	public void testCmul1()

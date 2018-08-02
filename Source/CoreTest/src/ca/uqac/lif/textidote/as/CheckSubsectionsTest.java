@@ -49,4 +49,32 @@ public class CheckSubsectionsTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
+	
+	@Test
+	public void test3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-3.tex")));
+		Rule r = new CheckSubsections();
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(containsAdviceWithLabel(ad_list, "sh:secorder"));
+	}
+	
+	/**
+	 * Checks if the list of advice contains one with a given label
+	 * @param list The list of advice
+	 * @param The label to look for
+	 * @return {@code true} if the list contains an advice with given label,
+	 * {@code false} otherwise
+	 */
+	protected static boolean containsAdviceWithLabel(List<Advice> list, String label)
+	{
+		for (Advice a : list)
+		{
+			if (a.getRule().getName().compareToIgnoreCase(label) == 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }
