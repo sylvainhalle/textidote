@@ -87,7 +87,7 @@ public class LatexCleaner extends TextCleaner
 			}
 			else
 			{
-				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+				if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
 				{
 					in_environment++;
 				}
@@ -96,7 +96,7 @@ public class LatexCleaner extends TextCleaner
 					as.removeLine(i);
 					i--; // Step counter back so next loop is at same index
 				}
-				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+				if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
 				{
 					in_environment--;
 				}
