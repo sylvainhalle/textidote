@@ -77,7 +77,7 @@ the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
 ```
-TeXtidote v0.4 - A linter for LaTeX documents
+TeXtidote v0.6 - A linter for LaTeX documents
 (C) 2018 Sylvain Hallé - All rights reserved
 
 Found 23 warnings(s)
