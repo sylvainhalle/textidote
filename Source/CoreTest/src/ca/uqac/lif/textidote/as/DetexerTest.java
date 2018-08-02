@@ -120,4 +120,22 @@ public class DetexerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("$12$-uniform graph")));
 		assertEquals("12-uniform graph", as.toString());
 	}
+	
+	@Test
+	public void testRemoveLabels1()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. }")));
+		assertEquals("Hello world. ", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveLabels2()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{foo}}")));
+		assertEquals("Hello world. ", as.toString());	
+	}
 }
