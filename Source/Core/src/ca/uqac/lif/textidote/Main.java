@@ -58,7 +58,7 @@ import ca.uqac.lif.util.NullPrintStream;
 
 /**
  * Command-line interface for TeXtidote.
- * @author Sylvain Hallé
+ * @author Sylvain Hallér
  */
 public class Main 
 {
