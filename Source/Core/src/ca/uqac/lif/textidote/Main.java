@@ -75,10 +75,12 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.5.1";
+	protected static final String VERSION_STRING = "0.6-pre";
 
 	/**
-	 * The name of the Aspell dictionary file to look for in a folder
+	 * The name of the Aspell dictionary file to look for in a folder. The
+	 * "XX" must be there, as it is replaced with an actual language code
+	 * at runtim.
 	 */
 	protected static final String ASPELL_DICT_FILENAME = ".aspell.XX.pws";
 
