@@ -216,7 +216,10 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces
 		as_out = as_out.replaceAll("~", " ");
-		// Inline equations
+		// Inline equations with only digits are replaced by digits or letters
+		as_out = as_out.replaceAll("([^\\\\])\\$([\\d,a-zA-z]+?)\\$", "$1$2");
+		as_out = as_out.replaceAll("^\\$([\\d,a-zA-z]+?)\\$", "$1");
+		// Other inline equations are replaced by "X"
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		// Commands we can ignore

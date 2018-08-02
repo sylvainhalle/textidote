@@ -84,4 +84,40 @@ public class DetexerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Fr\\'{e}chet")));
 		assertEquals("Fréchet", as.toString());
 	}
+	
+	@Test
+	public void testRemoveEquations1()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("A $k$-uniform graph")));
+		assertEquals("A k-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations2()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("$k$-uniform graph")));
+		assertEquals("k-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations3()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("A $12$-uniform graph")));
+		assertEquals("A 12-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations4()
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("$12$-uniform graph")));
+		assertEquals("12-uniform graph", as.toString());
+	}
 }
