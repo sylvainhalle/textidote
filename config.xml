@@ -63,7 +63,7 @@
       <name>Bullwinkle</name>
       <classname>ca.uqac.lif.bullwinkle.BnfParser</classname>
       <files>
-        <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.1/bullwinkle-1.4.1.zip</zip>
+        <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.3/bullwinkle-1.4.3.zip</zip>
       </files>
       <bundle>true</bundle>
     </dependency>

@@ -208,14 +208,14 @@ file and give you no advice.
 ### Removing markup
 
 You can also use TeXtidote just to remove the markup from your original LaTeX
-file. This is done with the option `--detex`:
+file. This is done with the option `--clean`:
 
-    $ java -jar textidote.jar --detex example.tex
+    $ java -jar textidote.jar --clean example.tex
 
 By default, the resulting "clean" file is printed directly at the console. To
 save it to a file, use a redirection:
 
-    $ java -jar textidote.jar --detex example.tex > clean.txt
+    $ java -jar textidote.jar --clean example.tex > clean.txt
 
 You will see that TeXtidote performs a very aggressive deletion of LaTeX
 markup:
@@ -234,10 +234,10 @@ clean and legible enough for a spelling or grammar checker to provide
 sensible advice.
 
 As was mentioned earlier, TeXtidote keeps a mapping between character ranges
-in the "detexed" file, and the same character ranges in the original LaTeX
+in the "cleaned" file, and the same character ranges in the original LaTeX
 document. You can get this mapping by using the `--map` option:
 
-    $ java -jar textidote.jar --detex --map map.txt example.tex > clean.txt
+    $ java -jar textidote.jar --clean --map map.txt example.tex > clean.txt
 
 The `--map` parameter is given the name of a file. TeXtidote will put in this
 file the list correspondences between character ranges. This file is made of
@@ -259,6 +259,33 @@ original file by something else). Conversely, it is also possible that
 characters in the original file do not correspond to anything in the clean
 file (this happens when the cleaner deletes characters from the original).
 
+### Using a configuration file
+
+If you need to run TeXtidote with many command line arguments (for example:
+you load a local dictionary, ignore a few rules, apply replacements, etc.), it
+may become tedious to invoke the program with a long list of arguments every
+time. TeXtidote can be "configured" by putting those arguments in a text
+file called `.textidote` in the directory from which it is called. Here is an
+example of what such a file could contain:
+
+```
+--html --read-all 
+--replace replacements.txt 
+--dict mydict.txt
+--ignore sh:001,sh:d:001
+--check en mytext.tex
+```
+
+As you can see, arguments can be split across multiple lines. You can then
+call TeXtidote without any arguments like this:
+
+    $ textidote > report.html
+
+If you call TeXtidote with command line arguments, they will be merged with
+whatever was found in `.textidote`. You can also tell TeXtidote to explicitly
+ignore that file and only take into account the command line arguments using
+the `--no-config` argument.
+
 ## Helping TeXtidote
 
 It order to get the best results when using TeXtidote, it is advisable that
@@ -276,7 +303,7 @@ you follow a few formatting conventions when writing your LaTeX file:
 - Put headings like `\section` or `\paragraph` alone on their line
 
 As a rule, it is advisable to first see what your text looks like using the
-`--detex` option, to make sure that TeXtidote is performing checks on
+`--clean` option, to make sure that TeXtidote is performing checks on
 something that makes sense.
 
 If you realize that a portion of LaTeX markup is not handled properly and

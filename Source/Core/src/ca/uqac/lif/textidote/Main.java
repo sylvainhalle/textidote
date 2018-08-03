@@ -83,6 +83,11 @@ public class Main
 	protected static final String ASPELL_DICT_FILENAME = ".aspell.XX.pws";
 
 	/**
+	 * The name of the optional file containing command line parameters
+	 */
+	protected static final String PARAM_FILENAME = ".textidote";
+
+	/**
 	 * Main method. This method simply calls the static method
 	 * {@link #main(String[]) mainLoop()},
 	 * and exits with the return value of that method. The reason for this is
@@ -105,20 +110,52 @@ public class Main
 	{
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
-		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
-		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
-		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
+		cli_parser.addArgument(new Argument().withLongName("clean").withDescription("Remove markup from input file"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
-		cli_parser.addArgument(new Argument().withLongName("detex").withDescription("Detex input file"));
+		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
+		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
+		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
+		cli_parser.addArgument(new Argument().withLongName("name").withArgument("n").withDescription("Use n as app name when printing usage"));
+		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
+		cli_parser.addArgument(new Argument().withLongName("no-config").withDescription("Ignore config file if any"));
+		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
-		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
-		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
-		cli_parser.addArgument(new Argument().withLongName("name").withArgument("n").withDescription("Use n as app name when printing usage"));
-		ArgumentMap map = cli_parser.parse(args);
+
+		// Check if there is a parameter filename
+		ArgumentMap map = null;
+		File param_file = new File(PARAM_FILENAME);
+		if (param_file.exists())
+		{
+			Scanner f_c_scan = new Scanner(param_file);
+			String[] f_c_args = readArguments(f_c_scan);
+			map = cli_parser.parse(f_c_args);
+		}
+		ArgumentMap map_cline = cli_parser.parse(args);
+		if (map == null)
+		{
+			// If no arguments were read from a file, just use those from
+			// the actual command line
+			map = map_cline;
+		}
+		else
+		{
+			if (map_cline.hasOption("no-config"))
+			{
+				// Just use command line args
+				map = map_cline;
+			}
+			else
+			{
+				// Merge CLI and args from file
+				map.putAll(map_cline);
+			}
+		}
+		
+		// Process command line arguments
 		String app_name = "java -jar textidote.jar";
 		if (map == null)
 		{
@@ -526,5 +563,62 @@ public class Main
 			ps.print(map.get(key));
 			ps.println();
 		}
+	}
+
+	/**
+	 * Reads command-line arguments from a file.
+	 * @param scanner A scanner open on the file to read from
+	 * @return An array of strings, similar to what would be in the
+	 * <tt>args</tt> input of the {@link #main(String[])} method if the
+	 * arguments were received from the command line.
+	 */
+	/* This method has protected visibility in order to 
+	 * be accessible from the unit tests */
+	/*@ non_null @*/ static String[] readArguments(/*@ non_null @*/ Scanner scanner)
+	{
+		List<String> arguments = new ArrayList<String>();
+		StringBuilder current_argument = new StringBuilder();
+		while (scanner.hasNextLine())
+		{
+			String line = scanner.nextLine().trim();
+			if (line.isEmpty() || line.startsWith("#"))
+			{
+				// Blank and "comment" lines are ignored
+				continue;
+			}
+			String[] parts = line.split("\\s+");
+			boolean quotes = false;
+			for (String part : parts)
+			{
+				part = part.trim();
+				if (part.startsWith(("\"")))
+				{
+					quotes = true;
+					part = part.substring(1);
+				}
+				current_argument.append(part).append(" ");
+				if (part.endsWith("\""))
+				{
+					quotes = false;
+				}
+				if (!quotes)
+				{
+					String arg = current_argument.toString().trim();
+					if (arg.endsWith("\""))
+					{
+						arg = arg.substring(0, arg.length() - 1);
+					}
+					arguments.add(arg);
+					current_argument = new StringBuilder();
+				}
+			}
+		}
+		scanner.close();
+		String[] out = new String[arguments.size()];
+		for (int i = 0; i < arguments.size(); i++)
+		{
+			out[i] = arguments.get(i);
+		}
+		return out;
 	}
 }

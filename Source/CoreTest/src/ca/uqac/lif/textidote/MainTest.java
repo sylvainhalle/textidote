@@ -15,12 +15,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Scanner;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test5() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
@@ -69,7 +70,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test5Html() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--html"}, in, out, new NullPrintStream());
@@ -81,7 +82,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test6() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
@@ -93,7 +94,7 @@ public class MainTest
 	@Test//(timeout = 2000)
 	public void test7() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test-subsec-1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, new NullPrintStream());
@@ -103,7 +104,7 @@ public class MainTest
 	@Test(timeout = 5000)
 	public void test8() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", "en"}, in, out, new NullPrintStream());
@@ -115,12 +116,79 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void testDetex1() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--detex"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
+	}
+	
+	@Test
+	public void testReadArguments1()
+	{
+		String arg_string = "--foo --bar";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(2, args.length);
+		assertEquals("--foo", args[0]);
+		assertEquals("--bar", args[1]);
+	}
+	
+	@Test
+	public void testReadArguments2()
+	{
+		String arg_string = "--foo\n--bar";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(2, args.length);
+		assertEquals("--foo", args[0]);
+		assertEquals("--bar", args[1]);
+	}
+	
+	@Test
+	public void testReadArguments3()
+	{
+		String arg_string = "--foo \"Some\" --bar";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(3, args.length);
+		assertEquals("--foo", args[0]);
+		assertEquals("Some", args[1]);
+		assertEquals("--bar", args[2]);
+	}
+	
+	@Test
+	public void testReadArguments4()
+	{
+		String arg_string = "--foo \"Some Thing\" --bar";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(3, args.length);
+		assertEquals("--foo", args[0]);
+		assertEquals("Some Thing", args[1]);
+		assertEquals("--bar", args[2]);
+	}
+	
+	@Test
+	public void testReadArguments5()
+	{
+		String arg_string = "#--foo\n\n--bar";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(1, args.length);
+		assertEquals("--bar", args[0]);
+	}
+	
+	@Test
+	public void testReadArguments6()
+	{
+		String arg_string = "--foo\n\"Some\n#\nThing\"";
+		Scanner scanner = new Scanner(arg_string);
+		String[] args = Main.readArguments(scanner);
+		assertEquals(2, args.length);
+		assertEquals("--foo", args[0]);
+		assertEquals("Some Thing", args[1]);
 	}
 }
