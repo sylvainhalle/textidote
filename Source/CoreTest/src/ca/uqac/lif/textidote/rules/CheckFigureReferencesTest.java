@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -26,17 +26,16 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
-import ca.uqac.lif.textidote.rules.CheckFigurePaths;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 
-public class CheckFigurePathsTest 
+public class CheckFigureReferencesTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\begin{figure}\n" + 
-				"\\includegraphics{path/to/file.pdf}\n" + 
-				"\\end{figure}"));
-		Rule r = new CheckFigurePaths();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test4.tex")));
+		Rule r = new CheckFigureReferences();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
@@ -44,21 +43,8 @@ public class CheckFigurePathsTest
 	@Test
 	public void test2()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\begin{figure}\n" + 
-				"\\includegraphics{D:\\Sylvain\\file.pdf}\n" + 
-				"\\end{figure}"));
-		Rule r = new CheckFigurePaths();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-	}
-	
-	@Test
-	public void test3()
-	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\begin{figure}\n" + 
-				"\\includegraphics{/home/Sylvain/file.pdf}\n" + 
-				"\\end{figure}"));
-		Rule r = new CheckFigurePaths();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test5.tex")));
+		Rule r = new CheckFigureReferences();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
 	}

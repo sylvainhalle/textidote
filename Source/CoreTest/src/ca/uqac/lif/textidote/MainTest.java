@@ -58,7 +58,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test5() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
@@ -70,7 +70,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test5Html() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--html"}, in, out, new NullPrintStream());
@@ -82,7 +82,7 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test6() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test-subsec-1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
@@ -94,7 +94,7 @@ public class MainTest
 	@Test//(timeout = 2000)
 	public void test7() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test-subsec-1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-subsec-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, new NullPrintStream());
@@ -104,7 +104,7 @@ public class MainTest
 	@Test(timeout = 5000)
 	public void test8() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", "en"}, in, out, new NullPrintStream());
@@ -116,10 +116,10 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void testDetex1() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("as/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--detex"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);

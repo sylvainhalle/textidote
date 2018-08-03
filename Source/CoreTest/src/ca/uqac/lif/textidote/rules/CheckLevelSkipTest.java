@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -26,51 +26,44 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
+import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.rules.CheckSubsections;
 
-public class CheckSubsectionsTest 
+public class CheckLevelSkipTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-1.tex")));
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\section{foo}\n" + 
+				"\\subsection{bar}\n" + 
+				"\\chapter{baz}"));
 		Rule r = new CheckSubsections();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-		Advice ad = ad_list.get(0);
-		assertEquals(2, ad.getRange().getStart().getLine());
+		assertFalse(containsSkipAdvice(ad_list));
 	}
 	
 	@Test
 	public void test2()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-2.tex")));
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\section{foo}\n" + 
+				"\\subsubsection{bar}\n" + 
+				"\\section{baz}"));
 		Rule r = new CheckSubsections();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
-	}
-	
-	@Test
-	public void test3()
-	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-3.tex")));
-		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(containsAdviceWithLabel(ad_list, "sh:secorder"));
+		assertTrue(containsSkipAdvice(ad_list));
 	}
 	
 	/**
-	 * Checks if the list of advice contains one with a given label
+	 * Checks if the list of advice contains one of type "section skip"
 	 * @param list The list of advice
-	 * @param The label to look for
-	 * @return {@code true} if the list contains an advice with given label,
+	 * @return {@code true} if the list contains a "section skip" advice,
 	 * {@code false} otherwise
 	 */
-	protected static boolean containsAdviceWithLabel(List<Advice> list, String label)
+	protected static boolean containsSkipAdvice(List<Advice> list)
 	{
 		for (Advice a : list)
 		{
-			if (a.getRule().getName().compareToIgnoreCase(label) == 0)
+			if (a.getRule().getName().compareToIgnoreCase("sh:secskip") == 0)
 			{
 				return true;
 			}

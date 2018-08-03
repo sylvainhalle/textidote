@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -25,28 +25,30 @@ import java.util.Scanner;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
-import ca.uqac.lif.textidote.Rule;
-import ca.uqac.lif.textidote.rules.CheckNoBreak;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
-public class CheckNoBreakTest 
+public class CheckSubsectionSizeTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet.\n\n" +
-				"Lorem ipsum dolor sit amet."));
-		Rule r = new CheckNoBreak();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
+		CheckSubsectionSize r = new CheckSubsectionSize();
+		r.setMinNumWords(40);
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
+		assertEquals(1, ad_list.size());
+		Advice ad = ad_list.get(0);
+		assertEquals(17, ad.getRange().getStart().getLine());
 	}
 	
 	@Test
 	public void test2()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet.\\\\\n" +
-				"Lorem ipsum dolor sit amet."));
-		Rule r = new CheckNoBreak();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
+		CheckSubsectionSize r = new CheckSubsectionSize();
+		r.setMinNumWords(40);
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-	}	
+		assertTrue(ad_list.isEmpty());
+	}
 }

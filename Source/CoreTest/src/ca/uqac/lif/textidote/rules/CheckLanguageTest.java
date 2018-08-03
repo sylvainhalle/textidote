@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
+import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
 import ca.uqac.lif.textidote.rules.LanguageFactory;
 

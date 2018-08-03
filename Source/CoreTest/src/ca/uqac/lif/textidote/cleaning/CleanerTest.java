@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.cleaning;
 
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static org.junit.Assert.*;
