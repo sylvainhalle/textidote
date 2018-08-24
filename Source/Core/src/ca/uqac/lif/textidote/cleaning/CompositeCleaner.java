@@ -48,6 +48,17 @@ public class CompositeCleaner extends TextCleaner
 		}
 	}
 	
+	/**
+	 * Creates a new copy of a composite cleaner
+	 * @param c The cleaner to copy
+	 */
+	public CompositeCleaner(/*@ non_null @*/ CompositeCleaner c)
+	{
+		super();
+		m_cleaners = new ArrayList<TextCleaner>(c.m_cleaners.size());
+		m_cleaners.addAll(c.m_cleaners);
+	}
+	
 	@Override
 	/*@ pure non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString s) throws TextCleanerException
 	{

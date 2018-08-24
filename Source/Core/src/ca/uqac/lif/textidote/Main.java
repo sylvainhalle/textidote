@@ -38,6 +38,7 @@ import ca.uqac.lif.textidote.cleaning.CompositeCleaner;
 import ca.uqac.lif.textidote.cleaning.ReplacementCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
+import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
@@ -108,6 +109,9 @@ public class Main
 	 */
 	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
 	{
+		// Store input type
+		Linter.Language input_type = Linter.Language.UNSPECIFIED;
+
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
@@ -123,6 +127,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
+		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("\tInput is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 
 		// Check if there is a parameter filename
@@ -154,7 +159,7 @@ public class Main
 				map.putAll(map_cline);
 			}
 		}
-		
+
 		// Process command line arguments
 		String app_name = "java -jar textidote.jar";
 		if (map == null)
@@ -209,9 +214,25 @@ public class Main
 			stdout.close();
 			return 0;
 		}
+		if (map.hasOption("type"))
+		{
+			String type = map.getOptionValue("type");
+			if (type.compareToIgnoreCase("md") == 0)
+			{
+				input_type = Linter.Language.MARKDOWN;
+			}
+			else if (type.compareToIgnoreCase("tex") == 0)
+			{
+				input_type = Linter.Language.LATEX;
+			}
+			else if (type.compareToIgnoreCase("txt") == 0)
+			{
+				input_type = Linter.Language.TEXT;
+			}
+		}
 
 		// Only detex input
-		if (map.hasOption("detex"))
+		if (map.hasOption("clean"))
 		{
 			CompositeCleaner cleaner = new CompositeCleaner();
 			if (map.hasOption("replace"))
@@ -229,9 +250,6 @@ public class Main
 					stderr.println("Using replacement file " + replacement_filename);
 				}
 			}
-			LatexCleaner latex_cleaner = new LatexCleaner();
-			latex_cleaner.setIgnoreBeforeDocument(!read_all);
-			cleaner.add(latex_cleaner);
 			List<String> filenames = map.getOthers();
 			if (filenames.isEmpty())
 			{
@@ -257,9 +275,23 @@ public class Main
 					{
 						scanner = new Scanner(f);
 					}
+					// Create cleaner based on file extension
+					CompositeCleaner c_file = new CompositeCleaner(cleaner);
+					if (input_type == Linter.Language.LATEX || (filename.compareTo("--") == 0 && input_type == Linter.Language.UNSPECIFIED) || filename.endsWith(".tex"))
+					{
+						// LaTeX file
+						LatexCleaner latex_cleaner = new LatexCleaner();
+						latex_cleaner.setIgnoreBeforeDocument(!read_all);
+						c_file.add(latex_cleaner);
+					}
+					else if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
+					{
+						MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
+						c_file.add(markdown_cleaner);
+					}
 					AnnotatedString s = AnnotatedString.read(scanner);
 					s.setResourceName(filename);
-					AnnotatedString ds = cleaner.clean(s);
+					AnnotatedString ds = c_file.clean(s);
 					stdout.println(ds);
 					if (map.hasOption("map"))
 					{
@@ -309,19 +341,14 @@ public class Main
 				stderr.println("Using replacement file " + replacement_filename);
 			}
 		}
-		LatexCleaner latex_cleaner = new LatexCleaner();
-		latex_cleaner.setIgnoreBeforeDocument(!read_all);
-		cleaner.add(latex_cleaner);
-		Linter linter = new Linter(cleaner);
-		populateRules(linter);
-		linter.addToBlacklist(rule_blacklist);
 
 		// Do we check the language?
+		List<String> dictionary = new ArrayList<String>();
+		String lang_s = "";
 		if (map.hasOption("check"))
 		{
-			String lang_s = map.getOptionValue("check");
+			lang_s = map.getOptionValue("check");
 			// Try to read dictionary from an Aspell file
-			List<String> dictionary = new ArrayList<String>();
 			try
 			{
 				String dict_filename = ASPELL_DICT_FILENAME.replace("XX", lang_s);
@@ -344,16 +371,6 @@ public class Main
 				{
 					stderr.println("Dictionary not found: " + map.getOptionValue("dict"));
 				}
-			}
-			try
-			{
-				linter.addDetexed(new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary));
-			}
-			catch (CheckLanguage.UnsupportedLanguageException e)
-			{
-				stderr.println("Unknown language: " + map.getOptionValue("check"));
-				stdout.close();
-				return -1;
 			}
 		}
 
@@ -383,8 +400,40 @@ public class Main
 						stderr.println("File " + filename + " not found (skipping)");
 						continue;
 					}
-
 					scanner = new Scanner(f);
+				}
+				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
+				Linter linter = null;
+				if (input_type == Linter.Language.LATEX || (input_type == Linter.Language.UNSPECIFIED && filename.compareTo("--") == 0) ||  filename.endsWith(".tex"))
+				{
+					LatexCleaner latex_cleaner = new LatexCleaner();
+					latex_cleaner.setIgnoreBeforeDocument(!read_all);
+					c_cleaner.add(latex_cleaner);
+					linter = new Linter(c_cleaner);
+					populateLatexRules(linter);
+					linter.addToBlacklist(rule_blacklist);
+				}
+				else if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
+				{
+					MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
+					linter = new Linter(c_cleaner);
+					c_cleaner.add(markdown_cleaner);
+					linter = new Linter(c_cleaner);
+					populateMarkdownRules(linter);
+					linter.addToBlacklist(rule_blacklist);
+				}
+				if (!lang_s.isEmpty())
+				{
+					try
+					{
+						linter.addCleaned(new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary));
+					}
+					catch (CheckLanguage.UnsupportedLanguageException e)
+					{
+						stderr.println("Unknown language: " + map.getOptionValue("check"));
+						stdout.close();
+						return -1;
+					}
 				}
 				last_string = processDocument(scanner, filename, linter, all_advice);
 			}
@@ -447,19 +496,19 @@ public class Main
 	 */
 	protected static void printGreeting(AnsiPrinter out)
 	{
-		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents");
+		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents and others");
 		out.println("(C) 2018 Sylvain Hallé - All rights reserved");
 		out.println();
 	}
 
 	/**
-	 * Adds the rules to the linter
+	 * Adds the rules to the LaTeX linter
 	 * @param linter The linter to configure
 	 */
-	protected static void populateRules(Linter linter)
+	protected static void populateLatexRules(Linter linter)
 	{
 		linter.add(readRules(REGEX_FILENAME).values());
-		linter.addDetexed(readRules(REGEX_FILENAME_DETEX).values());
+		linter.addCleaned(readRules(REGEX_FILENAME_DETEX).values());
 		linter.add(new CheckFigureReferences());
 		linter.add(new CheckFigurePaths());
 		linter.add(new CheckCaptions());
@@ -467,6 +516,15 @@ public class Main
 		linter.add(new CheckSubsectionSize());
 		linter.add(new CheckNoBreak());
 		linter.add(new CheckCiteMix());
+	}
+	
+	/**
+	 * Adds the rules to the Markdown linter
+	 * @param linter The linter to configure
+	 */
+	protected static void populateMarkdownRules(Linter linter)
+	{
+		// Do nothing
 	}
 
 	/**

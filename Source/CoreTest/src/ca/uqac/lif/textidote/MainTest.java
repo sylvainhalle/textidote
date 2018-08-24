@@ -124,6 +124,18 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
+	
+	@Test(timeout = 2000)
+	public void testClean2() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.md");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--type", "md"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
 
 	@Test
 	public void testReadArguments1()
