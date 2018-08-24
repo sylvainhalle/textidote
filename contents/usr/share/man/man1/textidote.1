@@ -1,4 +1,4 @@
-.TH TEXTIDOTE 1 "2018-07-07" "GNU" "TeXtidote Abbreviated User's Manual"
+.TH TEXTIDOTE 1 "2018-08-24" "GNU" "TeXtidote Abbreviated User's Manual"
 .SH NAME
 textidote \- proof reader for LaTeX files
 .SH SYNOPSIS
@@ -27,6 +27,9 @@ What is unique to TeXtidote is that it keeps track of the relative position of
 words between the original and the "clean" text. This means that it can
 translate the messages from Language Tool back to their proper location
 .B directly in your source file.
+.PP
+TeXtidote also supports spelling and grammar checking of files in the
+Markdown format. Simply pass a Markdown file instead of a LaTeX file.
 .SS OPTIONS
 When launched with no option, TeXtidote analyzes the input file(s) and produces
 a report of all errors and warnings found; this report is printed on the
@@ -71,6 +74,10 @@ Output correspondences between character ranges in \fIfile\fR. This option only
 has an effect when used with \fB--detex\fR. TeXtidote keeps a mapping between
 character ranges in the "detexed" file, and the same character ranges in the
 original LaTeX document. This parameter can output the mapping to a text file.
+.TP
+\fB--type\fP \fIt\fR
+Tells TeXtidote that the input file type is t. Supported values are \fItex\fR
+(LaTeX) and \fImd\fR (Markdown).
 .TP
 \fB--no-color\fP
 Disable the use of ANSI escape codes when printing reports to the standard
