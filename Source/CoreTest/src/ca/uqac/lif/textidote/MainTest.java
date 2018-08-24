@@ -36,25 +36,25 @@ public class MainTest
 	{
 		Main.mainLoop(new String[] {"--help"}, null, new NullPrintStream(), new NullPrintStream());
 	}
-	
+
 	@Test(timeout = 1000)
 	public void test2() throws IOException
 	{
 		Main.mainLoop(new String[] {"--help", "--quiet"}, null, new NullPrintStream(), new NullPrintStream());
 	}
-	
+
 	@Test(timeout = 1000)
 	public void test3() throws IOException
 	{
 		Main.mainLoop(new String[] {"--help", "--quiet"}, null, new NullPrintStream(), new NullPrintStream());
 	}
-	
+
 	@Test(timeout = 1000)
 	public void test4() throws IOException
 	{
 		Main.mainLoop(new String[] {"--version"}, null, new NullPrintStream(), new NullPrintStream());
 	}
-	
+
 	@Test(timeout = 2000)
 	public void test5() throws IOException
 	{
@@ -66,7 +66,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 2000)
 	public void test5Html() throws IOException
 	{
@@ -78,7 +78,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 2000)
 	public void test6() throws IOException
 	{
@@ -90,7 +90,7 @@ public class MainTest
 		assertNotNull(output);
 		assertTrue(ret_code > 0);
 	}
-	
+
 	@Test//(timeout = 2000)
 	public void test7() throws IOException
 	{
@@ -100,7 +100,7 @@ public class MainTest
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--ignore", "sh:seclen,sh:nsubdiv"}, in, out, new NullPrintStream());
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 5000)
 	public void test8() throws IOException
 	{
@@ -112,9 +112,9 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 2000)
-	public void testDetex1() throws IOException
+	public void testClean1() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -124,7 +124,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test
 	public void testReadArguments1()
 	{
@@ -135,7 +135,7 @@ public class MainTest
 		assertEquals("--foo", args[0]);
 		assertEquals("--bar", args[1]);
 	}
-	
+
 	@Test
 	public void testReadArguments2()
 	{
@@ -146,7 +146,7 @@ public class MainTest
 		assertEquals("--foo", args[0]);
 		assertEquals("--bar", args[1]);
 	}
-	
+
 	@Test
 	public void testReadArguments3()
 	{
@@ -158,7 +158,7 @@ public class MainTest
 		assertEquals("Some", args[1]);
 		assertEquals("--bar", args[2]);
 	}
-	
+
 	@Test
 	public void testReadArguments4()
 	{
@@ -170,7 +170,7 @@ public class MainTest
 		assertEquals("Some Thing", args[1]);
 		assertEquals("--bar", args[2]);
 	}
-	
+
 	@Test
 	public void testReadArguments5()
 	{
@@ -180,7 +180,7 @@ public class MainTest
 		assertEquals(1, args.length);
 		assertEquals("--bar", args[0]);
 	}
-	
+
 	@Test
 	public void testReadArguments6()
 	{
