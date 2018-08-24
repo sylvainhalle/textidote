@@ -1,5 +1,5 @@
-TeXtidote: a correction tool for LaTeX documents
-================================================
+TeXtidote: a correction tool for LaTeX documents and other formats
+==================================================================
 
 [![Travis](https://img.shields.io/travis/sylvainhalle/textidote.svg?style=flat-square)](https://travis-ci.org/sylvainhalle/textidote)
 [![SonarQube Coverage](https://sonarcloud.io/api/project_badges/measure?project=sylvainhalle%3Atextidote&metric=coverage)](https://sonarcloud.io/dashboard?id=sylvainhalle%3Atextidote)
@@ -27,6 +27,8 @@ translate the messages from Language Tool back to their proper location
 
 You can see the list of all the rules checked by TeXtidote at the end of this
 file.
+
+TeXtidote also supports spelling and grammar checking of files in the [Markdown](https://en.wikipedia.org/wiki/Markdown) format.
 
 ## Getting TeXtidote
 
@@ -285,6 +287,12 @@ If you call TeXtidote with command line arguments, they will be merged with
 whatever was found in `.textidote`. You can also tell TeXtidote to explicitly
 ignore that file and only take into account the command line arguments using
 the `--no-config` argument.
+
+### Markdown input
+
+TeXtidote also supports files in the Markdown format. The only difference is that rules specific to LaTeX (references to figures, citations) are not evaluated.
+
+Simply call TeXtidote with a Markdown input file instead of a LaTeX file. The format is auto-detected by looking at the file extension. However, if you pass a file through the standard input, you must tell TeXtidote that the input file is Markdown by using the command line parameter `--type md`. Otherwise, TeXtidote assumes by default that the input file is LaTeX.
 
 ## Helping TeXtidote
 
