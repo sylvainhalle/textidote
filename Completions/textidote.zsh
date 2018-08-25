@@ -8,11 +8,12 @@
 # ----------------------------------------------------------------------
 _textidote_complete()
 {
-	_arguments '--check[Check grammar]:lang:->lang' '--detex[Clear markup]' '--dict[Use dictionary]:filename:_files' '--help[Show command line usage]' '--html[Produce HTML output]' '--map[Produce map file]:filename:_files' '--no-color[No ANSI color]' '--quiet[No messages]' '--read-all[Read all file]' '--replace[Apply replacements]:filename:_files'
+	_arguments '--check[Check grammar]:lang:->lang' '--detex[Clear markup]' '--dict[Use dictionary]:filename:_files' '--help[Show command line usage]' '--html[Produce HTML output]' '--map[Produce map file]:filename:_files' '--no-color[No ANSI color]' '--quiet[No messages]' '--read-all[Read all file]' '--replace[Apply replacements]:filename:_files' '--type[Input is of type]:type:->type'
 	case "$state" in
 	lang)
-		_values -s ' ' 'lang' de de_AT de_CH en en_CA en_UK es fr nl pt
+		_values -s ' ' 'lang' de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt
 		;;
+		
 	texfiles)
 		local -a tex_files
 		tex_files=(*.tex)
@@ -22,6 +23,9 @@ _textidote_complete()
 		local -a dict_files
 		dict_files=(*.txt)
 		_multi_parts / dict_files
+		;;
+	type)
+		_values -s ' ' 'type' tex md
 		;;
 	*)
 		local -a tex_files
