@@ -117,11 +117,11 @@ public class MarkdownCleaner extends TextCleaner
 	{
 		as_out = as_out.replaceAll("\\*", "");
 		as_out = as_out.replaceAll("`", "");
-		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1");
+		as_out = as_out.replaceAll("!\\[(.*?)\\]\\(.*?\\)", "$1"); // images
+		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1"); // links
 		as_out = as_out.replaceAll("^\\s*?- ", "• ");
 		as_out = as_out.replaceAll("^\\s*#*\\s*", "");
 		as_out = as_out.replaceAll("^\\s*=*\\s*$", "");
-		
 		return as_out;
 	}
 }
