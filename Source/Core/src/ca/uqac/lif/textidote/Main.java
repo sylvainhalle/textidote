@@ -127,7 +127,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
-		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("\tInput is of type x (tex or md)"));
+		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 
 		// Check if there is a parameter filename
