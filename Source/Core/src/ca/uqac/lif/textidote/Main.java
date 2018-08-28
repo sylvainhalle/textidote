@@ -404,22 +404,22 @@ public class Main
 				}
 				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
 				Linter linter = null;
-				if (input_type == Linter.Language.LATEX || (input_type == Linter.Language.UNSPECIFIED && filename.compareTo("--") == 0) ||  filename.endsWith(".tex"))
-				{
-					LatexCleaner latex_cleaner = new LatexCleaner();
-					latex_cleaner.setIgnoreBeforeDocument(!read_all);
-					c_cleaner.add(latex_cleaner);
-					linter = new Linter(c_cleaner);
-					populateLatexRules(linter);
-					linter.addToBlacklist(rule_blacklist);
-				}
-				else if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
+				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
 				{
 					MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
 					linter = new Linter(c_cleaner);
 					c_cleaner.add(markdown_cleaner);
 					linter = new Linter(c_cleaner);
 					populateMarkdownRules(linter);
+					linter.addToBlacklist(rule_blacklist);
+				}
+				else
+				{
+					LatexCleaner latex_cleaner = new LatexCleaner();
+					latex_cleaner.setIgnoreBeforeDocument(!read_all);
+					c_cleaner.add(latex_cleaner);
+					linter = new Linter(c_cleaner);
+					populateLatexRules(linter);
 					linter.addToBlacklist(rule_blacklist);
 				}
 				if (!lang_s.isEmpty())
