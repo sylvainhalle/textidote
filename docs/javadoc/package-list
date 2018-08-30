@@ -2,6 +2,7 @@ ca.uqac.lif.textidote
 ca.uqac.lif.textidote.as
 ca.uqac.lif.textidote.cleaning
 ca.uqac.lif.textidote.cleaning.latex
+ca.uqac.lif.textidote.cleaning.markdown
 ca.uqac.lif.textidote.render
 ca.uqac.lif.textidote.rules
 ca.uqac.lif.util
