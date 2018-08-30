@@ -47,6 +47,7 @@ import ca.uqac.lif.textidote.rules.CheckFigurePaths;
 import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
 import ca.uqac.lif.textidote.rules.CheckNoBreak;
+import ca.uqac.lif.textidote.rules.CheckStackedHeadings;
 import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 import ca.uqac.lif.textidote.rules.CheckSubsections;
 import ca.uqac.lif.textidote.rules.LanguageFactory;
@@ -514,6 +515,7 @@ public class Main
 		linter.add(new CheckCaptions());
 		linter.add(new CheckSubsections());
 		linter.add(new CheckSubsectionSize());
+		linter.add(new CheckStackedHeadings());
 		linter.add(new CheckNoBreak());
 		linter.add(new CheckCiteMix());
 	}

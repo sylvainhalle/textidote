@@ -457,7 +457,7 @@ is considerably longer when using that option.
   [sh:figmag]
 
 ### Structure
-                                        
+
 - A section should not contain a single sub-section. More generally, a
   division of level n should not contain a single division of level n+1.
   [sh:nsubdiv]
@@ -467,6 +467,8 @@ is considerably longer when using that option.
 - There should not be a jump down between two non-successive section
   levels (e.g. a `\section` followed by a `\subsubsection` without a
   `\subsection` in between). [sh:secskip]
+- You should avoid stacked headings, i.e. consecutive headings wihtout
+  text in between. [sh:stacked]
 
 ### Hard-coding
 
