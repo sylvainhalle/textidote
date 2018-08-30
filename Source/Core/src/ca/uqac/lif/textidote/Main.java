@@ -77,7 +77,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.6-pre";
+	protected static final String VERSION_STRING = "0.6";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
