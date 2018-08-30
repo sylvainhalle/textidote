@@ -51,14 +51,17 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 		printFromInternalFile("preamble.html");
 		m_printer.println("<p>Found " + list.size() + " warning(s)</p>");
 		m_printer.println("<div class=\"original-file\">");
+		int num_digits = (int) Math.ceil((Math.log10(m_originalString.lineCount())));
 		for (int cur_line_nb = 0; cur_line_nb < m_originalString.lineCount(); cur_line_nb++)
 		{
 			String cur_line = m_originalString.getLine(cur_line_nb);
+			m_printer.print(printLineNumber(cur_line_nb + 1, num_digits)); // +1 since 1st line is 1, not 0
+			m_printer.print("<div class=\"codeline\">");
 			if (!map.containsKey(cur_line_nb))
 			{
 				// No advice on this line: print it as is
 				m_printer.print(highlightLatex(escape(cur_line)));
-				m_printer.println("<br/>");
+				m_printer.println("</div><div class=\"clear\"></div>");
 				continue;
 			}
 			AnnotatedString a_cur_line = new AnnotatedString().append(cur_line, Range.make(cur_line_nb, 0, cur_line.length() - 1));
@@ -114,7 +117,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 				a_cur_line = as_left;
 			}
 			m_printer.print(highlightLatex(a_cur_line.toString()));
-			m_printer.println("<br/>");
+			m_printer.println("</div><div class=\"clear\"></div>");
 		}
 		m_printer.println("</div>");
 		printFromInternalFile("postamble.html");
@@ -227,10 +230,25 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 	 */
 	protected static String highlightLatex(String s)
 	{
+		if (s.isEmpty())
+		{
+			return "&nbsp;";
+		}
 		s = s.replaceAll("\\\\(textbf|emph|textit|section|subsection|subsubsection|paragraph|includegraphics|caption|label|maketitle|documentclass|item|documentclass|usepackage|title)", "<span class=\"keyword1\">\\\\$1</span>");
 		s = s.replaceAll("\\\\(begin|end)(\\{.*?\\})", "<span class=\"keyword2\">\\\\$1$2</span>");
 		s = s.replaceAll("(%.*)$", "<span class=\"comment\">$1</span>");
 		return s;
+	}
+	
+	protected static String printLineNumber(int n, int width)
+	{
+		StringBuilder out = new StringBuilder(); 
+		out.append("<div class=\"linenb\">");
+		String number = String.format("%" + width + "d", n);
+		number = number.replaceAll(" ", "&nbsp;");
+		out.append(number);
+		out.append("</div>");
+		return out.toString();
 	}
 
 }

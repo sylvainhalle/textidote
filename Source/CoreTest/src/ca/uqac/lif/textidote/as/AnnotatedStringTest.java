@@ -311,6 +311,29 @@ public class AnnotatedStringTest
 	}
 	
 	@Test
+	public void testReplace3()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello<!-- c -->world").appendNewLine().append("foobar");
+		AnnotatedString as_rep = as_orig.replaceAll("<", "");
+		assertNotNull(as_rep);
+		assertEquals("Hello!-- c -->world\nfoobar", as_rep.toString());
+	}
+	
+	@Test
+	public void testReplace4()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Hello", Range.make(0, 0, 4)).appendNewLine().append("world!", Range.make(0, 6, 11));
+		AnnotatedString as_rep = as_orig.replace("rl", "rr");
+		assertNotNull(as_rep);
+		assertEquals("Hello" + CRLF + "worrd!", as_rep.toString());
+		Position p = as_rep.getSourcePosition(new Position(0, 1));
+		assertEquals(0, p.getLine());
+		assertEquals(1, p.getColumn());
+	}
+	
+	@Test
 	public void testReplaceAll1()
 	{
 		AnnotatedString as_orig = new AnnotatedString();

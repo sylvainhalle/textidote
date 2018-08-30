@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -25,6 +25,7 @@ import java.util.Scanner;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
 
 public class CheckCaptionsTest 

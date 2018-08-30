@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.rules;
 
 import static org.junit.Assert.*;
 
@@ -26,17 +26,17 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
-import ca.uqac.lif.textidote.rules.CheckCiteMix;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.rules.CheckNoBreak;
 
-public class CheckCiteMixTest 
+public class CheckNoBreakTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\cite{foo}\n" + 
-				"\\cite{bar}\n" + 
-				"\\cite{baz}"));
-		Rule r = new CheckCiteMix();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet.\n\n" +
+				"Lorem ipsum dolor sit amet."));
+		Rule r = new CheckNoBreak();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
@@ -44,33 +44,10 @@ public class CheckCiteMixTest
 	@Test
 	public void test2()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\cite{foo}\n" + 
-				"\\citep{bar}\n" + 
-				"\\citet{baz}"));
-		Rule r = new CheckCiteMix();
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet.\\\\\n" +
+				"Lorem ipsum dolor sit amet."));
+		Rule r = new CheckNoBreak();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
-	}
-	
-	@Test
-	public void test3()
-	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\citep{foo}\n" + 
-				"\\citep{bar}\n" + 
-				"\\cite{baz}"));
-		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-	}
-	
-	@Test
-	public void test4()
-	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\citep{foo}\n" + 
-				"\\citet{bar}\n" + 
-				"\\citep{baz}"));
-		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
-	}
+	}	
 }

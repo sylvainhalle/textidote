@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.as;
+package ca.uqac.lif.textidote.cleaning;
 
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static org.junit.Assert.*;
@@ -89,6 +89,59 @@ public class CleanerTest
 	}
 	
 	@Test
+	public void testRemoveEquations1() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("A $k$-uniform graph")));
+		assertEquals("A k-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("$k$-uniform graph")));
+		assertEquals("k-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations3() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("A $12$-uniform graph")));
+		assertEquals("A 12-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveEquations4() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("$12$-uniform graph")));
+		assertEquals("12-uniform graph", as.toString());
+	}
+	
+	@Test
+	public void testRemoveLabels1() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. }")));
+		assertEquals("Hello world. ", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveLabels2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{foo}}")));
+		assertEquals("Hello world. ", as.toString());
+	}
+
 	public void testReplacementCleaner1() throws TextCleanerException
 	{
 		ReplacementCleaner cleaner = ReplacementCleaner.create(new Scanner(CleanerTest.class.getResourceAsStream("data/replacements-1.txt")));

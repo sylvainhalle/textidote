@@ -88,7 +88,7 @@ public class LatexCleaner extends TextCleaner
 			}
 			else
 			{
-				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[\\*"))
+				if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
 				{
 					in_environment++;
 				}
@@ -97,7 +97,7 @@ public class LatexCleaner extends TextCleaner
 					as.removeLine(i);
 					i--; // Step counter back so next loop is at same index
 				}
-				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches("\\s*\\\\\\].*"))
+				if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
 				{
 					in_environment--;
 				}
@@ -199,7 +199,7 @@ public class LatexCleaner extends TextCleaner
 		// Images
 		as_out = as_out.replaceAll("\\\\includegraphics.*$", "");
 		// Commands that don't produce text
-		as_out = as_out.replaceAll("\\\\(label)\\{.*?\\}", "");
+		as_out = as_out.replaceAll("\\\\(label)\\{[^\\}]*?\\}", "");
 		// Footnotes (ignore)
 		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
@@ -208,7 +208,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url|cref|Cref)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
 		// Font commands
@@ -219,7 +219,12 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces
 		as_out = as_out.replaceAll("~", " ");
-		// Inline equations
+		// Dots
+		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
+		// Inline equations with only digits are replaced by digits or letters
+		as_out = as_out.replaceAll("([^\\\\])\\$([\\d,a-zA-z]+?)\\$", "$1$2");
+		as_out = as_out.replaceAll("^\\$([\\d,a-zA-z]+?)\\$", "$1");
+		// Other inline equations are replaced by "X"
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		// Commands we can ignore

@@ -36,14 +36,14 @@ _textidote()
     #
     #  The basic options we'll complete.
     #
-    opts="--check --detex --dict --help --html --no-color --map --quiet --read-all --replace"
+    opts="--check --detex --dict --help --html --no-color --map --quiet --read-all --replace --type"
     
     #
     #  Complete the arguments to some of the basic commands.
     #
     case "${prev}" in
         --check)
-            local langs="de de_AT de_CH en en_CA en_UK fr nl pt"
+            local langs="de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt"
             COMPREPLY=( $(compgen -W "${langs}" -- ${cur}) )
             return 0
             ;;
@@ -57,6 +57,11 @@ _textidote()
             ;;
         --replace)
             completeFiles
+            return 0
+            ;;
+        --type)
+            local types="tex md"
+            COMPREPLY=( $(compgen -W "${types}" -- ${cur}) )
             return 0
             ;;
         *)
@@ -76,7 +81,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --detex --dict --help --html --no-color --map --quiet --read-all --replace
+	compadd --check --detex --dict --help --html --no-color --map --quiet --read-all --replace --type
 }
 
 # Register the goto completions.

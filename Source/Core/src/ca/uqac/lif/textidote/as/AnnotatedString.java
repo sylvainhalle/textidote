@@ -414,7 +414,8 @@ public class AnnotatedString
 							System.out.println("HE");
 						}
 						String truncated_line = line.substring(0, Math.min(line.length(), end.getColumn() + 1));
-						out_as.m_lines.add(truncated_line);
+						//out_as.m_lines.add(truncated_line);
+						out_as.m_builder.append(truncated_line);
 					}
 					else
 					{
@@ -595,7 +596,8 @@ public class AnnotatedString
 		int max_iterations = 10000;
 		AnnotatedString replaced = this;
 		Position last_pos = Position.ZERO;
-		for (int i = 0; i < max_iterations; i++)
+		int i = 0;
+		for (; i < max_iterations; i++)
 		{
 			Match m = replaced.find(regex, last_pos);
 			if (m == null)
@@ -853,7 +855,7 @@ public class AnnotatedString
 		}
 		return as;
 	}
-	
+
 	/**
 	 * Determines if the string is empty, i.e. contains no characters.
 	 * @return {@code true} if the string is empty, {@code false}

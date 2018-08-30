@@ -54,6 +54,11 @@ public class Linter
 	protected List<String> m_blacklist;
 	
 	/**
+	 * The markup language used in the source file
+	 */
+	public enum Language {LATEX, MARKDOWN, TEXT, UNSPECIFIED}
+	
+	/**
 	 * Creates a new empty linter object
 	 */
 	public Linter(/*@ non_null @*/ TextCleaner cleaner)
@@ -95,7 +100,7 @@ public class Linter
 	 * @param r The rule to add
 	 * @return This linter
 	 */
-	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Rule r)
+	/*@ non_null @*/ public Linter addCleaned(/*@ non_null @*/ Rule r)
 	{
 		m_rulesDetexed.add(r);
 		return this;
@@ -107,7 +112,7 @@ public class Linter
 	 * @param r The rules to add
 	 * @return This linter
 	 */
-	/*@ non_null @*/ public Linter addDetexed(/*@ non_null @*/ Collection<? extends Rule> r)
+	/*@ non_null @*/ public Linter addCleaned(/*@ non_null @*/ Collection<? extends Rule> r)
 	{
 		m_rulesDetexed.addAll(r);
 		return this;
