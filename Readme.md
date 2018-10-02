@@ -133,9 +133,9 @@ of the rule in question is also shown between brackets.
 
 ### Spelling, grammar and style
 
-If the Language Tool library is installed on your system, you can perform
-further checks on spelling and grammar, by passing the `--check` option at
-the command line. For example, to check text in English, you run:
+You can perform further checks on spelling and grammar, by passing the
+`--check` option at the command line. For example, to check text in English,
+you run:
 
     $ java -jar textidote.jar --check en example.tex
 
