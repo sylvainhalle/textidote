@@ -77,7 +77,7 @@ public class LanguageCodeTest
 		m_languageCode = language_code;
 	}
 
-	@Test(timeout = 5000)
+	@Test(timeout = 15000)
 	public void testEachLanguage() throws IOException
 	{
 		InputStream in = LanguageCodeTest.class.getResourceAsStream("rules/data/test1.tex");
