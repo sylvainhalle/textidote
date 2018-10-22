@@ -68,12 +68,12 @@ file: an "HTML" report (viewable in a web browser) and a "console" report.
 
 To run TeXtidote and perform a basic verification of the file, run:
 
-    $ java -jar textidote.jar --html example.tex > report.html
+    java -jar textidote.jar --html example.tex > report.html
 
 In Linux, if you installed TeXtidote using `apt-get`, you can also call it
 directly by typing:
 
-    $ textidote --html example.tex > report.html
+    textidote --html example.tex > report.html
 
 Here, the `--html` option tells TeXtidote to produce a report in HTML format;
 the `>` symbol indicates that the output should be saved to a file, whose name
@@ -105,7 +105,7 @@ will attempt to read one from the standard input.
 To run TeXtidote and display the results directly in the console, simply omit
 the `--html` option, and do not redirect the output to a file:
 
-    $ java -jar textidote.jar example.tex
+    java -jar textidote.jar example.tex
 
 TeXtidote will analyze the file like before, but produce a report that looks
 like this:
@@ -137,7 +137,7 @@ You can perform further checks on spelling and grammar, by passing the
 `--check` option at the command line. For example, to check text in English,
 you run:
 
-    $ java -jar textidote.jar --check en example.tex
+    java -jar textidote.jar --check en example.tex
 
 The `--check` parameter must be accompanied by a two-letter code indicating
 the language to be used. Language Tool is a powerful library that can verify
@@ -194,7 +194,7 @@ the ID of the rule "A section title should start with a capital letter" is
 TeXtidote); to ignore warnings triggered by this rule, you call TeXtidote as
 follows:
 
-    $ java -jar textidote.jar --ignore sh:001 myfile.tex
+    java -jar textidote.jar --ignore sh:001 myfile.tex
 
 If you want to ignore multiple rules, separate their IDs with a comma (but no
 space).
@@ -213,12 +213,12 @@ file and give you no advice.
 You can also use TeXtidote just to remove the markup from your original LaTeX
 file. This is done with the option `--clean`:
 
-    $ java -jar textidote.jar --clean example.tex
+    java -jar textidote.jar --clean example.tex
 
 By default, the resulting "clean" file is printed directly at the console. To
 save it to a file, use a redirection:
 
-    $ java -jar textidote.jar --clean example.tex > clean.txt
+    java -jar textidote.jar --clean example.tex > clean.txt
 
 You will see that TeXtidote performs a very aggressive deletion of LaTeX
 markup:
@@ -240,7 +240,7 @@ As was mentioned earlier, TeXtidote keeps a mapping between character ranges
 in the "cleaned" file, and the same character ranges in the original LaTeX
 document. You can get this mapping by using the `--map` option:
 
-    $ java -jar textidote.jar --clean --map map.txt example.tex > clean.txt
+    java -jar textidote.jar --clean --map map.txt example.tex > clean.txt
 
 The `--map` parameter is given the name of a file. TeXtidote will put in this
 file the list correspondences between character ranges. This file is made of
@@ -282,7 +282,7 @@ example of what such a file could contain:
 As you can see, arguments can be split across multiple lines. You can then
 call TeXtidote without any arguments like this:
 
-    $ textidote > report.html
+    textidote > report.html
 
 If you call TeXtidote with command line arguments, they will be merged with
 whatever was found in `.textidote`. You can also tell TeXtidote to explicitly
@@ -351,13 +351,13 @@ java -jar /opt/textidote/textidote.jar "$@"
 
 Make this file executable by typing at the command line:
 
-    $ sudo chmod +x /usr/local/bin/textidote
+    sudo chmod +x /usr/local/bin/textidote
 
 (These two operations also require root previliges.) From then on, you can
 invoke TeXtidote on the command line from any folder by simply typing
 `textidote`, e.g.:
 
-    $ textidote somefile.tex
+    textidote somefile.tex
 
 ### Desktop shortcut
 
