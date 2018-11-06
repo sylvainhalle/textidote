@@ -55,7 +55,7 @@ public class CheckNoBreak extends Rule
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
 			String line = lines.get(line_cnt);
-			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\[.*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|equation\\*|align|align\\*|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|matrix|bmatrix|Bmatrix|pmatrix|vmatrix|Vmatrix|smallmatrix).*") || line.matches(".*\\\\\\[.*"))
 			{
 				env_level++;
 			}
@@ -71,7 +71,7 @@ public class CheckNoBreak extends Rule
 					out_list.add(new Advice(this, r, "You should not break lines manually in a paragraph. Either start a new paragraph or stay in the current one.", original.getResourceName(), original.getLine(start_pos.getLine())));	
 				}
 			}
-			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure).*") || line.matches(".*\\\\\\].*"))
+			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|equation\\*|align|align\\*|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|matrix|bmatrix|Bmatrix|pmatrix|vmatrix|Vmatrix|smallmatrix).*") || line.matches(".*\\\\\\].*"))
 			{
 				env_level--;
 			}

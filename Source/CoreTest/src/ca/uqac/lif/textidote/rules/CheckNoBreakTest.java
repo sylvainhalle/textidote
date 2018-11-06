@@ -49,5 +49,17 @@ public class CheckNoBreakTest
 		Rule r = new CheckNoBreak();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
-	}	
+	}
+
+	@Test
+	public void test3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\begin{align*}\n" + 
+				"Lorem ipsum dolor sit amet.\\\\\n" +
+				"Lorem ipsum dolor sit amet.\n"+
+				"\\end{align*}"));
+		Rule r = new CheckNoBreak();
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
+	}
 }
