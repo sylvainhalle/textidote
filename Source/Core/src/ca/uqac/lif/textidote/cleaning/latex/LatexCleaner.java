@@ -51,7 +51,7 @@ public class LatexCleaner extends TextCleaner
 	{
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
-		as = removeEnvironments(new_as);
+		new_as = removeEnvironments(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;

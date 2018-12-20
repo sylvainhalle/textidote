@@ -292,7 +292,8 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
-		assertEquals(Position.NOWHERE, p); // p is a replacement string
+		assertEquals(0, p.getLine());
+		assertEquals(2, p.getColumn());
 	}
 	
 	@Test
@@ -304,7 +305,8 @@ public class AnnotatedStringTest
 		assertNotNull(as_rep);
 		assertEquals("Alllo" + CRLF + "world!", as_rep.toString());
 		Position p = as_rep.getSourcePosition(new Position(0, 1));
-		assertEquals(Position.NOWHERE, p); // p is a replacement string
+		assertEquals(0, p.getLine());
+		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
 		assertEquals(0, p.getLine());
 		assertEquals(2, p.getColumn());
@@ -345,7 +347,11 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 		p = as_rep.getSourcePosition(new Position(0, 2));
-		assertEquals(Position.NOWHERE, p); // p is a replacement string
+		assertEquals(0, p.getLine());
+		assertEquals(2, p.getColumn());
+		p = as_rep.getSourcePosition(new Position(1, 2));
+		assertEquals(0, p.getLine());
+		assertEquals(8, p.getColumn());
 	}
 	
 	@Test
