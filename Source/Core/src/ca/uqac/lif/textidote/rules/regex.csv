@@ -1,0 +1,33 @@
+sh:001		\\(sub)*section\{\s*[a-z].*?\}			A section title should start with a capital letter.
+sh:002		\\(sub)*section\{.*?[\.,;:]\s*\}		A section title should not end with a punctuation symbol.
+sh:003		\\(sub)*section\{[A-Z0-9\s,:;]*?\}		A section title should not be written in all caps. The LaTeX stylesheet takes care of rendering titles in caps if needed.
+sh:007		\\paragraph\{\s*[a-z].*?\}				A paragraph heading should start with a capital letter.
+sh:008		\\paragraph\{.*?[\.,;:]\s*\}			A paragraph heading should not end with a punctuation symbol.
+sh:009		\\paragraph\{[A-Z0-9\s,:;]*?\}			A paragraph heading should not be written in all caps. The LaTeX stylesheet takes care of rendering titles in caps if needed.
+sh:010		et al\.[^\\]							Use a backslash after the period; otherwise LaTeX will think it is a full stop ending a sentence.
+sh:011		i\.e\.[^\\]								Use a backslash after the second period; otherwise LaTeX will think it is a full stop ending a sentence.
+sh:012		\\fg\s									Utilisez '\fg{}' au lieu de '\fg'; sinon le mot suivant sera collé au guillemet fermant. 
+
+# Citations and references
+
+sh:c:001	\w\\(cite|ref)							Add a space before citation or reference.
+sh:c:002	\\(cite|ref)\{.*?\}\s+[\.,;:]			Remove space between citation/reference and punctuation.
+sh:c:noin	\b(In|in|by|from)\s+\\cite				Do not use '$1 [X]': the syntax of a sentence should not be changed by the removal of a citation.
+sh:c:mul	\\cite\s*\{.*?\}[\s,]*\\cite			Put all references in a single \cite command
+sh:c:mulp	\\cite(p|t)\s*\{.*?\}[\s,]*\\cite		Put all references in a single \cite$1 command
+
+# Style
+
+sh:figmag	figure(\s+|~)\\ref						Use a capital letter when referring to a specific figure: 'Figure X'
+sh:secmag	section(\s+|~)\\ref						Use a capital letter when referring to a specific section: 'Section X'
+sh:chamag	chapter(\s+|~)\\ref						Use a capital letter when referring to a specific chapter: 'Chapter X'
+sh:tabmag	table(\s+|~)\\ref						Use a capital letter when referring to a specific table: 'Table X'
+
+# Hard-coding
+
+sh:hcfig	(F|f)igure(\s+|~)\d						Do not refer to figures using hard-coded numbers. Use \ref instead.
+sh:hcsec	(S|s)ection(\s+|~)\d					Do not refer to sections using hard-coded numbers. Use \ref instead.
+sh:hccha	(C|c)hapter(\s+|~)\d					Do not refer to chapters using hard-coded numbers. Use \ref instead.
+sh:hctab	(T|t)able(\s+|~)\d						Do not refer to tables using hard-coded numbers. Use \ref instead.
+sh:nonp		\\newpage								If you are writing a research paper, do not force page breaks.
+sh:nbsp		~[;:!\?]								N'utilisez pas d'espace insécable; c'est plutôt une espace fine qui doit être utilisée, et LaTeX se charge de l'insérer par lui-même.
