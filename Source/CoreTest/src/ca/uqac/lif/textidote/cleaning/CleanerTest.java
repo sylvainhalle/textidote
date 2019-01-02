@@ -20,6 +20,7 @@ package ca.uqac.lif.textidote.cleaning;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static org.junit.Assert.*;
 
+import java.util.HashSet;
 import java.util.Scanner;
 
 import org.junit.Test;
@@ -66,7 +67,34 @@ public class CleanerTest
 	public void testRemoveEnvironments1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test3.tex"))));
+		assertTrue(as.isEmpty());
+	}
+	
+	@Test
+	public void testRemoveEnvironments2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test1.tex"))));
+		assertFalse(as.isEmpty());
+		detexer.ignoreEnvironment("itemize");
+		as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test1.tex"))));
+		assertTrue(as.isEmpty());
+	}
+	
+	@Test
+	public void testRemoveEnvironments3() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test1.tex"))));
+		assertFalse(as.isEmpty());
+		HashSet<String> envs = new HashSet<String>();
+		envs.add("itemize");
+		detexer.ignoreEnvironments(envs);
+		as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test1.tex"))));
 		assertTrue(as.isEmpty());
 	}
 	

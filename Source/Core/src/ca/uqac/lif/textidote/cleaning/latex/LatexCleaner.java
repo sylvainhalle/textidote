@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.cleaning.latex;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
@@ -45,6 +49,33 @@ public class LatexCleaner extends TextCleaner
 	 * <tt>\begin{document}</tt>
 	 */
 	protected boolean m_ignoreBeforeDocument = true;
+	
+	/**
+	 * A set of additional environment names to remove when cleaning up
+	 */
+	/*@ non_null @*/ protected final Set<String> m_environmentsToIgnore = new HashSet<String>();
+	
+	/**
+	 * Adds a new environment name to remove when cleaning up
+	 * @param e_name The name of the environment
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreEnvironment(/*@ non_null @*/ String e_name)
+	{
+		m_environmentsToIgnore.add(e_name);
+		return this;
+	}
+	
+	/**
+	 * Adds new environment names to remove when cleaning up
+	 * @param e_name A collection of environment names
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreEnvironments(/*@ non_null @*/ Collection<String> e_names)
+	{
+		m_environmentsToIgnore.addAll(e_names);
+		return this;
+	}
 
 	@Override
 	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
@@ -88,7 +119,7 @@ public class LatexCleaner extends TextCleaner
 			}
 			else
 			{
-				if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+				if (isEnvironmentStart(line))
 				{
 					in_environment++;
 				}
@@ -97,13 +128,61 @@ public class LatexCleaner extends TextCleaner
 					as.removeLine(i);
 					i--; // Step counter back so next loop is at same index
 				}
-				if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+				if (isEnvironmentEnd(line))
 				{
 					in_environment--;
 				}
 			}
 		}
 		return as;
+	}
+	
+	/**
+	 * Determines if the current line contains the start of an environment
+	 * to remove from the markup
+	 * @param line The text line
+	 * @return {@code true} if the line contains the start of an environment,
+	 * {@code false} otherwise
+	 */
+	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
+	{
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+		{
+			return true;
+		}
+		for (String e_name : m_environmentsToIgnore)
+		{
+			// Also loop through user-specified environments
+			if (line.matches(".*\\\\begin\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Determines if the current line contains the end of an environment
+	 * to remove from the markup
+	 * @param line The text line
+	 * @return {@code true} if the line contains the end of an environment,
+	 * {@code false} otherwise
+	 */
+	protected boolean isEnvironmentEnd(/*@ non_null @*/ String line)
+	{
+		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+		{
+			return true;
+		}
+		for (String e_name : m_environmentsToIgnore)
+		{
+			// Also loop through user-specified environments
+			if (line.matches(".*\\\\end\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

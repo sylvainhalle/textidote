@@ -107,22 +107,23 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", "en"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", "en"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
 
-	@Test(timeout = 2000)
+	@Test//(timeout = 2000)
 	public void testClean1() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--clean"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
+		assertFalse(output.trim().isEmpty());
 	}
 	
 	@Test(timeout = 2000)
@@ -131,10 +132,23 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.md");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--type", "md"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--read-all", "--type", "md"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
+	}
+	
+	@Test(timeout = 2000)
+	public void testClean3() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--read-all", "--remove", "itemize"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+		assertTrue(output.trim().isEmpty());
 	}
 
 	@Test
