@@ -17,9 +17,13 @@
  */
 package ca.uqac.lif.textidote.cleaning.latex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
@@ -56,6 +60,18 @@ public class LatexCleaner extends TextCleaner
 	/*@ non_null @*/ protected final Set<String> m_environmentsToIgnore = new HashSet<String>();
 	
 	/**
+	 * A list of <em>non-commented</em> <tt>input</tt> and <tt>include</tt>
+	 * declarations found in the file to be cleaned.
+	 */
+	protected final List<String> m_innerFiles = new ArrayList<String>();
+
+	/**
+	 * A regex pattern matching the <tt>input</tt> and <tt>include</tt>
+	 * declarations in a line of markup.
+	 */
+	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
+	
+	/**
 	 * Adds a new environment name to remove when cleaning up
 	 * @param e_name The name of the environment
 	 * @return This cleaner
@@ -80,9 +96,12 @@ public class LatexCleaner extends TextCleaner
 	@Override
 	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
 	{
+		// Reset list of inner files every time we clean
+		m_innerFiles.clear();
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
+		fetchIncludes(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;
@@ -427,5 +446,37 @@ public class LatexCleaner extends TextCleaner
 	{
 		m_ignoreBeforeDocument = b;
 		return this;
+	}
+	
+	/**
+	 * Populates a list of <em>non-commented</em> <tt>input</tt> and
+	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * @param as The contents of the file (where environments and
+	 * comments have already been removed).
+	 */
+	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
+	{
+		for (String line : as.getLines())
+		{
+			Matcher mat = m_includePattern.matcher(line);
+			if (mat.find())
+			{
+				String filename = mat.group(2).trim();
+				m_innerFiles.add(filename);
+			}
+		}
+	}
+	
+	/**
+	 * Returns the list of <em>non-commented</em> <tt>input</tt> and
+	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * This result will be non-empty only after
+	 * {@link #clean(AnnotatedString) clean()} has been called.
+	 * @return The list of filenames
+	 */
+	@Override
+	/*@ pure non_null @*/ public List<String> getInnerFiles()
+	{
+		return m_innerFiles;
 	}
 }

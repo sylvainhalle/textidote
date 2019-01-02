@@ -21,6 +21,7 @@ import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static org.junit.Assert.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 
 import org.junit.Test;
@@ -170,6 +171,7 @@ public class CleanerTest
 		assertEquals("Hello world. ", as.toString());
 	}
 
+	@Test
 	public void testReplacementCleaner1() throws TextCleanerException
 	{
 		ReplacementCleaner cleaner = ReplacementCleaner.create(new Scanner(CleanerTest.class.getResourceAsStream("data/replacements-1.txt")));
@@ -200,5 +202,29 @@ public class CleanerTest
 		CompositeCleaner cc = new CompositeCleaner(cleaner1, cleaner2);
 		AnnotatedString as = cc.clean(AnnotatedString.read(new Scanner("foo baz foo")));
 		assertEquals("baz baz baz", as.toString());
+	}
+	
+	@Test
+	public void testIncludes0() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		@SuppressWarnings("unused")
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{ foo}}\nSomething.")));
+		List<String> inner_files = detexer.getInnerFiles();
+		assertEquals(0, inner_files.size());
+	}
+	
+	@Test
+	public void testIncludes2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		@SuppressWarnings("unused")
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{ foo}}\n\\input{foo.tex}\nSomething.")));
+		List<String> inner_files = detexer.getInnerFiles();
+		assertEquals(1, inner_files.size());
+		String s_file = inner_files.get(0);
+		assertEquals("foo.tex", s_file);
 	}
 }

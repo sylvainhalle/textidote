@@ -24,6 +24,8 @@ import java.io.PrintStream;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Main;
@@ -55,7 +57,7 @@ public class MainTest
 		Main.mainLoop(new String[] {"--version"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 
-	@Test(timeout = 2000)
+	@Test//(timeout = 2000)
 	public void test5() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
@@ -163,6 +165,19 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 		assertTrue(output.trim().isEmpty());
+	}
+	
+	@Test//(timeout = 2000)
+	public void testInput1() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-input1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+		assertFalse(output.trim().isEmpty());
 	}
 
 	@Test

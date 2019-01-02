@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,9 @@
  */
 package ca.uqac.lif.textidote.cleaning;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.PatternSyntaxException;
@@ -112,5 +114,11 @@ public class ReplacementCleaner extends TextCleaner
 			replacements.put(parts[0], parts[1]);
 		}
 		return new ReplacementCleaner(replacements);
+	}
+
+	@Override
+	/*@ pure non_null @*/ public List<String> getInnerFiles() 
+	{
+		return new ArrayList<String>(0);
 	}
 }

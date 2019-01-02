@@ -215,6 +215,8 @@ command. If you have a large document that consists of multiple included LaTeX
 `--read-all` command line option. Otherwise, TeXtidote will ignore the whole
 file and give you no advice.
 
+TeXtidote also automatically follows sub-files that are embedded from a main document using `\input{filename}` and `\include{filename}` (braces are mandatory). Any such *non-commented* instruction will add the corresponding filename to the running queue. If you want to *exclude* an `\input` from being processed, you must surround the line with `ignore begin`/`end` comments (see below, *Helping TeXtidote*).
+
 ### Removing markup
 
 You can also use TeXtidote just to remove the markup from your original LaTeX

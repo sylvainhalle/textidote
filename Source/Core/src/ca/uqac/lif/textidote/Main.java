@@ -23,12 +23,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -421,8 +423,13 @@ public class Main
 			filenames.add("--"); // This indicates: read from stdin
 		}
 		AnnotatedString last_string = null;
-		for (String filename : filenames)
+		Queue<String> filename_queue = new ArrayDeque<String>();
+		Set<String> processed_filenames = new HashSet<String>();
+		filename_queue.addAll(filenames);
+		while (!filename_queue.isEmpty())
 		{
+			String filename = filename_queue.remove();
+			processed_filenames.add(filename);
 			Scanner scanner = null;
 			try 
 			{
@@ -485,6 +492,7 @@ public class Main
 					}
 				}
 				last_string = processDocument(scanner, filename, linter, all_advice);
+				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue);
 			}
 			catch (LinterException e) 
 			{
@@ -728,5 +736,27 @@ public class Main
 			out[i] = arguments.get(i);
 		}
 		return out;
+	}
+	
+	/**
+	 * Adds filenames found in the <tt>input</tt> statements of the current
+	 * file to the queue of files to process. A filename is added to the
+	 * queue only if it has not already been processed earlier in the current
+	 * run of the program.
+	 * @param inner_files The list of new filenames
+	 * @param processed_filenames The set of filenames already processed
+	 * @param file_queue The queue of filenames waiting to be processed.
+	 * This object is modified by the current method (new filenames can be
+	 * added to it).
+	 */
+	protected static void addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames, Queue<String> file_queue)
+	{
+		for (String filename : inner_files)
+		{
+			if (!processed_filenames.contains(filename))
+			{
+				file_queue.add(filename);
+			}
+		}
 	}
 }
