@@ -198,7 +198,7 @@ public class Main
 			stderr = new AnsiPrinter(err);
 		}
 		assert stderr != null;
-		// Use has specified rules to ignore
+		// User has specified rules to ignore
 		List<String> rule_blacklist = new ArrayList<String>();
 		if (map.hasOption("ignore"))
 		{
@@ -267,14 +267,17 @@ public class Main
 						// Open scanner on stdin
 						scanner = new Scanner(in);
 					}
-					if (!f.exists())
-					{
-						stderr.println("File " + filename + " not found (skipping)");
-						continue;
-					}
 					else
 					{
-						scanner = new Scanner(f);
+						if (!f.exists())
+						{
+							stderr.println("File " + filename + " not found (skipping)");
+							continue;
+						}
+						else
+						{
+							scanner = new Scanner(f);
+						}
 					}
 					// Create cleaner based on file extension
 					CompositeCleaner c_file = new CompositeCleaner(cleaner);
@@ -519,7 +522,7 @@ public class Main
 		linter.add(new CheckNoBreak());
 		linter.add(new CheckCiteMix());
 	}
-	
+
 	/**
 	 * Adds the rules to the Markdown linter
 	 * @param linter The linter to configure
