@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -108,6 +108,20 @@ public class MainTest
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", "en"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
+	
+	@Test(timeout = 5000)
+	public void test9() throws IOException
+	{
+		// We don't test n-gram use, but least check that pointing to a
+		// nonexistent/invalid folder is gracefully ignored
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", "en", "--languagemodel", "/tmp/foobarbaz"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);

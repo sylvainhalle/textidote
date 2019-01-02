@@ -198,6 +198,14 @@ follows:
 If you want to ignore multiple rules, separate their IDs with a comma (but no
 space).
 
+### Ignoring environments
+
+TeXtidote can be instructed to remove user-specified environments using the `--remove` command line parameter. For example:
+
+    $ java -jar textidote.jar --remove itemize myfile.tex
+
+This command will remove all text lines between `\begin{itemize}` and `\end{itemize}` before further processing the file.
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`
@@ -427,6 +435,8 @@ In addition to all the rules below, the `--check xx` option activates all the
 [rules verified by Language Tool](https://community.languagetool.org/rule/list?sort=pattern&max=10&offset=0&lang=en)
 (more than 2,000 grammar and spelling errors). Note that the verification time
 is considerably longer when using that option.
+
+If the `--check` option is used, you can add the `--languagemodel xx` option to [find errors using n-gram data](http://wiki.languagetool.org/finding-errors-using-n-gram-data). In order to do so, `xx` must be a path pointing to an n-gram-index directory. Please refer to the LanguageTool page (link above) on how to use n-grams and what this directory should contain.
 
 ### Style
 

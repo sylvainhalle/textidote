@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 package ca.uqac.lif.textidote.rules;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,6 +218,18 @@ public class CheckLanguage extends Rule
 			out_list.add(ad);
 		}
 		return out_list;
+	}
+	
+	/**
+	 * Activate rules that depend on a language model. The language model
+	 * currently consists of Lucene indexes with ngram occurrence counts.
+	 * @param f_ngram_dir Directory with a '3grams' sub directory which
+	 * contains a Lucene index with 3gram occurrence counts
+	 * @throws IOException If folder cannot be found
+	 */
+	public void activateLanguageModelRules(File f_ngram_dir) throws IOException
+	{
+		m_languageTool.activateLanguageModelRules(f_ngram_dir);
 	}
 
 	/**

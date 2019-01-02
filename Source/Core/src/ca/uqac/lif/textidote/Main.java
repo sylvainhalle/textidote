@@ -121,6 +121,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
 		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
+		cli_parser.addArgument(new Argument().withLongName("languagemodel").withArgument("dir").withDescription("Use n-grams data from dir"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
 		cli_parser.addArgument(new Argument().withLongName("name").withArgument("n").withDescription("Use n as app name when printing usage"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
@@ -209,7 +210,7 @@ public class Main
 				rule_blacklist.add(id);
 			}
 		}
-		// Use has specified environments to remove
+		// User has specified environments to remove
 		List<String> env_blacklist = new ArrayList<String>();
 		if (map.hasOption("remove"))
 		{
@@ -217,6 +218,28 @@ public class Main
 			for (String id : ids)
 			{
 				env_blacklist.add(id);
+			}
+		}
+		// User uses n-gram
+		String ngram_dir = "";
+		File f_ngram_dir = null;
+		if (map.hasOption("languagemodel"))
+		{
+			ngram_dir = map.getOptionValue("languagemodel");
+			f_ngram_dir = new File(ngram_dir);
+			if (!f_ngram_dir.exists())
+			{
+				stderr.println("N-gram directory " + ngram_dir + " not found. N-gram rules will be ignored.");
+				f_ngram_dir = null;
+			}
+			else if (!f_ngram_dir.isDirectory())
+			{
+				stderr.println("N-gram path " + ngram_dir + " is not a directory. N-gram rules will be ignored.");
+				f_ngram_dir = null;
+			}
+			else
+			{
+				stderr.println("Using N-grams from " + ngram_dir);
 			}
 		}
 		printGreeting(stderr);
@@ -443,7 +466,16 @@ public class Main
 				{
 					try
 					{
-						linter.addCleaned(new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary));
+						CheckLanguage cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary);
+						if (f_ngram_dir != null)
+						{
+							cl.activateLanguageModelRules(f_ngram_dir);
+						}
+						linter.addCleaned(cl);
+					}
+					catch (IOException e)
+					{
+						stderr.println("Cannot open N-gram directory " + ngram_dir + ". N-gram rules will be ignored.");
 					}
 					catch (CheckLanguage.UnsupportedLanguageException e)
 					{
