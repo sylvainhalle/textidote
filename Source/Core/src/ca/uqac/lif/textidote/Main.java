@@ -79,7 +79,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.6";
+	protected static final String VERSION_STRING = "0.7";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -90,6 +90,11 @@ public class Main
 	 * The name of the optional file containing command line parameters
 	 */
 	protected static final String PARAM_FILENAME = ".textidote";
+
+	/**
+	 * The OS-dependent path separator
+	 */
+	protected static final transient String PATH_SEP = File.separator;
 
 	/**
 	 * Main method. This method simply calls the static method
@@ -104,13 +109,37 @@ public class Main
 	{
 		System.exit(mainLoop(args, System.in, System.out, System.err));
 	}
-
+	
 	/**
-	 * Main method
+	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, boolean)}. 
 	 * @param args Command-line arguments
-	 * @throws IOException 
+	 * @param in A stream corresponding to the standard input
+	 * @param out A stream corresponding to the standard output
+	 * @param err A stream corresponding to the standard error
+	 * @return An exit code
+	 * @throws IOException
 	 */
 	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
+	{
+		return mainLoop(args, in, out, err, null);
+	}
+
+	/**
+	 * Main method. The {@code base_class} argument can be set to a non-null
+	 * value to indicate that the loop is being run inside a unit test.
+	 * When given a filename, the loop will fetch it using
+	 * {@link Class#getResourceAsStream(String)} instead of through a
+	 * {@link File} object.
+	 * @param args Command-line arguments
+	 * @param in A stream corresponding to the standard input
+	 * @param out A stream corresponding to the standard output
+	 * @param err A stream corresponding to the standard error
+	 * @param base_class Unit tests can pass a {@code Class} object to indicate
+	 * that the loop is being run inside a unit test.
+	 * @return An exit code
+	 * @throws IOException 
+	 */
+	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
 	{
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
@@ -440,13 +469,26 @@ public class Main
 				}
 				else
 				{
-					File f = new File(filename);
-					if (!f.exists())
+					if (base_class != null)
 					{
-						stderr.println("File " + filename + " not found (skipping)");
-						continue;
+						InputStream is = base_class.getResourceAsStream(filename);
+						if (is == null)
+						{
+							stderr.println("File " + filename + " not found (skipping)");
+							continue;
+						}
+						scanner = new Scanner(is);
 					}
-					scanner = new Scanner(f);
+					else
+					{
+						File f = new File(filename);
+						if (!f.exists())
+						{
+							stderr.println("File " + filename + " not found (skipping)");
+							continue;
+						}
+						scanner = new Scanner(f);
+					}
 				}
 				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
 				Linter linter = null;
@@ -492,7 +534,7 @@ public class Main
 					}
 				}
 				last_string = processDocument(scanner, filename, linter, all_advice);
-				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue);
+				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
 			}
 			catch (LinterException e) 
 			{
@@ -737,7 +779,7 @@ public class Main
 		}
 		return out;
 	}
-	
+
 	/**
 	 * Adds filenames found in the <tt>input</tt> statements of the current
 	 * file to the queue of files to process. A filename is added to the
@@ -748,14 +790,23 @@ public class Main
 	 * @param file_queue The queue of filenames waiting to be processed.
 	 * This object is modified by the current method (new filenames can be
 	 * added to it).
+	 * @param current_filename The name of the file currently being processed
 	 */
-	protected static void addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames, Queue<String> file_queue)
+	protected static void addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames,
+			Queue<String> file_queue, String current_filename)
 	{
+		File f = new File(current_filename);
+		String parent_path = f.getParent();
+		if (parent_path == null)
+		{
+			// This happens if the filename is "--"
+			parent_path = "";
+		}
 		for (String filename : inner_files)
 		{
 			if (!processed_filenames.contains(filename))
 			{
-				file_queue.add(filename);
+				file_queue.add(parent_path + PATH_SEP + filename);
 			}
 		}
 	}
