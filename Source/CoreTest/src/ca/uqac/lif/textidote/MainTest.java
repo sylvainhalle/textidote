@@ -71,13 +71,13 @@ public class MainTest
 	@Test(timeout = 2000)
 	public void test5Html() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-stacked-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--html"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--html", "--read-all"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
-		assertEquals(0, ret_code);
+		assertEquals(4, ret_code);
 	}
 
 	@Test(timeout = 2000)

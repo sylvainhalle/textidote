@@ -213,7 +213,16 @@ public class CheckLanguage extends Rule
 					}
 				}
 			}
-			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId()), r, rm.getMessage() + " (" + rm.getFromPos() + ")", s.getResourceName(), line);
+			StringBuilder advice_message = new StringBuilder();
+			advice_message.append(rm.getMessage());
+			// Append suggested replacements to advice message, if any
+			List<String> replacements = rm.getSuggestedReplacements();
+			if (!replacements.isEmpty())
+			{
+				advice_message.append(". Suggestions: ").append(replacements.toString());
+			}
+			advice_message.append(" (").append(rm.getFromPos()).append(")");
+			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId()), r, advice_message.toString(), s.getResourceName(), line);
 			ad.setOriginal(original_range);
 			out_list.add(ad);
 		}
