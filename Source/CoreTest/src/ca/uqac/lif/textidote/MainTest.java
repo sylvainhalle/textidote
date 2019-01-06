@@ -102,7 +102,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 	}
 
-	@Test(timeout = 5000)
+	@Test(timeout = 20000)
 	public void test8() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
@@ -114,7 +114,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 	}
 	
-	@Test(timeout = 5000)
+	@Test(timeout = 20000)
 	public void test9() throws IOException
 	{
 		// We don't test n-gram use, but least check that pointing to a
@@ -128,7 +128,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 	}
 
-	@Test//(timeout = 2000)
+	@Test(timeout = 5000)
 	public void testClean1() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
@@ -141,7 +141,7 @@ public class MainTest
 		assertFalse(output.trim().isEmpty());
 	}
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 5000)
 	public void testClean2() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.md");
@@ -153,7 +153,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 	}
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 5000)
 	public void testClean3() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
@@ -166,7 +166,7 @@ public class MainTest
 		assertTrue(output.trim().isEmpty());
 	}
 	
-	@Test(timeout = 2000)
+	@Test(timeout = 5000)
 	public void testInput1() throws IOException
 	{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
