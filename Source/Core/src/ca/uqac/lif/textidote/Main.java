@@ -111,7 +111,7 @@ public class Main
 	}
 	
 	/**
-	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, boolean)}. 
+	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, Class)}. 
 	 * @param args Command-line arguments
 	 * @param in A stream corresponding to the standard input
 	 * @param out A stream corresponding to the standard output
@@ -444,20 +444,44 @@ public class Main
 			}
 		}
 
+		// Setup the advice renderer
+		AdviceRenderer renderer = null;
+		if (map.hasOption("html"))
+		{
+			stdout.disableColors();
+			renderer = new HtmlAdviceRenderer(stdout);
+		}
+		else
+		{
+			if (enable_colors)
+			{
+				stdout.enableColors();
+			}
+			else
+			{
+				stdout.disableColors();
+			}
+			renderer = new AnsiAdviceRenderer(stdout);
+		}
+		
 		// Process files
-		List<Advice> all_advice = new ArrayList<Advice>();
+		int num_advice = 0;
+		int num_files = 0;
 		List<String> filenames = map.getOthers();
 		if (filenames.isEmpty())
 		{
 			filenames.add("--"); // This indicates: read from stdin
 		}
-		AnnotatedString last_string = null;
 		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
 		filename_queue.addAll(filenames);
 		while (!filename_queue.isEmpty())
 		{
 			String filename = filename_queue.remove();
+			if (processed_filenames.contains(filename))
+			{
+				continue;
+			}
 			processed_filenames.add(filename);
 			Scanner scanner = null;
 			try 
@@ -490,6 +514,7 @@ public class Main
 						scanner = new Scanner(f);
 					}
 				}
+				num_files++;
 				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
 				Linter linter = null;
 				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
@@ -533,7 +558,11 @@ public class Main
 						return -1;
 					}
 				}
-				last_string = processDocument(scanner, filename, linter, all_advice);
+				AnnotatedString last_string = AnnotatedString.read(scanner);
+				last_string.setResourceName(filename);
+				List<Advice> all_advice = linter.evaluateAll(last_string);
+				renderer.addAdvice(filename, last_string, all_advice);
+				num_advice += all_advice.size();
 				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
 			}
 			catch (LinterException e) 
@@ -553,40 +582,22 @@ public class Main
 				}
 			}
 		}
-		if (last_string == null)
+		if (num_files == 0)
 		{
 			// No file was processed
 			stdout.close();
 			return -1;
 		}
 		long end_time = System.currentTimeMillis();
-		stderr.println("Found " + all_advice.size() + " warning(s)");
+		stderr.println("Found " + num_advice + " warning(s)");
 		stderr.println("Total analysis time: " + ((end_time - start_time) / 1000) + " second(s)");
 		stderr.println();
 
-		// Render advice
-		AdviceRenderer renderer = null;
-		if (map.hasOption("html"))
-		{
-			stdout.disableColors();
-			renderer = new HtmlAdviceRenderer(stdout, last_string);
-		}
-		else
-		{
-			if (enable_colors)
-			{
-				stdout.enableColors();
-			}
-			else
-			{
-				stdout.disableColors();
-			}
-			renderer = new AnsiAdviceRenderer(stdout);
-		}
-		renderer.render(all_advice);
+		// Render all the advice
+		renderer.render();
 
 		// The exit code is the number of warnings raised
-		return all_advice.size();
+		return num_advice;
 	}
 
 	/**
@@ -596,7 +607,7 @@ public class Main
 	protected static void printGreeting(AnsiPrinter out)
 	{
 		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents and others");
-		out.println("(C) 2018 Sylvain Hallé - All rights reserved");
+		out.println("(C) 2018-2019 Sylvain Hallé - All rights reserved");
 		out.println();
 	}
 
@@ -632,19 +643,16 @@ public class Main
 	 * @param scanner A scanner open on the document to read
 	 * @param filename The name of the file for this document
 	 * @param linter The linter to apply on the document
-	 * @param all_advice A list of advice. Any new advice produced by the
+	 * @return A list of advice. Any new advice produced by the
 	 * execution of the linter on the document will be added to this list.
-	 * @return The annotated string corresponding to the document that was
-	 * read. Can be null.
 	 * @throws LinterException Thrown if reading the file produces
 	 * an exception
 	 */
-	protected static AnnotatedString processDocument(Scanner scanner, String filename, Linter linter, List<Advice> all_advice) throws LinterException
+	protected static List<Advice> processDocument(Scanner scanner, String filename, Linter linter) throws LinterException
 	{
 		AnnotatedString last_string = AnnotatedString.read(scanner);
 		last_string.setResourceName(filename);
-		all_advice.addAll(linter.evaluateAll(last_string));
-		return last_string;
+		return linter.evaluateAll(last_string);
 	}
 
 	/**

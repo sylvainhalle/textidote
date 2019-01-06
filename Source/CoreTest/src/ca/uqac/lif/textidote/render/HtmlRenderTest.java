@@ -44,8 +44,9 @@ public class HtmlRenderTest
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		AnsiPrinter ansi_p = new AnsiPrinter(out);
-		HtmlAdviceRenderer har = new HtmlAdviceRenderer(ansi_p, in_string);
-		har.render(ad_list);
+		HtmlAdviceRenderer har = new HtmlAdviceRenderer(ansi_p);
+		har.addAdvice("foo", in_string, ad_list);
+		har.render();
 		String html_render = new String(baos.toByteArray());
 		assertNotNull(html_render);
 		assertFalse(html_render.isEmpty());

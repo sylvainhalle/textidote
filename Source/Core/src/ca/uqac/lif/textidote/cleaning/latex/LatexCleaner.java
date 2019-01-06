@@ -84,7 +84,7 @@ public class LatexCleaner extends TextCleaner
 	
 	/**
 	 * Adds new environment names to remove when cleaning up
-	 * @param e_name A collection of environment names
+	 * @param e_names A collection of environment names
 	 * @return This cleaner
 	 */
 	public LatexCleaner ignoreEnvironments(/*@ non_null @*/ Collection<String> e_names)
