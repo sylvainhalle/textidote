@@ -1,30 +1,4 @@
-/*
- * Copyright 2013 Raffael Herzog
- *
- * This file is part of markdown-doclet.
- *
- * markdown-doclet is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * markdown-doclet is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with markdown-doclet.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/* Javadoc style sheet v8
- *
- * Taken from the standard doclet:
- * http://download.java.net/jdk8/docs/api/stylesheet.css
- */
-
-@import url(highlight.css);
-
+/* Javadoc style sheet */
 /*
 Overall document style
 */
@@ -57,11 +31,10 @@ a[name]:hover {
     text-decoration:none;
     color:#353833;
 }
-/*[MOD]
 pre {
     font-family:'DejaVu Sans Mono', monospace;
     font-size:14px;
-}*/
+}
 h1 {
     font-size:20px;
 }
@@ -84,7 +57,6 @@ h6 {
 ul {
     list-style-type:disc;
 }
-
 code, tt {
     font-family:'DejaVu Sans Mono', monospace;
     font-size:14px;
@@ -117,9 +89,9 @@ Document title and Copyright styles
 .aboutLanguage {
     float:right;
     padding:0px 21px;
-    font-size:.8em;
+    font-size:11px;
     z-index:200;
-    margin-top:-7px;
+    margin-top:-9px;
 }
 .legalCopy {
     margin-left:.5em;
@@ -159,7 +131,7 @@ Navigation bar styles
     height:2.8em;
     padding-top:10px;
     overflow:hidden;
-    font-size:12px;
+    font-size:12px; 
 }
 .bottomNav {
     margin-top:10px;
@@ -185,7 +157,7 @@ Navigation bar styles
     clear:left;
     float:left;
     padding:0 0 5px 6px;
-    text-transform:uppercase;/*???*/
+    text-transform:uppercase;
 }
 ul.navList, ul.subNavList {
     float:left;
@@ -196,22 +168,21 @@ ul.navList li{
     list-style:none;
     float:left;
     padding: 5px 6px;
-    text-transform:uppercase;/*???*/
+    text-transform:uppercase;
 }
 ul.subNavList li{
     list-style:none;
     float:left;
-    font-size:90%;/*???*/
 }
 .topNav a:link, .topNav a:active, .topNav a:visited, .bottomNav a:link, .bottomNav a:active, .bottomNav a:visited {
     color:#FFFFFF;
     text-decoration:none;
-    text-transform:uppercase;/*???*/
+    text-transform:uppercase;
 }
 .topNav a:hover, .bottomNav a:hover {
     text-decoration:none;
     color:#bb7a2a;
-    text-transform:uppercase;/*???*/
+    text-transform:uppercase;
 }
 .navBarCell1Rev {
     background-color:#F8981D;
@@ -360,7 +331,7 @@ ul.blockList li.blockList, ul.blockListLast li.blockList {
 }
 ul.blockList ul.blockList li.blockList, ul.blockList ul.blockListLast li.blockList {
     padding:0px 20px 5px 10px;
-    border:1px solid #ededed;
+    border:1px solid #ededed; 
     background-color:#f8f8f8;
 }
 ul.blockList ul.blockList ul.blockList li.blockList, ul.blockList ul.blockList ul.blockListLast li.blockList {
@@ -388,9 +359,9 @@ Table styles
 */
 .overviewSummary, .memberSummary, .typeSummary, .useSummary, .constantsSummary, .deprecatedSummary {
     width:100%;
-    border-left:1px solid #EEE;
-    border-right:1px solid #EEE;
-    border-bottom:1px solid #EEE;
+    border-left:1px solid #EEE; 
+    border-right:1px solid #EEE; 
+    border-bottom:1px solid #EEE; 
 }
 .overviewSummary, .memberSummary  {
     padding:0px;
@@ -475,7 +446,7 @@ Table styles
     display:none;
     width:5px;
     margin-right:3px;
-    position:relative;
+    position:relative; 
     float:left;
     background-color:#F8981D;
 }
@@ -492,7 +463,6 @@ Table styles
 .useSummary td, .constantsSummary td, .deprecatedSummary td {
     text-align:left;
     padding:0px 0px 12px 10px;
-    width:100%;
 }
 th.colOne, th.colFirst, th.colLast, .useSummary th, .constantsSummary th,
 td.colOne, td.colFirst, td.colLast, .useSummary td, .constantsSummary td{
@@ -517,6 +487,7 @@ td.colOne, th.colOne {
     font-size:13px;
 }
 .overviewSummary td.colFirst, .overviewSummary th.colFirst,
+.useSummary td.colFirst, .useSummary th.colFirst,
 .overviewSummary td.colOne, .overviewSummary th.colOne,
 .memberSummary td.colFirst, .memberSummary th.colFirst,
 .memberSummary td.colOne, .memberSummary th.colOne,
@@ -592,106 +563,12 @@ h1.hidden {
 .deprecationComment, .emphasizedPhrase, .interfaceName {
     font-style:italic;
 }
-/*
-DELETED V8
-.contentContainer blockquote code, blockquote tt {
-    background: none;
-    border: 0;
-    padding: 0;
-}
-.contentContainer pre {
-    margin: 1em 2em;
-    padding: 0 5px;
-}
-.contentContainer dl dt {
-    margin-top: 1em;
-    font-weight: bold;
-    /!*font-style: italic;*!/
-}
-.contentContainer dl dd {
-    margin-left: 2em;
-}
-.contentContainer dl dd p:first-child {
-    margin-top: 0;
-}
-div.block h2 {
-    padding: 0 !important; /!* fixes rule for ul.blockList li.blockList h2 above *!/
-}
-.block img {
-    margin-left: 2em;
-}
-*/
 
 div.block div.block span.deprecationComment, div.block div.block span.emphasizedPhrase,
 div.block div.block span.interfaceName {
     font-style:normal;
 }
-/* DELETED V8
-.block td, .block th {
-    padding: .25em .5em;
-}
-.block td {
-    border: solid 1px rgb(234, 234, 234);
-}
-.block tbody {
-    background: rgb(248, 248, 248);
-}
-*/
 
-/* code block tweaks */
-code, tt {
-    font-size: 14px;
-}
-pre {
-    /* inspired by GitHub */
-    padding: 0 5px;
-    border: solid 1px rgb(234, 234, 234);
-    background: rgb(248, 248, 248);
-    border-radius: 3px;
-}
-pre code {
-    background: none;
-}
-li.blockList > pre {
-    font-size: 16px;
-    padding: 0;
-    margin: 0;
-    background: 0;
-    border: 0;
-}
-div.summary code {
-    background: none;
-    border: 0;
-    padding: 0;
-}
-
-/* @todo tag */
-div.todo {
-    display: block;
-    margin: 1em;
-    border: solid 1px black;
-    border-radius: 3px;
-}
-div.todoTitle {
-    display: block;
-    background: #f6f30d;
-    padding: 5px;
-    border-bottom: solid 1px black;
-}
-span.todoTitle {
-    font-weight: bold;
-}
-span.todoCounter {
-    float: right;
-    font-size: .8em;
-}
-div.todoText {
-    display: block;
-    padding: 5px;
-}
-
-/* NEW v8
 div.contentContainer ul.blockList li.blockList h2{
     padding-bottom:0px;
 }
-/*
