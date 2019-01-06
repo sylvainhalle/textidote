@@ -103,7 +103,7 @@ public class Main
 	 * is that we can test the main loop, and the test is not interrupted
 	 * by calls to {@code System.exit}.
 	 * @param args Command-line arguments
-	 * @throws IOException 
+	 * @throws IOException Thrown if some file cannot be found or open
 	 */
 	public static void main(String[] args) throws IOException
 	{
@@ -117,7 +117,7 @@ public class Main
 	 * @param out A stream corresponding to the standard output
 	 * @param err A stream corresponding to the standard error
 	 * @return An exit code
-	 * @throws IOException
+	 * @throws IOException Thrown if some file cannot be found or open
 	 */
 	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
 	{
@@ -137,7 +137,7 @@ public class Main
 	 * @param base_class Unit tests can pass a {@code Class} object to indicate
 	 * that the loop is being run inside a unit test.
 	 * @return An exit code
-	 * @throws IOException 
+	 * @throws IOException Thrown if some file cannot be found or open
 	 */
 	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
 	{
@@ -694,6 +694,7 @@ public class Main
 
 	/**
 	 * Reads a list of word from an Aspell-generated file
+	 * @param filename The name of the file to read from
 	 * @return A set of words read from the file
 	 * @throws FileNotFoundException Thrown if file not found
 	 */

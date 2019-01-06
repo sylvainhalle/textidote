@@ -178,6 +178,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 	 * Groups a list of advice by the line number of the start position of
 	 * their character range.
 	 * @param list The list of advice
+	 * @param original_string The contents of the file
 	 * @return A map from line numbers to a list of advice
 	 */
 	/*@ pure non_null @*/ protected Map<Integer,List<Advice>> groupAdviceByStartLine(/*@ non_null @*/ List<Advice> list, AnnotatedString original_string)

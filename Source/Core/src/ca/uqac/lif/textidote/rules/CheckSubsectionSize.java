@@ -146,6 +146,7 @@ public class CheckSubsectionSize extends Rule
 	 * blobs that are separated by spaces. That's good enough for the "size"
 	 * rule we are evaluating here.
 	 * @param line The line to count words in
+	 * @return The number of words
 	 */
 	protected static int countWords(/*@ non_null @*/ String line)
 	{

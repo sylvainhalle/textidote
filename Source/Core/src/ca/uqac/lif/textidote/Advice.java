@@ -92,7 +92,7 @@ public class Advice implements Comparable<Advice>
 	/**
 	 * Sets whether the range applies on the original text or a sanitized
 	 * version
-	 * @param b
+	 * @param b Set to {@code true} to apply to the original text
 	 * @return This advice
 	 */
 	public Advice setOriginal(boolean b)

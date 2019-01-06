@@ -60,6 +60,7 @@ public class Linter
 	
 	/**
 	 * Creates a new empty linter object
+	 * @param cleaner The text cleaner used to clean the text
 	 */
 	public Linter(/*@ non_null @*/ TextCleaner cleaner)
 	{
