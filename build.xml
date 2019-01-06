@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
     AntRun, a general-purpose Ant build script
-    Copyright (C) 2015-2016  Sylvain Hallé
+    Copyright (C) 2015-2018  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
   xmlns:jacoco="antlib:org.jacoco.ant">
   
   <!-- The build script's version number. Do not edit! -->
-  <property name="antrun.version" value="1.3"/>
+  <property name="antrun.version" value="1.4.2"/>
   
   <!-- Load project properties from XML file -->
   <xmlproperty file="config.xml"/>
@@ -91,10 +91,16 @@
   <!-- Base name of the jar to produce (used by the "zip" target) -->
   <basename property="build.jar.basename" file="${build.jar.filename}" suffix=".jar"/>
   
+  <!-- The filename pattern to recognize test files -->
+  <property name="build.test.filenamepattern" value="**/*.java"/>
+  
   <!-- Location of the Java 6 boot classpath. If this is not set, the compiler
        will resort to the default boot classpath. -->
   <property environment="env"/>
   <property name="java6.boot.classpath" value="${env.JAVA6_BOOTCLASSES}"/>
+  
+  <!-- The location of rt.jar, if it is there -->
+  <property name="build.rtlocation">rt.jar</property>
   
   <!-- Target: initialization
        All other targets should ultimately
@@ -145,9 +151,9 @@
        default rt.jar present in the system. The "compile" task should
        depend on this. -->
   <target name="check-rt" depends="init">
-    <available file="rt.jar" property="localrt.present"/>
+    <available file="${build.rtlocation}" property="localrt.present"/>
     <if>
-      <available file="rt.jar"/>
+      <available file="${build.rtlocation}"/>
       <then>
         <echo message="Local bootstrap JAR is present"/>
       </then>
@@ -156,7 +162,7 @@
       </else>
     </if>
     <var name="java6.boot.classpath" unset="true"/>
-    <property name="java6.boot.classpath" value="rt.jar"/>
+    <property name="java6.boot.classpath" value="${build.rtlocation}"/>
   </target>
   
   <!-- Target: zip
@@ -177,7 +183,7 @@
   <!-- Target: compile
        Compiles the main project
   -->
-  <target name="compile" depends="init,check-rt" description="Compile the sources">
+  <target name="compile" depends="init,junit,check-rt" description="Compile the sources">
     <mkdir dir="${build.bindir}"/>
     <javac
       target="1.6" source="1.6"
@@ -217,8 +223,9 @@
   <!-- Target: javadoc
        Generates the javadoc associated to the project
   -->
-  <target name="javadoc" depends="init,doclet" description="Generate the documentation">
+  <target name="javadoc" depends="init" description="Generate the documentation">
     <mkdir dir="${build.docdir}"/>
+    <mkdir dir="${build.docdir}/doc-files"/>
     <javadoc sourcepath="${build.srcdir}"
              destdir="${build.docdir}"
              packagenames="*"
@@ -231,12 +238,19 @@
              docencoding="utf8"
              charset="utf8"
              windowtitle="${build.name} Documentation">
-      <doclet name="ch.raffael.mddoclet.MarkdownDoclet" path="lib/markdown-doclet-1.4-all.jar"></doclet>
       <doctitle><![CDATA[<h1>]]>${build.name}<![CDATA[ Documentation</h1>]]></doctitle>
       <bottom><![CDATA[<i>Copyright&nbsp;&#169; ]]>${build.author}<![CDATA[. All Rights Reserved.</i>]]></bottom>
       <link href="http://docs.oracle.com/javase/6/docs/api/"/>
       <classpath refid="build.classpath"/>
     </javadoc>
+    <if>
+      <available file="${build.srcdir}/doc-files" type="dir"/>
+      <then>
+      	<copy todir="${build.docdir}/doc-files" includeemptydirs="false">
+      		<fileset dir="${build.srcdir}/doc-files"/>
+      	</copy>
+      </then>
+    </if>
   </target>
   
   <!-- Target: jar
@@ -285,7 +299,7 @@
         <formatter type="xml"/>
         <batchtest fork="yes" todir="${test.reportdir}">
           <fileset dir="${build.test.srcdir}">
-            <include name="**/*.java"/>
+            <include name="${build.test.filenamepattern}"/>
           </fileset>
         </batchtest>
       </junit>
@@ -412,7 +426,7 @@
        Download boot classpath for Java 1.6 and put it in the root folder
   -->
   <target name="download-rt6">
-    <get src="http://sylvainhalle.github.io/AntRun/dependencies/1.6.0_45/rt.jar" dest="."/>
+    <get src="http://sylvainhalle.github.io/AntRun/dependencies/1.6.0_45/rt.jar" dest="${build.rtlocation}"/>
   </target>
 
   
@@ -453,18 +467,6 @@
       </patternset>
       <mapper type="flatten"/>
     </unzip>
-  </target>
-  
-  <!-- Target: doclet
-       Download Markdown doclet if not present, and put it in the lib folder
-  -->
-  <property name="doclet.jarname" value="markdown-doclet-1.4-all.jar"/>
-  <condition property="doclet.absent" value="false" else="true">
-    <available file="${build.libdir}/${doclet.jarname}"/>
-  </condition>
-  <target name="doclet" if="${doclet.absent}" description="Install Markdown doclet if not present">
-    <mkdir dir="${build.libdir}"/>
-    <get src="https://oss.sonatype.org/content/repositories/releases/ch/raffael/markdown-doclet/markdown-doclet/1.4/markdown-doclet-1.4-all.jar" dest="${build.libdir}/markdown-doclet-1.4-all.jar"/>
   </target>
   
   <!-- Task: check-deps
@@ -556,6 +558,5 @@
     </xmltask>
     </sequential>
   </target>
-  
 </project>
 <!-- :tabWidth=2: -->
