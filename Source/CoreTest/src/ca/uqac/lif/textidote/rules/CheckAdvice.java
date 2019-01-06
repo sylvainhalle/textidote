@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,29 +26,34 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
-public class CheckSubsectionSizeTest 
+public class CheckAdvice 
 {
 	@Test
-	public void test1()
+	public void testToString()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
+		// Simple test to check that the toString method of Advice
+		// produces a non-empty string
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckAdvice.class.getResourceAsStream("data/test-subsec-1.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
 		Advice ad = ad_list.get(0);		
-		assertEquals(17, ad.getRange().getStart().getLine());
+		String s = ad.toString();
+		assertNotNull(s);
+		assertFalse(s.isEmpty());
 	}
 	
 	@Test
-	public void test2()
+	public void testEquals()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
+		Advice ad1 = new Advice(new CheckNoBreak(), Range.make(0, 0, 10), "message", "resource", "line");
+		Advice ad2 = new Advice(new CheckNoBreak(), Range.make(1, 0, 10), "message", "resource", "line");
+		Advice ad3 = new Advice(new CheckStackedHeadings(), Range.make(0, 0, 10), "message", "resource", "line");
+		assertTrue(ad1.equals(ad1));
+		assertFalse(ad1.equals(ad2));
+		assertFalse(ad1.equals(ad3));
 	}
 }

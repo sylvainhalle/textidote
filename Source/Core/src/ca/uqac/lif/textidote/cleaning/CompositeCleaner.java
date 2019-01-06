@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,5 +88,16 @@ public class CompositeCleaner extends TextCleaner
 	{
 		m_cleaners.add(tc);
 		return this;
+	}
+
+	@Override
+	/*@ pure non_null @*/ public List<String> getInnerFiles()
+	{
+		ArrayList<String> files = new ArrayList<String>();
+		for (TextCleaner tc : m_cleaners)
+		{
+			files.addAll(tc.getInnerFiles());
+		}
+		return files;
 	}
 }

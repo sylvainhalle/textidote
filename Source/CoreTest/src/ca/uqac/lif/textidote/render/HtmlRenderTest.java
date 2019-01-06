@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -15,40 +15,40 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package ca.uqac.lif.textidote.rules;
+package ca.uqac.lif.textidote.render;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Scanner;
 
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
+import ca.uqac.lif.textidote.rules.CheckFigureReferences;
+import ca.uqac.lif.textidote.rules.CheckFigureReferencesTest;
+import ca.uqac.lif.util.AnsiPrinter;
 
-public class CheckSubsectionSizeTest 
+public class HtmlRenderTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test4.tex")));
+		Rule r = new CheckFigureReferences();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-		Advice ad = ad_list.get(0);		
-		assertEquals(17, ad.getRange().getStart().getLine());
-	}
-	
-	@Test
-	public void test2()
-	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		AnsiPrinter ansi_p = new AnsiPrinter(out);
+		HtmlAdviceRenderer har = new HtmlAdviceRenderer(ansi_p);
+		har.addAdvice("foo", in_string, ad_list);
+		har.render();
+		String html_render = new String(baos.toByteArray());
+		assertNotNull(html_render);
+		assertFalse(html_render.isEmpty());
 	}
 }

@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.cleaning;
+
+import java.util.List;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 
@@ -55,4 +57,14 @@ public abstract class TextCleaner
 	 * @throws TextCleanerException If a problem occurs when cleaning
 	 */
 	/*@ non_null @*/ public abstract AnnotatedString cleanComments(/*@ non_null @*/ AnnotatedString s) throws TextCleanerException;
+	
+	/**
+	 * Returns the list of inner files included in the file to be cleaned.
+	 * Currently, this only has a meaning for cleaners based on LaTeX,
+	 * which has <tt>include</tt> and <tt>input</tt> instructions.
+	 * This result will be non-empty only after
+	 * {@link #clean(AnnotatedString) clean()} has been called.
+	 * @return The list of filenames
+	 */
+	/*@ non_null @*/ public abstract List<String> getInnerFiles();
 }

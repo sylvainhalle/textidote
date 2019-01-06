@@ -580,7 +580,17 @@ public class AnnotatedString
 				to = to.replace("$" + i, "");
 			}
 		}
-		part_left.append(to);
+		Position target_p = getSourcePosition(found_pos);
+		if (!target_p.equals(Position.NOWHERE))
+		{
+			Range r = Range.make(target_p.getLine(), target_p.getColumn(), target_p.getColumn() + m.getMatch().length() - 1);
+			part_left.append(to, r);
+		}
+		else
+		{
+			// Cannot locate where this is in the original string
+			part_left.append(to);
+		}
 		AnnotatedString part_right = substring(new Position(found_pos.getLine(), found_pos.getColumn() + m.getMatch().length()));
 		part_left.append(part_right);
 		return part_left;

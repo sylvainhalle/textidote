@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.cleaning.markdown;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
@@ -117,11 +120,17 @@ public class MarkdownCleaner extends TextCleaner
 	{
 		as_out = as_out.replaceAll("\\*", "");
 		as_out = as_out.replaceAll("`", "");
-		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1");
+		as_out = as_out.replaceAll("!\\[(.*?)\\]\\(.*?\\)", "$1"); // images
+		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1"); // links
 		as_out = as_out.replaceAll("^\\s*?- ", "• ");
 		as_out = as_out.replaceAll("^\\s*#*\\s*", "");
 		as_out = as_out.replaceAll("^\\s*=*\\s*$", "");
-		
 		return as_out;
+	}
+
+	@Override
+	/*@ pure non_null @*/ public List<String> getInnerFiles()
+	{
+		return new ArrayList<String>(0);
 	}
 }

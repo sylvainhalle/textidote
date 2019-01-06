@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.cleaning.latex;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
@@ -45,13 +53,55 @@ public class LatexCleaner extends TextCleaner
 	 * <tt>\begin{document}</tt>
 	 */
 	protected boolean m_ignoreBeforeDocument = true;
+	
+	/**
+	 * A set of additional environment names to remove when cleaning up
+	 */
+	/*@ non_null @*/ protected final Set<String> m_environmentsToIgnore = new HashSet<String>();
+	
+	/**
+	 * A list of <em>non-commented</em> <tt>input</tt> and <tt>include</tt>
+	 * declarations found in the file to be cleaned.
+	 */
+	protected final List<String> m_innerFiles = new ArrayList<String>();
+
+	/**
+	 * A regex pattern matching the <tt>input</tt> and <tt>include</tt>
+	 * declarations in a line of markup.
+	 */
+	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
+	
+	/**
+	 * Adds a new environment name to remove when cleaning up
+	 * @param e_name The name of the environment
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreEnvironment(/*@ non_null @*/ String e_name)
+	{
+		m_environmentsToIgnore.add(e_name);
+		return this;
+	}
+	
+	/**
+	 * Adds new environment names to remove when cleaning up
+	 * @param e_names A collection of environment names
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreEnvironments(/*@ non_null @*/ Collection<String> e_names)
+	{
+		m_environmentsToIgnore.addAll(e_names);
+		return this;
+	}
 
 	@Override
 	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
 	{
+		// Reset list of inner files every time we clean
+		m_innerFiles.clear();
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
-		as = removeEnvironments(new_as);
+		new_as = removeEnvironments(new_as);
+		fetchIncludes(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;
@@ -88,7 +138,7 @@ public class LatexCleaner extends TextCleaner
 			}
 			else
 			{
-				if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[\\*"))
+				if (isEnvironmentStart(line))
 				{
 					in_environment++;
 				}
@@ -97,13 +147,61 @@ public class LatexCleaner extends TextCleaner
 					as.removeLine(i);
 					i--; // Step counter back so next loop is at same index
 				}
-				if (line.matches(".*\\\\end\\s*\\{\\s*(equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches("\\s*\\\\\\].*"))
+				if (isEnvironmentEnd(line))
 				{
 					in_environment--;
 				}
 			}
 		}
 		return as;
+	}
+	
+	/**
+	 * Determines if the current line contains the start of an environment
+	 * to remove from the markup
+	 * @param line The text line
+	 * @return {@code true} if the line contains the start of an environment,
+	 * {@code false} otherwise
+	 */
+	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
+	{
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+		{
+			return true;
+		}
+		for (String e_name : m_environmentsToIgnore)
+		{
+			// Also loop through user-specified environments
+			if (line.matches(".*\\\\begin\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Determines if the current line contains the end of an environment
+	 * to remove from the markup
+	 * @param line The text line
+	 * @return {@code true} if the line contains the end of an environment,
+	 * {@code false} otherwise
+	 */
+	protected boolean isEnvironmentEnd(/*@ non_null @*/ String line)
+	{
+		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+		{
+			return true;
+		}
+		for (String e_name : m_environmentsToIgnore)
+		{
+			// Also loop through user-specified environments
+			if (line.matches(".*\\\\end\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -193,13 +291,13 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
 		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
 		as_out = as_out.replaceAll("\\\\includegraphics.*$", "");
 		// Commands that don't produce text
-		as_out = as_out.replaceAll("\\\\(label)\\{.*?\\}", "");
+		as_out = as_out.replaceAll("\\\\(label)\\{[^\\}]*?\\}", "");
 		// Footnotes (ignore)
 		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
@@ -208,7 +306,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url|cref|Cref)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
 		// Font commands
@@ -219,7 +317,12 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces
 		as_out = as_out.replaceAll("~", " ");
-		// Inline equations
+		// Dots
+		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
+		// Inline equations with only digits are replaced by digits or letters
+		as_out = as_out.replaceAll("([^\\\\])\\$([\\d,a-zA-z]+?)\\$", "$1$2");
+		as_out = as_out.replaceAll("^\\$([\\d,a-zA-z]+?)\\$", "$1");
+		// Other inline equations are replaced by "X"
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		// Commands we can ignore
@@ -343,5 +446,37 @@ public class LatexCleaner extends TextCleaner
 	{
 		m_ignoreBeforeDocument = b;
 		return this;
+	}
+	
+	/**
+	 * Populates a list of <em>non-commented</em> <tt>input</tt> and
+	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * @param as The contents of the file (where environments and
+	 * comments have already been removed).
+	 */
+	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
+	{
+		for (String line : as.getLines())
+		{
+			Matcher mat = m_includePattern.matcher(line);
+			if (mat.find())
+			{
+				String filename = mat.group(2).trim();
+				m_innerFiles.add(filename);
+			}
+		}
+	}
+	
+	/**
+	 * Returns the list of <em>non-commented</em> <tt>input</tt> and
+	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * This result will be non-empty only after
+	 * {@link #clean(AnnotatedString) clean()} has been called.
+	 * @return The list of filenames
+	 */
+	@Override
+	/*@ pure non_null @*/ public List<String> getInnerFiles()
+	{
+		return m_innerFiles;
 	}
 }

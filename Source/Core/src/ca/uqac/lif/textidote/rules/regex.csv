@@ -12,7 +12,7 @@ sh:012		\\fg\s									Utilisez '\fg{}' au lieu de '\fg'; sinon le mot suivant s
 
 sh:c:001	\w\\(cite|ref)							Add a space before citation or reference.
 sh:c:002	\\(cite|ref)\{.*?\}\s+[\.,;:]			Remove space between citation/reference and punctuation.
-sh:c:noin	(In|in|by|from)\s+\\cite				Do not use '$1 [X]': the syntax of a sentence should not be changed by the removal of a citation.
+sh:c:noin	\b(In|in|by|from)\s+\\cite				Do not use '$1 [X]': the syntax of a sentence should not be changed by the removal of a citation.
 sh:c:mul	\\cite\s*\{.*?\}[\s,]*\\cite			Put all references in a single \cite command
 sh:c:mulp	\\cite(p|t)\s*\{.*?\}[\s,]*\\cite		Put all references in a single \cite$1 command
 

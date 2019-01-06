@@ -33,32 +33,32 @@ public class Advice implements Comparable<Advice>
 	 * The range in the file where the advice applies
 	 */
 	protected Range m_range;
-	
+
 	/**
 	 * The message associated with the advice
 	 */
 	protected String m_message;
-	
+
 	/**
 	 * The rule from which this advice was generated
 	 */
 	protected Rule m_rule;
-	
+
 	/**
 	 * The name of the resource (e.g. filename) this advice refers to 
 	 */
 	protected String m_resource;
-	
+
 	/**
 	 * The line where the advice applies
 	 */
 	protected String m_line;
-	
+
 	/**
 	 * Whether the range is on the original string or a sanitized version
 	 */
 	protected boolean m_originalRange = true;
-	
+
 	/**
 	 * Creates a new advice
 	 * @param rule The rule from which this advice was generated
@@ -79,7 +79,7 @@ public class Advice implements Comparable<Advice>
 		m_resource = resource;
 		m_line = line;
 	}
-	
+
 	/**
 	 * Gets the range in the file where the advice applies
 	 * @return The range
@@ -88,7 +88,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_range;
 	}
-	
+
 	/**
 	 * Sets whether the range applies on the original text or a sanitized
 	 * version
@@ -100,7 +100,7 @@ public class Advice implements Comparable<Advice>
 		m_originalRange = b;
 		return this;
 	}
-	
+
 	/**
 	 * Gets the line in the file where the advice applies
 	 * @return The line
@@ -109,7 +109,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_line;
 	}
-	
+
 	/**
 	 * Gets the message for this advice
 	 * @return The message
@@ -118,7 +118,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_message;
 	}
-	
+
 	/**
 	 * Gets the rule from which this advice was generated
 	 * @return The rule
@@ -127,7 +127,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_rule;
 	}
-	
+
 	/**
 	 * Gets the name of the resource (e.g. filename) this advice refers to
 	 * @return The name of the resource
@@ -136,7 +136,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_resource;
 	}
-	
+
 	@Override
 	/*@ pure non_null @*/ public String toString()
 	{
@@ -147,13 +147,13 @@ public class Advice implements Comparable<Advice>
 		}
 		return range_string + " " + m_message;
 	}
-	
+
 	@Override
 	/*@ pure @*/ public int hashCode()
 	{
 		return m_range.hashCode() + m_rule.hashCode();
 	}
-	
+
 	@Override
 	/*@ pure @*/ public boolean equals(Object o)
 	{
@@ -165,7 +165,7 @@ public class Advice implements Comparable<Advice>
 		return m_range.equals(a.m_range) && m_rule.equals(a.m_rule) 
 				&& m_resource.compareTo(a.m_resource) == 0;
 	}
-	
+
 	@Override
 	public int compareTo(Advice a)
 	{

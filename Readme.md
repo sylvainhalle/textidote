@@ -199,6 +199,14 @@ follows:
 If you want to ignore multiple rules, separate their IDs with a comma (but no
 space).
 
+### Ignoring environments
+
+TeXtidote can be instructed to remove user-specified environments using the `--remove` command line parameter. For example:
+
+    $ java -jar textidote.jar --remove itemize myfile.tex
+
+This command will remove all text lines between `\begin{itemize}` and `\end{itemize}` before further processing the file.
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`
@@ -207,6 +215,8 @@ command. If you have a large document that consists of multiple included LaTeX
 `\begin{document}`, you must tell TeXtidote to read all the file using the
 `--read-all` command line option. Otherwise, TeXtidote will ignore the whole
 file and give you no advice.
+
+TeXtidote also automatically follows sub-files that are embedded from a main document using `\input{filename}` and `\include{filename}` (braces are mandatory). Any such *non-commented* instruction will add the corresponding filename to the running queue. If you want to *exclude* an `\input` from being processed, you must surround the line with `ignore begin`/`end` comments (see below, *Helping TeXtidote*).
 
 ### Removing markup
 
@@ -429,6 +439,8 @@ In addition to all the rules below, the `--check xx` option activates all the
 (more than 2,000 grammar and spelling errors). Note that the verification time
 is considerably longer when using that option.
 
+If the `--check` option is used, you can add the `--languagemodel xx` option to [find errors using n-gram data](http://wiki.languagetool.org/finding-errors-using-n-gram-data). In order to do so, `xx` must be a path pointing to an n-gram-index directory. Please refer to the LanguageTool page (link above) on how to use n-grams and what this directory should contain.
+
 ### Style
 
 - A section title should start with a capital letter. [sh:001]
@@ -458,7 +470,7 @@ is considerably longer when using that option.
   [sh:figmag]
 
 ### Structure
-                                        
+
 - A section should not contain a single sub-section. More generally, a
   division of level n should not contain a single division of level n+1.
   [sh:nsubdiv]
@@ -468,6 +480,8 @@ is considerably longer when using that option.
 - There should not be a jump down between two non-successive section
   levels (e.g. a `\section` followed by a `\subsubsection` without a
   `\subsection` in between). [sh:secskip]
+- You should avoid stacked headings, i.e. consecutive headings wihtout
+  text in between. [sh:stacked]
 
 ### Hard-coding
 

@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,8 +17,11 @@
  */
 package ca.uqac.lif.textidote;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.util.AnsiPrinter;
 
 /**
@@ -33,6 +36,17 @@ public abstract class AdviceRenderer
 	/*@ non_null @*/ protected AnsiPrinter m_printer;
 	
 	/**
+	 * A map between filenames and the list of advice computed for that
+	 * file
+	 */
+	/*@ non_null @*/ protected Map<String,List<Advice>> m_advice;
+	
+	/**
+	 * A map associating each filename to its (annotated) contents
+	 */
+	/*@ non_null @*/ protected Map<String,AnnotatedString> m_originalStrings;
+	
+	/**
 	 * Creates a new advice renderer
 	 * @param printer The printer where the renderer will print its
 	 * results
@@ -41,11 +55,26 @@ public abstract class AdviceRenderer
 	{
 		super();
 		m_printer = printer;
+		m_advice = new HashMap<String,List<Advice>>();
+		m_originalStrings = new HashMap<String,AnnotatedString>();
 	}
 	
 	/**
-	 * Renders the list of advice.
-	 * @param list The list of advice to render
+	 * Associate a list of advice to a filename
+	 * @param filename The filename
+	 * @param contents The contents of the corresponding file
+	 * @param advice The list of advice
 	 */
-	public abstract void render(/*@ non_null @*/ List<Advice> list);
+	public void addAdvice(/*@ non_null @*/ String filename, /*@ non_null @*/ AnnotatedString contents, /*@ non_null @*/ List<Advice> advice)
+	{
+		m_advice.put(filename, advice);
+		m_originalStrings.put(filename, contents);
+	}
+	
+	/**
+	 * Renders the list of advice for each of the files given to the
+	 * renderer, and prints them to the {@link AnsiPrinter} associated to
+	 * it when it was instantiated.
+	 */
+	public abstract void render();
 }

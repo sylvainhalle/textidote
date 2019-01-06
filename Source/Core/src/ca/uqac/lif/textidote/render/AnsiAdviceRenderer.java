@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 package ca.uqac.lif.textidote.render;
 
 import java.util.List;
+import java.util.Map;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.AdviceRenderer;
@@ -37,12 +38,12 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 	 * from the file
 	 */
 	protected int m_lineWidth = 50;
-	
+
 	/**
 	 * The width of the line in the terminal (in number of characters)
 	 */
 	protected int m_terminalLineWidth = 78;
-	
+
 	/**
 	 * Creates a new advice renderer
 	 * @param printer The printer to which the advice will be printed
@@ -53,28 +54,43 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 	}
 
 	@Override
-	public void render(List<Advice> list)
+	public void render()
 	{
-		if (list.isEmpty())
+		boolean map_single = m_advice.size() <= 1;
+		for (Map.Entry<String,List<Advice>> entry : m_advice.entrySet())
 		{
-			m_printer.println("Everything is OK!");
-		}
-		else
-		{
-			for (Advice ad : list)
+			String filename = entry.getKey();
+			List<Advice> list = entry.getValue();
+			if (!map_single)
 			{
-				m_printer.setForegroundColor(Color.YELLOW);
-				m_printer.print("* " + ad.getRange());
-				m_printer.resetColors();
-				m_printer.print(" ");
-				wrap(ad.getMessage() + " [" + ad.getRule().getName() + "]", "  ", ad.getRange().toString().length() + 2);
+				m_printer.println(filename);
 				m_printer.println();
-				m_printer.setForegroundColor(Color.WHITE);
-				renderExcerpt(ad.getLine(), ad.getRange());
+			}
+			if (list.isEmpty())
+			{
+				if (!map_single)
+				{
+					m_printer.print("* ");
+				}
+				m_printer.println("Everything is OK!");
+			}
+			else
+			{
+				for (Advice ad : list)
+				{
+					m_printer.setForegroundColor(Color.YELLOW);
+					m_printer.print("* " + ad.getRange());
+					m_printer.resetColors();
+					m_printer.print(" ");
+					wrap(ad.getMessage() + " [" + ad.getRule().getName() + "]", "  ", ad.getRange().toString().length() + 2);
+					m_printer.println();
+					m_printer.setForegroundColor(Color.WHITE);
+					renderExcerpt(ad.getLine(), ad.getRange());
+				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Renders a line of text and "highlights" a portion of it. The highlight
 	 * here is simulated with a series of "^" characters, like this:
@@ -118,7 +134,7 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 		m_printer.resetColors();
 		m_printer.println();
 	}
-	
+
 	/**
 	 * Prints some spaces
 	 * @param n The number of spaces to print
@@ -130,7 +146,7 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 			m_printer.print(" ");
 		}	
 	}
-	
+
 	/**
 	 * Prints a sequence of words, using word wrapping and indenting each
 	 * new line

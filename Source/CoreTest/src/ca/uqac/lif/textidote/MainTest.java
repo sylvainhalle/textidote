@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import java.io.PrintStream;
 import java.util.Scanner;
 
 import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Main;
@@ -55,7 +56,7 @@ public class MainTest
 		Main.mainLoop(new String[] {"--version"}, null, new NullPrintStream(), new NullPrintStream());
 	}
 
-	@Test(timeout = 2000)
+	@Test//(timeout = 2000)
 	public void test5() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
@@ -67,16 +68,16 @@ public class MainTest
 		assertEquals(0, ret_code);
 	}
 
-	@Test(timeout = 2000)
+	@Test//(timeout = 2000)
 	public void test5Html() throws IOException
 	{
-		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-stacked-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--html"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--html", "--read-all"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
-		assertEquals(0, ret_code);
+		assertEquals(4, ret_code);
 	}
 
 	@Test(timeout = 2000)
@@ -107,23 +108,37 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", "en"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", "en"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-<<<<<<< HEAD:Source/CoreTest/src/ca/uqac/lif/textidote/MainTest.java
+	
+	@Test(timeout = 5000)
+	public void test9() throws IOException
+	{
+		// We don't test n-gram use, but least check that pointing to a
+		// nonexistent/invalid folder is gracefully ignored
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", "en", "--languagemodel", "/tmp/foobarbaz"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+	}
 
-	@Test(timeout = 2000)
+	@Test//(timeout = 2000)
 	public void testClean1() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--clean"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
+		assertFalse(output.trim().isEmpty());
 	}
 	
 	@Test(timeout = 2000)
@@ -132,22 +147,36 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.md");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--type", "md"}, in, out, new NullPrintStream());
-=======
-	
-	@Test(timeout = 2000)
-	public void testDetex1() throws IOException
-	{
-		InputStream in = MainTest.class.getResourceAsStream("data/test1.tex");
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--detex"}, in, out, new NullPrintStream());
->>>>>>> More unit tests:Source/CoreTest/src/ca/uqac/lif/textidote/as/MainTest.java
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--read-all", "--type", "md"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-<<<<<<< HEAD:Source/CoreTest/src/ca/uqac/lif/textidote/MainTest.java
+	
+	@Test(timeout = 2000)
+	public void testClean3() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--clean", "--read-all", "--remove", "itemize"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+		assertTrue(output.trim().isEmpty());
+	}
+	
+	@Test(timeout = 2000)
+	public void testInput1() throws IOException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "rules/data/test-input1.tex"}, null, out, new NullPrintStream(), MainTest.class);
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertTrue(ret_code > 0);
+		assertFalse(output.trim().isEmpty());
+	}
 
 	@Test
 	public void testReadArguments1()
@@ -215,6 +244,4 @@ public class MainTest
 		assertEquals("--foo", args[0]);
 		assertEquals("Some Thing", args[1]);
 	}
-=======
->>>>>>> More unit tests:Source/CoreTest/src/ca/uqac/lif/textidote/as/MainTest.java
 }

@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,35 +20,37 @@ package ca.uqac.lif.textidote.rules;
 import static org.junit.Assert.*;
 
 import java.util.List;
-import java.util.Scanner;
 
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
-public class CheckSubsectionSizeTest 
+public class CheckRule 
 {
 	@Test
-	public void test1()
+	public void testToString()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertEquals(1, ad_list.size());
-		Advice ad = ad_list.get(0);		
-		assertEquals(17, ad.getRange().getStart().getLine());
+		// Simple test to check that the toString method
+		// produces a non-empty string
+		Rule r = new DummyRule("foo");
+		assertEquals("foo", r.toString());
 	}
 	
-	@Test
-	public void test2()
+	public static class DummyRule extends Rule
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
+
+		public DummyRule(String name)
+		{
+			super(name);
+		}
+		
+		@Override
+		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+		{
+			// Don't care
+			return null;
+		}
 	}
 }

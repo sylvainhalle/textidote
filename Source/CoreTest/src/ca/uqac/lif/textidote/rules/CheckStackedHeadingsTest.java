@@ -26,29 +26,26 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
-public class CheckSubsectionSizeTest 
+public class CheckStackedHeadingsTest 
 {
 	@Test
 	public void test1()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckStackedHeadingsTest.class.getResourceAsStream("data/test-stacked-1.tex")));
+		CheckStackedHeadings r = new CheckStackedHeadings();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
-		Advice ad = ad_list.get(0);		
-		assertEquals(17, ad.getRange().getStart().getLine());
+		Advice ad = ad_list.get(0);
+		assertEquals(4, ad.getRange().getStart().getLine());
 	}
 	
 	@Test
 	public void test2()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
-		CheckSubsectionSize r = new CheckSubsectionSize();
-		r.setMinNumWords(40);
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckStackedHeadingsTest.class.getResourceAsStream("data/test-stacked-0.tex")));
+		CheckStackedHeadings r = new CheckStackedHeadings();
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertTrue(ad_list.isEmpty());
+		assertEquals(0, ad_list.size());
 	}
 }
