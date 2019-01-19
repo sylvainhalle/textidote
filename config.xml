@@ -30,7 +30,7 @@
   <author>Sylvain Hall&#233;</author>
   
   <!-- The project's version number -->
-  <version>0.6</version>
+  <version>0.7.1</version>
   
   <!-- The project's main class -->
   <mainclass>ca.uqac.lif.textidote.Main</mainclass>
@@ -74,7 +74,7 @@
       <name>Language Tool</name>
       <classname>org.languagetool.JLanguageTool</classname>
       <files>
-        <jar>https://github.com/sylvainhalle/languagetool/releases/download/v4.1a-standalone/languagetool-bundle-4.1a.jar</jar>
+        <jar>https://github.com/sylvainhalle/languagetool/releases/download/v4.1b-standalone/languagetool-bundle-4.1b.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
