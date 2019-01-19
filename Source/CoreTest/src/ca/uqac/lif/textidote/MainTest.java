@@ -177,6 +177,20 @@ public class MainTest
 		assertTrue(ret_code > 0);
 		assertFalse(output.trim().isEmpty());
 	}
+	
+	@Test(timeout = 5000)
+	public void testNgrams1() throws IOException
+	{
+		// We instruct Textidote to read from a non-existent n-gram directory (.)
+		// This will still trigger the initialization of the n-gram
+		// functionality
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		Main.mainLoop(new String[] {"--check", "fr", "--languagemodel", ".", "--read-all", "rules/data/test-input1.tex"}, null, out, new NullPrintStream(), MainTest.class);
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertFalse(output.trim().isEmpty());
+	}
 
 	@Test
 	public void testReadArguments1()

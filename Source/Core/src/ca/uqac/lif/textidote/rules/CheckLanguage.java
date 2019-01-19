@@ -234,11 +234,26 @@ public class CheckLanguage extends Rule
 	 * currently consists of Lucene indexes with ngram occurrence counts.
 	 * @param f_ngram_dir Directory with a '3grams' sub directory which
 	 * contains a Lucene index with 3gram occurrence counts
-	 * @throws IOException If folder cannot be found
+	 * @throws FolderNotFoundException If folder cannot be found
+	 * @throws IncorrectFolderStructureException If folder has the wrong
+	 * structure
 	 */
-	public void activateLanguageModelRules(File f_ngram_dir) throws IOException
+	public void activateLanguageModelRules(File f_ngram_dir) throws FolderNotFoundException, IncorrectFolderStructureException
 	{
-		m_languageTool.activateLanguageModelRules(f_ngram_dir);
+		try
+		{
+			m_languageTool.activateLanguageModelRules(f_ngram_dir);
+		}
+		catch (IOException e)
+		{
+			throw new FolderNotFoundException();
+		}
+		catch (RuntimeException e)
+		{
+			// This happens if the folder exists, but does not have the
+			// right structure
+			throw new IncorrectFolderStructureException(e.getMessage());
+		}
 	}
 
 	/**
@@ -280,6 +295,26 @@ public class CheckLanguage extends Rule
 		 * Dummy UID
 		 */
 		private static final long serialVersionUID = 1L;
-
+	}
+	
+	public static class IncorrectFolderStructureException extends Exception
+	{
+		/**
+		 * Dummy UID
+		 */
+		private static final long serialVersionUID = 1L;
+		
+		public IncorrectFolderStructureException(String message)
+		{
+			super(message);
+		}
+	}
+	
+	public static class FolderNotFoundException extends Exception
+	{
+		/**
+		 * Dummy UID
+		 */
+		private static final long serialVersionUID = 1L;
 	}
 }

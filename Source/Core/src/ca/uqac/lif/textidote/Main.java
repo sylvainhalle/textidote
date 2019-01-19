@@ -547,9 +547,13 @@ public class Main
 						}
 						linter.addCleaned(cl);
 					}
-					catch (IOException e)
+					catch (CheckLanguage.FolderNotFoundException e)
 					{
 						stderr.println("Cannot open N-gram directory " + ngram_dir + ". N-gram rules will be ignored.");
+					}
+					catch (CheckLanguage.IncorrectFolderStructureException e)
+					{
+						stderr.println(e.getMessage().replaceAll("[\n\r]+", " ") + " N-gram rules will be ignored.");
 					}
 					catch (CheckLanguage.UnsupportedLanguageException e)
 					{

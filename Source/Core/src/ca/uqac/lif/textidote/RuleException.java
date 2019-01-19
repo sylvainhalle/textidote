@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,16 +18,16 @@
 package ca.uqac.lif.textidote;
 
 /**
- * Exception thrown by a {@link Linter}.
+ * Exception thrown by a {@link Rule}.
  */
-public class LinterException extends Exception
+public class RuleException extends Exception
 {
 	/**
 	 * Dummy UID
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public LinterException(Throwable t)
+	public RuleException(Throwable t)
 	{
 		super(t);
 	}
