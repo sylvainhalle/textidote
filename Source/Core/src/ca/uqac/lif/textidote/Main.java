@@ -17,12 +17,9 @@
  */
 package ca.uqac.lif.textidote;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -79,7 +76,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.7.1";
+	protected static final String VERSION_STRING = "0.7.2";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -472,9 +469,19 @@ public class Main
 		{
 			filenames.add("--"); // This indicates: read from stdin
 		}
+
 		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
-		filename_queue.addAll(filenames);
+		// Expand Latex files with include commands
+		for (String filename : filenames) {
+			String trueFileName = filename.substring(0, filename.lastIndexOf("."));
+			String fileType = filename.substring(filename.lastIndexOf("."));
+			String expandFilename = trueFileName+"_expand"+fileType;
+
+			expandMainTexFile(filename, expandFilename);
+			filename_queue.add(expandFilename);
+		}
+
 		while (!filename_queue.isEmpty())
 		{
 			String filename = filename_queue.remove();
@@ -567,7 +574,7 @@ public class Main
 				List<Advice> all_advice = linter.evaluateAll(last_string);
 				renderer.addAdvice(filename, last_string, all_advice);
 				num_advice += all_advice.size();
-				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
+				// addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
 			}
 			catch (LinterException e) 
 			{
@@ -584,6 +591,16 @@ public class Main
 				{
 					scanner.close();
 				}
+			}
+		}
+
+		// clean temploral files
+		for (String expandFile : processed_filenames) {
+			File file = new File(expandFile);
+        	if(file.delete()){
+            	System.out.println(expandFile + " deleted from Project root directory");
+        	} else {
+				System.out.println(expandFile+ " doesn't exist in the project root directory");
 			}
 		}
 		if (num_files == 0)
@@ -809,7 +826,8 @@ public class Main
 			Queue<String> file_queue, String current_filename)
 	{
 		File f = new File(current_filename);
-		String parent_path = f.getParent();
+		String parent_path = f.getAbsoluteFile().getParent();
+		AnsiPrinter stderr = new AnsiPrinter(System.err);
 		if (parent_path == null)
 		{
 			// This happens if the filename is "--"
@@ -819,8 +837,50 @@ public class Main
 		{
 			if (!processed_filenames.contains(filename))
 			{
+				stderr.println("added file: " + parent_path + PATH_SEP + filename);
 				file_queue.add(parent_path + PATH_SEP + filename);
 			}
 		}
 	}
+
+
+	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
+
+    public static void expandMainTexFile(String mainTexFilePath, String outTexFilePath) throws IOException {
+        // PrintWriter object
+        PrintWriter pw = new PrintWriter(outTexFilePath);
+
+        printInnerFileString(mainTexFilePath, pw);
+
+        pw.close();
+
+        System.out.println("Finish expanding main tex file!");
+    }
+
+    public static void printInnerFileString(String innerFilePath, PrintWriter pw) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader(innerFilePath));
+
+        String line = br.readLine();
+
+        while (line != null)
+        {
+            Matcher mat = m_includePattern.matcher(line);
+            if (mat.find())
+            {
+                String filename = mat.group(2).trim();
+
+                File f = new File(innerFilePath);
+                String parent_path = f.getAbsoluteFile().getParent();
+                printInnerFileString(parent_path + PATH_SEP + filename, pw);
+            } else {
+                pw.println(line);
+            }
+
+            line = br.readLine();
+        }
+        pw.flush();
+        // closing resources
+        br.close();
+    }
+
 }
