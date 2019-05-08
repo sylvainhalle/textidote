@@ -291,8 +291,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
 		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote)\\}", "");
-		// List items
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|frame|thm|abstract|eqnarray|compactitem|query|center|minipage|quote)\\}", "");		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
 		as_out = as_out.replaceAll("\\\\includegraphics.*$", "");
@@ -325,6 +324,7 @@ public class LatexCleaner extends TextCleaner
 		// Other inline equations are replaced by "X"
 		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
+		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");
 		// Commands we can ignore
 		as_out = as_out.replaceAll("\\\\\\w+\\{", "");
 		//as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)", "");
