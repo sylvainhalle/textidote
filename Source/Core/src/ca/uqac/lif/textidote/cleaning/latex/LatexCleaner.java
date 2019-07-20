@@ -291,7 +291,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
 		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote|frame)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
