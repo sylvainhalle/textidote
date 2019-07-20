@@ -79,7 +79,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.7.1";
+	protected static final String VERSION_STRING = "0.7.2";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -812,14 +812,22 @@ public class Main
 		String parent_path = f.getParent();
 		if (parent_path == null)
 		{
-			// This happens if the filename is "--"
+			// This happens if the filename is "--" or the file is in
+			// the current folder
 			parent_path = "";
+		}
+		else
+		{
+			if (!parent_path.endsWith(PATH_SEP))
+			{
+				parent_path += PATH_SEP;
+			}
 		}
 		for (String filename : inner_files)
 		{
 			if (!processed_filenames.contains(filename))
 			{
-				file_queue.add(parent_path + PATH_SEP + filename);
+				file_queue.add(parent_path + filename);
 			}
 		}
 	}
