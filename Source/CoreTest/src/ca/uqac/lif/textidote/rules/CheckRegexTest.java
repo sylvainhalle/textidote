@@ -103,4 +103,85 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
 	}
+
+	@Test
+	public void test010_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al. foo"));
+		Rule r = m_rules.get("sh:010");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(1, ad_list.size());
+	}
+
+	@Test
+	public void test010_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al.\\ foo"));
+		Rule r = m_rules.get("sh:010");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void test010_3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al., foo"));
+		Rule r = m_rules.get("sh:010");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void test011_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e. foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(1, ad_list.size());
+	}
+
+	@Test
+	public void test011_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e.\\ foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void test011_3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e., foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void test011_4()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g. foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(1, ad_list.size());
+	}
+
+	@Test
+	public void test011_5()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g.\\ foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void test011_6()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g., foo"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
 }

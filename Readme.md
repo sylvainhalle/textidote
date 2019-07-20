@@ -496,8 +496,8 @@ If the `--check` option is used, you can add the `--languagemodel xx` option to 
 
 ### LaTeX subtleties 
 
-- Use a backslash after the last period in "i.e." and "et al."; otherwise
-  LaTeX will think it is a full stop ending a sentence. [sh:010, sh:011]
+- Use a backslash or a comma after the last period in "i.e.", "e.g." and "et al.";
+  otherwise LaTeX will think it is a full stop ending a sentence. [sh:010, sh:011]
 - There should not be a space before a semicolon or a colon. If in your
   language, typographic rules require a space here, LaTeX takes care of
   inserting it without your intervention. [sh:d:005, sh:d:006]
