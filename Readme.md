@@ -301,7 +301,7 @@ file called `.textidote` in the directory from which it is called. Here is an
 example of what such a file could contain:
 
 ```
---html --read-all
+--output html --read-all
 --replace replacements.txt
 --dict mydict.txt
 --ignore sh:001,sh:d:001
@@ -400,7 +400,7 @@ contents, and make this file executable:
 #! /bin/bash
 dir=$(dirname "$1")
 pushd $dir
-java -jar /opt/textidote/textidote.jar --check en --html "$@" > /tmp/textidote.html
+java -jar /opt/textidote/textidote.jar --check en --output html "$@" > /tmp/textidote.html
 popd
 sensible-browser /tmp/textidote.html &
 ```
