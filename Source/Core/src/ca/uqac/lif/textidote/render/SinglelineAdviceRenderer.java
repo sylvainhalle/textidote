@@ -60,6 +60,12 @@ public class SinglelineAdviceRenderer extends AdviceRenderer {
 		}
 	}
 
+	/**
+	 * Renders a line of text and "highlights" a portion of it. The highlight
+	 * here is represented by printing the text red:
+	 * @param line The line of text
+	 * @param range The range to highlight
+	 */
 	protected void renderExcerpt(/*@ non_null @*/ String line, /*@ non_null @*/ Range range)
 	{
 		m_printer.print(" \"");
