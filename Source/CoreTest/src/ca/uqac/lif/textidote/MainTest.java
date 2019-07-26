@@ -30,7 +30,7 @@ import org.junit.Test;
 import ca.uqac.lif.textidote.Main;
 import ca.uqac.lif.util.NullPrintStream;
 
-public class MainTest 
+public class MainTest
 {
 	@Test(timeout = 1000)
 	public void test1() throws IOException
@@ -74,7 +74,7 @@ public class MainTest
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-stacked-1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--html", "--read-all"}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--output", "html", "--read-all"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertEquals(4, ret_code);
@@ -113,7 +113,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 20000)
 	public void test9() throws IOException
 	{
@@ -140,7 +140,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 		assertFalse(output.trim().isEmpty());
 	}
-	
+
 	@Test(timeout = 5000)
 	public void testClean2() throws IOException
 	{
@@ -152,7 +152,7 @@ public class MainTest
 		assertNotNull(output);
 		assertEquals(0, ret_code);
 	}
-	
+
 	@Test(timeout = 5000)
 	public void testClean3() throws IOException
 	{
@@ -165,7 +165,7 @@ public class MainTest
 		assertEquals(0, ret_code);
 		assertTrue(output.trim().isEmpty());
 	}
-	
+
 	@Test(timeout = 5000)
 	public void testInput1() throws IOException
 	{
@@ -177,7 +177,7 @@ public class MainTest
 		assertTrue(ret_code > 0);
 		assertFalse(output.trim().isEmpty());
 	}
-	
+
 	@Test(timeout = 5000)
 	public void testNgrams1() throws IOException
 	{

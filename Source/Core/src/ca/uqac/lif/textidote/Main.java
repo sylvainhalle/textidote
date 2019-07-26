@@ -43,6 +43,7 @@ import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
+import ca.uqac.lif.textidote.render.SinglelineAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
 import ca.uqac.lif.textidote.rules.CheckCiteMix;
 import ca.uqac.lif.textidote.rules.CheckFigurePaths;
@@ -64,7 +65,7 @@ import ca.uqac.lif.util.NullPrintStream;
  * Command-line interface for TeXtidote.
  * @author Sylvain Hallér
  */
-public class Main 
+public class Main
 {
 	/**
 	 * Filename where the regex rules are stored
@@ -109,9 +110,9 @@ public class Main
 	{
 		System.exit(mainLoop(args, System.in, System.out, System.err));
 	}
-	
+
 	/**
-	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, Class)}. 
+	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, Class)}.
 	 * @param args Command-line arguments
 	 * @param in A stream corresponding to the standard input
 	 * @param out A stream corresponding to the standard output
@@ -150,7 +151,6 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("clean").withDescription("Remove markup from input file"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
-		cli_parser.addArgument(new Argument().withLongName("html").withDescription("\tFormats the report as HTML"));
 		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
 		cli_parser.addArgument(new Argument().withLongName("languagemodel").withArgument("dir").withDescription("Use n-grams data from dir"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
@@ -163,6 +163,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
+		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), html, or singleline"));
 
 		// Check if there is a parameter filename
 		ArgumentMap map = null;
@@ -324,7 +325,7 @@ public class Main
 			for (String filename : filenames)
 			{
 				Scanner scanner = null;
-				try 
+				try
 				{
 					File f = new File(filename);
 					if (filename.compareTo("--") == 0)
@@ -372,12 +373,12 @@ public class Main
 						ps_fos.close();
 					}
 				}
-				catch (TextCleanerException e) 
+				catch (TextCleanerException e)
 				{
 					stderr.print(e.getMessage());
 					return -1;
 				}
-				catch (FileNotFoundException e) 
+				catch (FileNotFoundException e)
 				{
 					// Nothing to do; we already trapped this
 				}
@@ -445,25 +446,37 @@ public class Main
 		}
 
 		// Setup the advice renderer
-		AdviceRenderer renderer = null;
-		if (map.hasOption("html"))
+		if (enable_colors)
 		{
-			stdout.disableColors();
-			renderer = new HtmlAdviceRenderer(stdout);
+			stdout.enableColors();
 		}
 		else
 		{
-			if (enable_colors)
+			stdout.disableColors();
+		}
+		AdviceRenderer renderer = null;
+		if (map.hasOption("output"))
+		{
+			String output_method = map.getOptionValue("output");
+			if (output_method.compareToIgnoreCase("plain") == 0)
 			{
-				stdout.enableColors();
+				renderer = new AnsiAdviceRenderer(stdout);
 			}
-			else
+			else if (output_method.compareToIgnoreCase("html") == 0)
 			{
 				stdout.disableColors();
+				renderer = new HtmlAdviceRenderer(stdout);
 			}
+			else if (output_method.compareToIgnoreCase("singleline") == 0)
+			{
+				renderer = new SinglelineAdviceRenderer(stdout);
+			}
+		}
+		else
+		{
 			renderer = new AnsiAdviceRenderer(stdout);
 		}
-		
+
 		// Process files
 		int num_advice = 0;
 		int num_files = 0;
@@ -484,7 +497,7 @@ public class Main
 			}
 			processed_filenames.add(filename);
 			Scanner scanner = null;
-			try 
+			try
 			{
 				if (filename.compareTo("--") == 0)
 				{
@@ -569,12 +582,12 @@ public class Main
 				num_advice += all_advice.size();
 				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
 			}
-			catch (LinterException e) 
+			catch (LinterException e)
 			{
 				stderr.print(e.getMessage());
 				return -1;
 			}
-			catch (FileNotFoundException e) 
+			catch (FileNotFoundException e)
 			{
 				// Nothing to do; we already trapped this
 			}
@@ -662,7 +675,7 @@ public class Main
 	/**
 	 * Reads a list of regex rules from a file
 	 * @param filename The filename to read from
-	 * @return A map of rule names to regex rules 
+	 * @return A map of rule names to regex rules
 	 */
 	/*@ non_null @*/ public static Map<String,RegexRule> readRules(/*@ non_null @*/ String filename)
 	{
@@ -712,7 +725,7 @@ public class Main
 		{
 			String line = sc.nextLine();
 			dict.add(line.trim());
-		} 
+		}
 		sc.close();
 		return dict;
 	}
@@ -743,7 +756,7 @@ public class Main
 	 * <tt>args</tt> input of the {@link #main(String[])} method if the
 	 * arguments were received from the command line.
 	 */
-	/* This method has protected visibility in order to 
+	/* This method has protected visibility in order to
 	 * be accessible from the unit tests */
 	/*@ non_null @*/ static String[] readArguments(/*@ non_null @*/ Scanner scanner)
 	{
