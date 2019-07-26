@@ -68,14 +68,14 @@ file: an "HTML" report (viewable in a web browser) and a "console" report.
 
 To run TeXtidote and perform a basic verification of the file, run:
 
-    java -jar textidote.jar --html example.tex > report.html
+    java -jar textidote.jar --output html example.tex > report.html
 
 In Linux, if you installed TeXtidote using `apt-get`, you can also call it
 directly by typing:
 
-    textidote --html example.tex > report.html
+    textidote --output html example.tex > report.html
 
-Here, the `--html` option tells TeXtidote to produce a report in HTML format;
+Here, the `--output html` option tells TeXtidote to produce a report in HTML format;
 the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
@@ -103,7 +103,7 @@ will attempt to read one from the standard input.
 ### Plain report
 
 To run TeXtidote and display the results directly in the console, simply omit
-the `--html` option, and do not redirect the output to a file:
+the `--output html` option (you can also use `--output plain`), and do not redirect the output to a file:
 
     java -jar textidote.jar example.tex
 
@@ -111,15 +111,15 @@ TeXtidote will analyze the file like before, but produce a report that looks
 like this:
 
 ```
-* L25C1-L25C25 A section title should start with a capital letter. [sh:001] 
+* L25C1-L25C25 A section title should start with a capital letter. [sh:001]
   \section{a first section}
   ^^^^^^^^^^^^^^^^^^^^^^^^^
-* L38C1-L38C29 A section title should not end with a punctuation symbol. 
-  [sh:002] 
+* L38C1-L38C29 A section title should not end with a punctuation symbol.
+  [sh:002]
   \subsection{ My subsection. }
   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* L15C94-L15C99 Add a space before citation or reference. [sh:c:001] 
-   things, like a citation\cite{my:paper} .The text 
+* L15C94-L15C99 Add a space before citation or reference. [sh:c:001]
+   things, like a citation\cite{my:paper} .The text
 ```
 
 Each element of the list corresponds to a "warning", indicating that
@@ -130,6 +130,25 @@ from the line in question is displayed. The range of characters where the
 problem occurs is marked by the "^^^^" symbols below the text. Each of these
 warnings results from the evaluation of some "rule" on the text; an identifier
 of the rule in question is also shown between brackets.
+
+### Single line report
+
+Another option to display the results directly in the console is the single line report:
+
+    java -jar textidote.jar --output singleline example.tex
+
+Textidote will analyze the file like before, but this time the report looks like this:
+
+```
+example.tex(L25C1-L25C25): A section title should start with a capital letter. "\section{a first section}"
+example.tex(L38C1-L38C29): A section title should not end with a punctuation symbol. "\subsection{ My subsection. }"
+example.tex(L15C94-L15C99): Add a space before citation or reference. "things, like a citation\cite{my:paper} .The text"
+```
+
+Each line corresponds to a warning, and is parseable by regular expressions easily, e.g., for further processing in another tool.
+The file is given at the beginning of the line, followed by the position in parentheses.
+Then, the warning message is given, and the excerpt causing the warning is printed in double quotes ("").
+Note, that sometimes it may happen that a position cannot be determined. In this case, instead of LxxCyy, ? is printed.
 
 ### Spelling, grammar and style
 
@@ -282,8 +301,8 @@ file called `.textidote` in the directory from which it is called. Here is an
 example of what such a file could contain:
 
 ```
---html --read-all 
---replace replacements.txt 
+--html --read-all
+--replace replacements.txt
 --dict mydict.txt
 --ignore sh:001,sh:d:001
 --check en mytext.tex
@@ -494,7 +513,7 @@ If the `--check` option is used, you can add the `--languagemodel xx` option to 
 - If you are writing a research paper, do not hard-code page breaks with
   `\newpage`. [sh:nonp]
 
-### LaTeX subtleties 
+### LaTeX subtleties
 
 - Use a backslash or a comma after the last period in "i.e.", "e.g." and "et al.";
   otherwise LaTeX will think it is a full stop ending a sentence. [sh:010, sh:011]
