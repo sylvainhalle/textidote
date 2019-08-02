@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package ca.uqac.lif.textidote.as;
-                                   
+
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_SIZE;
 import static org.junit.Assert.*;
@@ -30,7 +30,7 @@ import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.as.Range;
 
 @SuppressWarnings("unused")
-public class AnnotatedStringTest 
+public class AnnotatedStringTest
 {
 	@Test
 	public void testLength1()
@@ -39,7 +39,7 @@ public class AnnotatedStringTest
 		as.append("Hello world!");
 		assertEquals(12, as.length());
 	}
-	
+
 	@Test
 	public void testLength2()
 	{
@@ -47,7 +47,7 @@ public class AnnotatedStringTest
 		as.append("Hello").appendNewLine().append("world!");
 		assertEquals(11 + CRLF_SIZE, as.length());
 	}
-	
+
 	@Test
 	public void testAppend1()
 	{
@@ -66,7 +66,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend2()
 	{
@@ -88,7 +88,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend3()
 	{
@@ -110,7 +110,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend4()
 	{
@@ -134,7 +134,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend5()
 	{
@@ -162,7 +162,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend6()
 	{
@@ -188,7 +188,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testAppend7()
 	{
@@ -211,7 +211,7 @@ public class AnnotatedStringTest
 		p = as.getSourcePosition(new Position(1, 7));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testSubstring1()
 	{
@@ -226,7 +226,7 @@ public class AnnotatedStringTest
 		p = as_sub.getSourcePosition(new Position(0, 4));
 		assertEquals(Position.NOWHERE, p);
 	}
-	
+
 	@Test
 	public void testSubstring2()
 	{
@@ -243,7 +243,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(7, p.getColumn());
 	}
-	
+
 	@Test
 	public void testSubstring3()
 	{
@@ -260,7 +260,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(7, p.getColumn());
 	}
-	
+
 	@Test
 	public void testFind1()
 	{
@@ -279,7 +279,7 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
 	}
-	
+
 	@Test
 	public void testReplace1()
 	{
@@ -295,7 +295,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(2, p.getColumn());
 	}
-	
+
 	@Test
 	public void testReplace2()
 	{
@@ -311,7 +311,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(2, p.getColumn());
 	}
-	
+
 	@Test
 	public void testReplace3()
 	{
@@ -319,9 +319,9 @@ public class AnnotatedStringTest
 		as_orig.append("Hello<!-- c -->world").appendNewLine().append("foobar");
 		AnnotatedString as_rep = as_orig.replaceAll("<", "");
 		assertNotNull(as_rep);
-		assertEquals("Hello!-- c -->world\nfoobar", as_rep.toString());
+		assertEquals(String.format("Hello!-- c -->world%nfoobar"), as_rep.toString());
 	}
-	
+
 	@Test
 	public void testReplace4()
 	{
@@ -334,7 +334,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(1, p.getColumn());
 	}
-	
+
 	@Test
 	public void testReplaceAll1()
 	{
@@ -353,7 +353,7 @@ public class AnnotatedStringTest
 		assertEquals(0, p.getLine());
 		assertEquals(8, p.getColumn());
 	}
-	
+
 	@Test
 	public void testGetPosition1()
 	{
@@ -365,7 +365,7 @@ public class AnnotatedStringTest
 		assertEquals(Position.NOWHERE, as.getPosition(-1));
 		assertEquals(Position.NOWHERE, as.getPosition(20));
 	}
-	
+
 	@Test
 	public void testGetPosition2()
 	{
@@ -380,7 +380,7 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
 	}
-	
+
 	@Test
 	public void testRemoveLine1()
 	{
@@ -394,7 +394,7 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
 	}
-	
+
 	@Test
 	public void testRemoveLine2()
 	{
@@ -411,7 +411,7 @@ public class AnnotatedStringTest
 		assertEquals(2, p.getLine());
 		assertEquals(1, p.getColumn());
 	}
-	
+
 	@Test
 	public void testTargetPosition1()
 	{
@@ -424,7 +424,7 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getColumn());
 		assertEquals(Position.NOWHERE, as.getTargetPosition(new Position(3, 1)));
 	}
-	
+
 	@Test
 	public void testTargetPosition2()
 	{

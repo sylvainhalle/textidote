@@ -13,7 +13,7 @@
 .DS_Store
 
 # Auto-generated folders
-/doc/
+/docs/javadoc/
 /lib/
 /deps/
 /tests/
@@ -47,6 +47,9 @@ jacoco.exec
 **/.settings/
 **/.recommenders/
 **/.loadpath
+
+# vscode-specific
+/.vscode/
 
 # External tool builders
 **/.externalToolBuilders/
