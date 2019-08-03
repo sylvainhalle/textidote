@@ -36,7 +36,7 @@ _textidote()
     #
     #  The basic options we'll complete.
     #
-    opts="--check --detex --dict --help --html --no-color --no-config --map --quiet --read-all --replace --type"
+    opts="--check --detex --dict --help --output --version --no-color --no-config --map --quiet --read-all --replace --type"
     
     #
     #  Complete the arguments to some of the basic commands.
@@ -60,6 +60,11 @@ _textidote()
             completeFiles
             return 0
             ;;
+        --output)
+            local formats="html plain singleline"
+            COMPREPLY=( $(compgen -W "${formats}" -- ${cur}) )
+            return 0
+            ;;
         --replace)
             completeFiles
             return 0
@@ -81,7 +86,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --detex --dict --help --html --no-color --map --quiet --read-all --replace
+	compadd --check --detex --dict --help --version --no-color --map --quiet --read-all --replace --output
 }
 
 # Register the goto completions.
