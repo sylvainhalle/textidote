@@ -86,7 +86,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --detex --dict --help --version --no-color --map --quiet --read-all --replace --output
+	compadd --check --clean --dict --help --version --no-color --map --quiet --read-all --replace --output
 }
 
 # Register the goto completions.
