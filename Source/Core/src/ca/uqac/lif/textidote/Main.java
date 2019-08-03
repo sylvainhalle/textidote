@@ -23,14 +23,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -50,7 +48,6 @@ import ca.uqac.lif.textidote.rules.CheckFigurePaths;
 import ca.uqac.lif.textidote.rules.CheckFigureReferences;
 import ca.uqac.lif.textidote.rules.CheckLanguage;
 import ca.uqac.lif.textidote.rules.CheckNoBreak;
-import ca.uqac.lif.textidote.rules.CheckStackedHeadings;
 import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 import ca.uqac.lif.textidote.rules.CheckSubsections;
 import ca.uqac.lif.textidote.rules.LanguageFactory;
@@ -93,11 +90,6 @@ public class Main
 	protected static final String PARAM_FILENAME = ".textidote";
 
 	/**
-	 * The OS-dependent path separator
-	 */
-	protected static final transient String PATH_SEP = File.separator;
-
-	/**
 	 * Main method. This method simply calls the static method
 	 * {@link #main(String[]) mainLoop()},
 	 * and exits with the return value of that method. The reason for this is
@@ -126,11 +118,7 @@ public class Main
 	}
 
 	/**
-	 * Main method. The {@code base_class} argument can be set to a non-null
-	 * value to indicate that the loop is being run inside a unit test.
-	 * When given a filename, the loop will fetch it using
-	 * {@link Class#getResourceAsStream(String)} instead of through a
-	 * {@link File} object.
+	 * Main method
 	 * @param args Command-line arguments
 	 * @param in A stream corresponding to the standard input
 	 * @param out A stream corresponding to the standard output
@@ -140,7 +128,7 @@ public class Main
 	 * @return An exit code
 	 * @throws IOException Thrown if some file cannot be found or open
 	 */
-	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
+	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
 	{
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
@@ -152,14 +140,12 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
 		cli_parser.addArgument(new Argument().withLongName("ignore").withArgument("rules").withDescription("Ignore rules"));
-		cli_parser.addArgument(new Argument().withLongName("languagemodel").withArgument("dir").withDescription("Use n-grams data from dir"));
 		cli_parser.addArgument(new Argument().withLongName("map").withArgument("file").withDescription("Output correspondence map to file"));
 		cli_parser.addArgument(new Argument().withLongName("name").withArgument("n").withDescription("Use n as app name when printing usage"));
 		cli_parser.addArgument(new Argument().withLongName("no-color").withDescription("Disables colors in ANSI printing"));
 		cli_parser.addArgument(new Argument().withLongName("no-config").withDescription("Ignore config file if any"));
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
-		cli_parser.addArgument(new Argument().withLongName("remove").withArgument("envs").withDescription("Remove LaTeX environments envs"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
@@ -232,7 +218,7 @@ public class Main
 			stderr = new AnsiPrinter(err);
 		}
 		assert stderr != null;
-		// User has specified rules to ignore
+		// Use has specified rules to ignore
 		List<String> rule_blacklist = new ArrayList<String>();
 		if (map.hasOption("ignore"))
 		{
@@ -240,38 +226,6 @@ public class Main
 			for (String id : ids)
 			{
 				rule_blacklist.add(id);
-			}
-		}
-		// User has specified environments to remove
-		List<String> env_blacklist = new ArrayList<String>();
-		if (map.hasOption("remove"))
-		{
-			String[] ids = map.getOptionValue("remove").split(",");
-			for (String id : ids)
-			{
-				env_blacklist.add(id);
-			}
-		}
-		// User uses n-gram
-		String ngram_dir = "";
-		File f_ngram_dir = null;
-		if (map.hasOption("languagemodel"))
-		{
-			ngram_dir = map.getOptionValue("languagemodel");
-			f_ngram_dir = new File(ngram_dir);
-			if (!f_ngram_dir.exists())
-			{
-				stderr.println("N-gram directory " + ngram_dir + " not found. N-gram rules will be ignored.");
-				f_ngram_dir = null;
-			}
-			else if (!f_ngram_dir.isDirectory())
-			{
-				stderr.println("N-gram path " + ngram_dir + " is not a directory. N-gram rules will be ignored.");
-				f_ngram_dir = null;
-			}
-			else
-			{
-				stderr.println("Using N-grams from " + ngram_dir);
 			}
 		}
 		printGreeting(stderr);
@@ -333,17 +287,14 @@ public class Main
 						// Open scanner on stdin
 						scanner = new Scanner(in);
 					}
+					if (!f.exists())
+					{
+						stderr.println("File " + filename + " not found (skipping)");
+						continue;
+					}
 					else
 					{
-						if (!f.exists())
-						{
-							stderr.println("File " + filename + " not found (skipping)");
-							continue;
-						}
-						else
-						{
-							scanner = new Scanner(f);
-						}
+						scanner = new Scanner(f);
 					}
 					// Create cleaner based on file extension
 					CompositeCleaner c_file = new CompositeCleaner(cleaner);
@@ -352,7 +303,6 @@ public class Main
 						// LaTeX file
 						LatexCleaner latex_cleaner = new LatexCleaner();
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
-						latex_cleaner.ignoreEnvironments(env_blacklist);
 						c_file.add(latex_cleaner);
 					}
 					else if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
@@ -478,24 +428,15 @@ public class Main
 		}
 
 		// Process files
-		int num_advice = 0;
-		int num_files = 0;
+		List<Advice> all_advice = new ArrayList<Advice>();
 		List<String> filenames = map.getOthers();
 		if (filenames.isEmpty())
 		{
 			filenames.add("--"); // This indicates: read from stdin
 		}
-		Queue<String> filename_queue = new ArrayDeque<String>();
-		Set<String> processed_filenames = new HashSet<String>();
-		filename_queue.addAll(filenames);
-		while (!filename_queue.isEmpty())
+		AnnotatedString last_string = null;
+		for (String filename : filenames)
 		{
-			String filename = filename_queue.remove();
-			if (processed_filenames.contains(filename))
-			{
-				continue;
-			}
-			processed_filenames.add(filename);
 			Scanner scanner = null;
 			try
 			{
@@ -506,28 +447,14 @@ public class Main
 				}
 				else
 				{
-					if (base_class != null)
+					File f = new File(filename);
+					if (!f.exists())
 					{
-						InputStream is = base_class.getResourceAsStream(filename);
-						if (is == null)
-						{
-							stderr.println("File " + filename + " not found (skipping)");
-							continue;
-						}
-						scanner = new Scanner(is);
+						stderr.println("File " + filename + " not found (skipping)");
+						continue;
 					}
-					else
-					{
-						File f = new File(filename);
-						if (!f.exists())
-						{
-							stderr.println("File " + filename + " not found (skipping)");
-							continue;
-						}
-						scanner = new Scanner(f);
-					}
+					scanner = new Scanner(f);
 				}
-				num_files++;
 				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
 				Linter linter = null;
 				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
@@ -543,7 +470,6 @@ public class Main
 				{
 					LatexCleaner latex_cleaner = new LatexCleaner();
 					latex_cleaner.setIgnoreBeforeDocument(!read_all);
-					latex_cleaner.ignoreEnvironments(env_blacklist);
 					c_cleaner.add(latex_cleaner);
 					linter = new Linter(c_cleaner);
 					populateLatexRules(linter);
@@ -575,12 +501,7 @@ public class Main
 						return -1;
 					}
 				}
-				AnnotatedString last_string = AnnotatedString.read(scanner);
-				last_string.setResourceName(filename);
-				List<Advice> all_advice = linter.evaluateAll(last_string);
-				renderer.addAdvice(filename, last_string, all_advice);
-				num_advice += all_advice.size();
-				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
+				last_string = processDocument(scanner, filename, linter, all_advice);
 			}
 			catch (LinterException e)
 			{
@@ -599,22 +520,40 @@ public class Main
 				}
 			}
 		}
-		if (num_files == 0)
+		if (last_string == null)
 		{
 			// No file was processed
 			stdout.close();
 			return -1;
 		}
 		long end_time = System.currentTimeMillis();
-		stderr.println("Found " + num_advice + " warning(s)");
+		stderr.println("Found " + all_advice.size() + " warning(s)");
 		stderr.println("Total analysis time: " + ((end_time - start_time) / 1000) + " second(s)");
 		stderr.println();
 
-		// Render all the advice
-		renderer.render();
+		// Render advice
+		AdviceRenderer renderer = null;
+		if (map.hasOption("html"))
+		{
+			stdout.disableColors();
+			renderer = new HtmlAdviceRenderer(stdout, last_string);
+		}
+		else
+		{
+			if (enable_colors)
+			{
+				stdout.enableColors();
+			}
+			else
+			{
+				stdout.disableColors();
+			}
+			renderer = new AnsiAdviceRenderer(stdout);
+		}
+		renderer.render(all_advice);
 
 		// The exit code is the number of warnings raised
-		return num_advice;
+		return all_advice.size();
 	}
 
 	/**
@@ -624,7 +563,7 @@ public class Main
 	protected static void printGreeting(AnsiPrinter out)
 	{
 		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents and others");
-		out.println("(C) 2018-2019 Sylvain Hallé - All rights reserved");
+		out.println("(C) 2018 Sylvain Hallé - All rights reserved");
 		out.println();
 	}
 
@@ -641,11 +580,10 @@ public class Main
 		linter.add(new CheckCaptions());
 		linter.add(new CheckSubsections());
 		linter.add(new CheckSubsectionSize());
-		linter.add(new CheckStackedHeadings());
 		linter.add(new CheckNoBreak());
 		linter.add(new CheckCiteMix());
 	}
-
+	
 	/**
 	 * Adds the rules to the Markdown linter
 	 * @param linter The linter to configure
@@ -660,16 +598,19 @@ public class Main
 	 * @param scanner A scanner open on the document to read
 	 * @param filename The name of the file for this document
 	 * @param linter The linter to apply on the document
-	 * @return A list of advice. Any new advice produced by the
+	 * @param all_advice A list of advice. Any new advice produced by the
 	 * execution of the linter on the document will be added to this list.
+	 * @return The annotated string corresponding to the document that was
+	 * read. Can be null.
 	 * @throws LinterException Thrown if reading the file produces
 	 * an exception
 	 */
-	protected static List<Advice> processDocument(Scanner scanner, String filename, Linter linter) throws LinterException
+	protected static AnnotatedString processDocument(Scanner scanner, String filename, Linter linter, List<Advice> all_advice) throws LinterException
 	{
 		AnnotatedString last_string = AnnotatedString.read(scanner);
 		last_string.setResourceName(filename);
-		return linter.evaluateAll(last_string);
+		all_advice.addAll(linter.evaluateAll(last_string));
+		return last_string;
 	}
 
 	/**
