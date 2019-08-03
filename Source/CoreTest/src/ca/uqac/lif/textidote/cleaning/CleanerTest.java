@@ -65,6 +65,46 @@ public class CleanerTest
 	}
 	
 	@Test
+	public void testRemoveMathMarkup1() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello $abc$ world")));
+		assertEquals("Hello abc world", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMathMarkup2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello $3.5$ world")));
+		assertEquals("Hello 3.5 world", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMathMarkup3() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello $3.5x$ world")));
+		assertEquals("Hello 3.5x world", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMathMarkup4() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello $abc\\theta$ world")));
+		assertEquals("Hello X world", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMathMarkup5() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello $ab\\$$ world")));
+		assertEquals("Hello X world", as.toString());
+	}
+	
+	@Test
 	public void testRemoveEnvironments1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();

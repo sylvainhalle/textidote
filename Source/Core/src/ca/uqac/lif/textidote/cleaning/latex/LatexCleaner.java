@@ -26,6 +26,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.Match;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
@@ -319,18 +320,56 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("~", " ");
 		// Dots
 		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
-		// Inline equations with only digits are replaced by digits or letters
-		as_out = as_out.replaceAll("([^\\\\])\\$([\\d,a-zA-z]+?)\\$", "$1$2");
-		as_out = as_out.replaceAll("^\\$([\\d,a-zA-z]+?)\\$", "$1");
-		// Other inline equations are replaced by "X"
-		as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
-		as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
-		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");
+		// Inline equations are replaced by "X"
+		as_out = replaceInlineEquations(as_out, line_pos);
+		/*as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
+		//as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
+		as_out = as_out.replaceAll("^\\$([^\\$]|\\.)*\\$", "X");
+		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");*/
 		// Commands we can ignore
 		as_out = as_out.replaceAll("\\\\\\w+\\{", "");
 		//as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)", "");
 		// Curly brackets
 		as_out = as_out.replaceAll("\\{|\\}", "");
+		return as_out;
+	}
+	
+	protected AnnotatedString replaceInlineEquations(AnnotatedString as_out, int line_pos)
+	{
+		Match m = null;
+		Position p = Position.ZERO;
+		do
+		{
+			m = as_out.find("[^\\\\]\\$.*?[^\\\\]\\$", p);
+			if (m == null)
+			{
+				break;
+			}
+			p = m.getPosition();
+			String s_from = m.getMatch();
+			String s_to = s_from.substring(0, 1) + "X";
+			String s_inside = s_from.substring(2, s_from.length() - 1);
+			if (s_inside.matches("[\\dA-Za-z\\.,]+"))
+			{
+				s_to = s_from.substring(0, 1) + s_inside;
+			}
+			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
+			p = p.moveBy(1); // To ensure progress
+		} while (m != null);
+		// Do it one last time for equations at the beginning of a line		
+		m = as_out.find("^\\$.*?[^\\\\]\\$", p);
+		if (m != null)
+		{
+			p = m.getPosition();
+			String s_from = m.getMatch();
+			String s_to = "X";
+			String s_inside = s_from.substring(1, s_from.length() - 1);
+			if (s_inside.matches("[\\dA-Za-z\\.,]+"))
+			{
+				s_to = s_inside;
+			}
+			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
+		}
 		return as_out;
 	}
 	
