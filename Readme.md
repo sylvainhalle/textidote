@@ -80,8 +80,8 @@ the `>` symbol indicates that the output should be saved to a file, whose name
 is `report.html`. TeXtidote will run for some time, and print:
 
 ```
-TeXtidote v0.6 - A linter for LaTeX documents
-(C) 2018 Sylvain Hallé - All rights reserved
+TeXtidote v0.8 - A linter for LaTeX documents
+(C) 2018-2019 Sylvain Hallé - All rights reserved
 
 Found 23 warnings(s)
 Total analysis time: 2 second(s)
