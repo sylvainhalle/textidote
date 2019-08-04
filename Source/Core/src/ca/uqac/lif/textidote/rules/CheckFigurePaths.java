@@ -74,7 +74,7 @@ public class CheckFigurePaths extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2)));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2) + mat.group(2).length()));
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not use an absolute path for a figure", original.getResourceName(), original.getLine(start_pos.getLine())));	
+					out_list.add(new Advice(this, r, "Do not use an absolute path for a figure", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));	
 				}
 			}
 		}
@@ -90,5 +90,11 @@ public class CheckFigurePaths extends Rule
 	protected static boolean isAbsolute(/*@ non_null @*/ String path)
 	{
 		return path.matches("[A-Za-z]\\:.*") || path.matches("/.*") || path.contains("..");
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "Absolute paths in figures";
 	}
 }

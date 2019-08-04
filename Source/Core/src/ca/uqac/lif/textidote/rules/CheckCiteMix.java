@@ -70,7 +70,7 @@ public class CheckCiteMix extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + 6)); // 6 = length("\cite")
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine())));
+					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));
 					break; // A single warning is enough
 				}
 			}
@@ -83,11 +83,17 @@ public class CheckCiteMix extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + 7)); // 6 = length("\citep")
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine())));
+					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));
 					break; // A single warning is enough
 				}
 			}
 		}
 		return out_list;
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "No mix of citation styles";
 	}
 }

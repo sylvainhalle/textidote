@@ -43,6 +43,7 @@ import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
+import ca.uqac.lif.textidote.render.JsonAdviceRenderer;
 import ca.uqac.lif.textidote.render.SinglelineAdviceRenderer;
 import ca.uqac.lif.textidote.rules.CheckCaptions;
 import ca.uqac.lif.textidote.rules.CheckCiteMix;
@@ -80,7 +81,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	protected static final String VERSION_STRING = "0.7.2";
+	public static final String VERSION_STRING = "0.8-beta";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -163,7 +164,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
-		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), html, or singleline"));
+		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
 
 		// Check if there is a parameter filename
 		ArgumentMap map = null;
@@ -470,6 +471,11 @@ public class Main
 			else if (output_method.compareToIgnoreCase("singleline") == 0)
 			{
 				renderer = new SinglelineAdviceRenderer(stdout);
+			}
+			else if (output_method.compareToIgnoreCase("json") == 0)
+			{
+				stdout.disableColors();
+				renderer = new JsonAdviceRenderer(stdout, lang_s);
 			}
 		}
 		else

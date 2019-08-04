@@ -64,7 +64,7 @@ public class CheckStackedHeadings extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1)));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1) + mat.group(1).length()));
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(CheckStackedHeadingsAdvice.instance, r, "Avoid stacked headings, i.e. consecutive headings without text in between.", original.getResourceName(), original.getLine(r.getStart().getLine())));
+					out_list.add(new Advice(CheckStackedHeadingsAdvice.instance, r, "Avoid stacked headings, i.e. consecutive headings without text in between.", original.getResourceName(), original.getLine(r.getStart().getLine()), original.getOffset(start_pos)));
 				}
 				found_text = false;
 			}
@@ -97,6 +97,18 @@ public class CheckStackedHeadings extends Rule
 		{
 			// Do nothing; this is a placeholder
 			return new ArrayList<Advice>(0);
-		}		
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return "Stacked headings";
+		}
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "Stacked headings";
 	}
 }

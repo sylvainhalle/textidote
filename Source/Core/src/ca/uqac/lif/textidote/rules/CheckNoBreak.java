@@ -68,7 +68,7 @@ public class CheckNoBreak extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + mat.group(0).length()));
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "You should not break lines manually in a paragraph. Either start a new paragraph or stay in the current one.", original.getResourceName(), original.getLine(start_pos.getLine())));	
+					out_list.add(new Advice(this, r, "You should not break lines manually in a paragraph. Either start a new paragraph or stay in the current one.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));	
 				}
 			}
 			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|equation\\*|align|align\\*|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|matrix|bmatrix|Bmatrix|pmatrix|vmatrix|Vmatrix|smallmatrix).*") || line.matches(".*\\\\\\].*"))
@@ -77,5 +77,11 @@ public class CheckNoBreak extends Rule
 			}
 		}
 		return out_list;
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "Don't use manual line breaks in text";
 	}
 }

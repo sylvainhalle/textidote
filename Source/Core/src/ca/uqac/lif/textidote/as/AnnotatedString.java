@@ -659,6 +659,7 @@ public class AnnotatedString
 	 * string
 	 * @return The position; you get {@link Position#NOWHERE}
 	 * if {@code nb_chars} lies beyond the string boundaries
+	 * @see #getOffset(Position)
 	 */
 	/*@ pure non_null @*/ public Position getPosition(int nb_chars)
 	{
@@ -874,5 +875,37 @@ public class AnnotatedString
 	public boolean isEmpty()
 	{
 		return m_lines.isEmpty() && m_builder.toString().isEmpty();
+	}
+	
+	/**
+	 * Gets the offset (in characters from the beginning) corresponding to
+	 * a position
+	 * @param p The position
+	 * @return The offset; -1 if the position does not correspond to a valid
+	 * offset in the text
+	 * @see #getPosition(int)
+	 */
+	public int getOffset(Position p)
+	{
+		int char_count = 0, line_count = 0;
+		int p_line = p.getLine();
+		int p_col = p.getColumn();
+		for (String line : m_lines)
+		{
+			if (line_count != p_line)
+			{
+				// It's not on this line
+				char_count += line.length() + CRLF_SIZE;
+				line_count++;
+				continue;
+			}
+			else
+			{
+				// It's on this line
+				char_count += p_col;
+				return char_count;
+			}
+		}
+		return -1;
 	}
 }

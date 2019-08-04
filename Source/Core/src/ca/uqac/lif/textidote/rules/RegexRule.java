@@ -126,7 +126,7 @@ public class RegexRule extends Rule
 				r = new Range(source_start_pos, source_end_pos);
 			}
 			assert r != null;
-			out_list.add(new Advice(this, r, message, s.getResourceName(), original_line));
+			out_list.add(new Advice(this, r, message, s.getResourceName(), original_line, original.getOffset(source_start_pos)));
 			pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length());;
 		}
 		return out_list;
@@ -155,5 +155,11 @@ public class RegexRule extends Rule
 			}
 		}
 		return out;
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "Regex check on the text";
 	}
 }

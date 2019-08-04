@@ -20,7 +20,7 @@ package ca.uqac.lif.textidote.as;
 /**
  * Represents a contiguous interval of characters in a text file.
  * A range is defined by a "start" and an "end" position.
- * @author sylvain
+ * @author Sylvain Hallé
  */
 public class Range implements Comparable<Range>
 {
