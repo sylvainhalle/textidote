@@ -81,7 +81,7 @@ public class CheckFigureReferences extends Rule
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, 0));
 					Position end_pos = start_pos.moveBy(1);
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "This figure is missing a label", original.getResourceName(), original.getLine(start_pos.getLine())));	
+					out_list.add(new Advice(this, r, "This figure is missing a label", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));	
 				}
 				continue;
 			}
@@ -117,10 +117,15 @@ public class CheckFigureReferences extends Rule
 				Position end_pos = s.getSourcePosition(new Position(start_pos.getLine(), start_pos.getColumn() + fig_name.length()));
 				Range r = new Range(start_pos, end_pos);
 				String original_line = original.getLine(start_pos.getLine());
-				out_list.add(new Advice(this, r, "Figure " + fig_name + " is never referenced in the text", original.getResourceName(), original_line));
+				out_list.add(new Advice(this, r, "Figure " + fig_name + " is never referenced in the text", original.getResourceName(), original_line, original.getOffset(start_pos)));
 			}
 		}
 		return out_list;
 	}
 
+	@Override
+	public String getDescription()
+	{
+		return "Every figure must be referenced";
+	}
 }

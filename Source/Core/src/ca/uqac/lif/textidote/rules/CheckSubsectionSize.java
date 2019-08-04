@@ -112,7 +112,7 @@ public class CheckSubsectionSize extends Rule
 							if (si_last.m_size < m_minNumWords && !si_last.m_sectionName.isEmpty())
 							{
 								Range r2 = si_last.m_range;
-								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
+								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
 							}
 						}
 						sections.push(si);
@@ -134,7 +134,7 @@ public class CheckSubsectionSize extends Rule
 			if (!si_last.m_sectionName.isEmpty() && si_last.m_size < m_minNumWords)
 			{
 				Range r2 = si_last.m_range;
-				out_list.add(new Advice(this, r2, "This section is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
+				out_list.add(new Advice(this, r2, "This section is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
 			}
 		}
 		return out_list;
@@ -151,5 +151,11 @@ public class CheckSubsectionSize extends Rule
 	protected static int countWords(/*@ non_null @*/ String line)
 	{
 		return line.split("\\s+").length;
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "Short sub-sections";
 	}
 }

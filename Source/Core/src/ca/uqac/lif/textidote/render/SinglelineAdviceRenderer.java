@@ -30,6 +30,7 @@ import ca.uqac.lif.util.AnsiPrinter.Color;
 /**
  * Renders advice to a terminal (such as {@code stdin}), printing a single line
  * per advice, using colored output.
+ * @author toolcreator
  */
 public class SinglelineAdviceRenderer extends AdviceRenderer {
 	/**

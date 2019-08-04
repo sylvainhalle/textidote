@@ -47,16 +47,34 @@ public abstract class AdviceRenderer
 	/*@ non_null @*/ protected Map<String,AnnotatedString> m_originalStrings;
 	
 	/**
+	 * A string containing the language code (if any) used when checking
+	 * the documents. May be the empty string.
+	 */
+	/*@ non_null @*/ protected String m_languageCode;
+	
+	/**
 	 * Creates a new advice renderer
 	 * @param printer The printer where the renderer will print its
 	 * results
 	 */
 	public AdviceRenderer(/*@ non_null @*/ AnsiPrinter printer)
 	{
+		this(printer, "");
+	}
+	
+	/**
+	 * Creates a new advice renderer
+	 * @param printer The printer where the renderer will print its
+	 * results
+	 * @param lang_code An optional language code
+	 */
+	public AdviceRenderer(/*@ non_null @*/ AnsiPrinter printer, String lang_code)
+	{
 		super();
 		m_printer = printer;
 		m_advice = new HashMap<String,List<Advice>>();
 		m_originalStrings = new HashMap<String,AnnotatedString>();
+		m_languageCode = lang_code;
 	}
 	
 	/**

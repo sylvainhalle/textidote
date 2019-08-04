@@ -77,4 +77,10 @@ public abstract class Rule
 	{
 		return m_name;
 	}
+	
+	/**
+	 * Gets a short textual description of the rule
+	 * @return The description
+	 */
+	/*@ pure non_null @*/ public abstract String getDescription();
 }

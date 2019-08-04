@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ public class CheckSubsections extends Rule
 				if (!si_last.m_sectionName.isEmpty() && SectionInfo.distance(si_last.m_sectionName, si.m_sectionName) < -1)
 				{
 					// Moving down more than one level
-					out_list.add(new Advice(CheckLevelSkip.instance, si.m_range, "A heading of level n should not be followed by a heading of level n+2 or more.", original.getResourceName(), original.getLine(si.m_range.getStart().getLine())));
+					out_list.add(new Advice(CheckLevelSkip.instance, si.m_range, "A heading of level n should not be followed by a heading of level n+2 or more.", original.getResourceName(), original.getLine(si.m_range.getStart().getLine()), original.getOffset(start_pos)));
 				}
 				if (SectionInfo.isMoveDown(si_last, si))
 				{
@@ -97,13 +97,13 @@ public class CheckSubsections extends Rule
 							if (si_last.m_size == 1)
 							{
 								Range r2 = si_last.m_range;
-								out_list.add(new Advice(this, r2, "If a section has sub-sections, it should have more than one such sub-section.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
+								out_list.add(new Advice(this, r2, "If a section has sub-sections, it should have more than one such sub-section.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(start_pos)));
 							}
 						}
 						if (sections.isEmpty())
 						{
 							Range r2 = new Range(original.getSourcePosition(si.m_range.getStart()), original.getSourcePosition(si.m_range.getEnd()));
-							out_list.add(new Advice(CheckSubsectionOrder.instance, r2, "The first heading of a document should be the one with the highest level. For example, if a document contains sections, the first section cannot be preceded by a sub-section.", original.getResourceName(), original.getLine(r2.getStart().getLine())));
+							out_list.add(new Advice(CheckSubsectionOrder.instance, r2, "The first heading of a document should be the one with the highest level. For example, if a document contains sections, the first section cannot be preceded by a sub-section.", original.getResourceName(), original.getLine(r2.getStart().getLine()), original.getOffset(start_pos)));
 							sections.push(doc_head);
 						}
 						else
@@ -123,7 +123,7 @@ public class CheckSubsections extends Rule
 			if (!si_last.m_sectionName.isEmpty() && si_last.m_size == 1)
 			{
 				Range r2 = si_last.m_range;
-				out_list.add(new Advice(this, r2, "If a section has sub-sections, it should have more than one such sub-section.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine())));
+				out_list.add(new Advice(this, r2, "If a section has sub-sections, it should have more than one such sub-section.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
 			}
 		}
 		return out_list;
@@ -150,7 +150,14 @@ public class CheckSubsections extends Rule
 		{
 			// Do nothing; this is a placeholder
 			return new ArrayList<Advice>(0);
-		}		
+		}
+		
+		@Override
+		public String getDescription()
+		{
+			return "No skipping of levels in subsections";
+		}
+
 	}
 	
 	/**
@@ -174,6 +181,19 @@ public class CheckSubsections extends Rule
 		{
 			// Do nothing; this is a placeholder
 			return new ArrayList<Advice>(0);
-		}		
+		}
+		
+		@Override
+		public String getDescription()
+		{
+			return "No skipping of levels in subsections";
+		}
+
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return "No skipping of levels in subsections";
 	}
 }

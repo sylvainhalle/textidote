@@ -222,8 +222,9 @@ public class CheckLanguage extends Rule
 				advice_message.append(". Suggestions: ").append(replacements.toString());
 			}
 			advice_message.append(" (").append(rm.getFromPos()).append(")");
-			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId()), r, advice_message.toString(), s.getResourceName(), line);
+			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId(), rm.getRule().getDescription()), r, advice_message.toString(), s.getResourceName(), line, original.getOffset(start_src_pos));
 			ad.setOriginal(original_range);
+			ad.setShortMessage("LanguageTool rule");
 			out_list.add(ad);
 		}
 		return out_list;
@@ -271,21 +272,33 @@ public class CheckLanguage extends Rule
 
 	public class CheckLanguageSpecific extends Rule
 	{
-		public CheckLanguageSpecific(String id)
+		/**
+		 * A description for the rule
+		 */
+		protected String m_description = "";
+		
+		public CheckLanguageSpecific(String id, String description)
 		{
 			super(CheckLanguage.this.getName() + ":" + id);
+			m_description = description;
 		}
 
 		@Override
 		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
 		{
-			// TODO Auto-generated method stub
+			// No need to implement, this is just a placeholder
 			return null;
 		}
 
 		/*@ pure non_null @*/ public CheckLanguage getParent()
 		{
 			return CheckLanguage.this;
+		}
+
+		@Override
+		public String getDescription() 
+		{
+			return m_description;
 		}
 	}
 
@@ -316,5 +329,11 @@ public class CheckLanguage extends Rule
 		 * Dummy UID
 		 */
 		private static final long serialVersionUID = 1L;
+	}
+
+	@Override
+	public String getDescription() 
+	{
+		return "LanguageTool";
 	}
 }

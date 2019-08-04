@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -74,7 +74,7 @@ public class CheckCaptions extends Rule
 						Position start_p = s.getSourcePosition(new Position(line_cnt, start_pos));
 						Position end_p = s.getSourcePosition(new Position(line_cnt, i));
 						Range r = new Range(start_p, end_p);
-						out_list.add(new Advice(this, r, "A caption should end with a period", original.getResourceName(), original.getLine(line_cnt)));
+						out_list.add(new Advice(this, r, "A caption should end with a period", original.getResourceName(), original.getLine(line_cnt), original.getOffset(start_p)));
 						break;
 					}
 					period_seen = false;
@@ -90,5 +90,11 @@ public class CheckCaptions extends Rule
 			}
 		}
 		return out_list;
+	}
+
+	@Override
+	public String getDescription()
+	{
+		return "Period at the end of table and figure captions";
 	}
 }
