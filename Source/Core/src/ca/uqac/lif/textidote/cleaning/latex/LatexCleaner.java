@@ -306,17 +306,8 @@ public class LatexCleaner extends TextCleaner
 		for (int line_pos = 0; line_pos < as.lineCount(); line_pos++)
 		{
 			String orig_source_line = as.getLine(line_pos);
-			if (orig_source_line.trim().isEmpty())
-			{
-				continue;
-			}
 			AnnotatedString source_line = as.substring(new Position(line_pos, 0), new Position(line_pos, orig_source_line.length()));
 			AnnotatedString clean_line = removeMarkup(source_line, line_pos);
-			if (clean_line.toString().trim().isEmpty())
-			{
-				// Ignore completely blank lines
-				continue;
-			}
 			if (first_line)
 			{
 				first_line = false;
