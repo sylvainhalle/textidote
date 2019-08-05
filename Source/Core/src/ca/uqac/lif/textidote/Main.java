@@ -161,6 +161,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("quiet").withDescription("Don't print any message"));
 		cli_parser.addArgument(new Argument().withLongName("read-all").withDescription("Don't ignore lines before \\begin{document}"));
 		cli_parser.addArgument(new Argument().withLongName("remove").withArgument("envs").withDescription("Remove LaTeX environments envs"));
+		cli_parser.addArgument(new Argument().withLongName("remove-macros").withArgument("macs").withDescription("Remove LaTeX macros macs"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
@@ -251,6 +252,16 @@ public class Main
 			for (String id : ids)
 			{
 				env_blacklist.add(id);
+			}
+		}
+		// User has specified environments to remove
+		List<String> mac_blacklist = new ArrayList<String>();
+		if (map.hasOption("remove-macros"))
+		{
+			String[] ids = map.getOptionValue("remove-macros").split(",");
+			for (String id : ids)
+			{
+				mac_blacklist.add(id);
 			}
 		}
 		// User uses n-gram
@@ -354,6 +365,7 @@ public class Main
 						LatexCleaner latex_cleaner = new LatexCleaner();
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
 						latex_cleaner.ignoreEnvironments(env_blacklist);
+						latex_cleaner.ignoreMacros(mac_blacklist);
 						c_file.add(latex_cleaner);
 					}
 					else if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
@@ -550,6 +562,7 @@ public class Main
 					LatexCleaner latex_cleaner = new LatexCleaner();
 					latex_cleaner.setIgnoreBeforeDocument(!read_all);
 					latex_cleaner.ignoreEnvironments(env_blacklist);
+					latex_cleaner.ignoreMacros(mac_blacklist);
 					c_cleaner.add(latex_cleaner);
 					linter = new Linter(c_cleaner);
 					populateLatexRules(linter);

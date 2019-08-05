@@ -210,6 +210,56 @@ public class CleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{foo}}")));
 		assertEquals("Hello world. ", as.toString());
 	}
+	
+	@Test
+	public void testRemoveMacros1() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello \\foo world.")));
+		assertEquals("Hello world.", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveMacros2() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello \\foob world.")));
+		assertEquals("Hello \\foob world.", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveMacros3() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello \\foo{abc} world.")));
+		assertEquals("Hello world.", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveMacros4() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello \\foo[param=2]{abc} world.")));
+		assertEquals("Hello world.", as.toString());	
+	}
+	
+	@Test
+	public void testRemoveMacros5() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Hello \\foo.")));
+		assertEquals("Hello .", as.toString());	
+	}
 
 	@Test
 	public void testReplacementCleaner1() throws TextCleanerException

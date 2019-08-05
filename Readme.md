@@ -226,6 +226,14 @@ TeXtidote can be instructed to remove user-specified environments using the `--r
 
 This command will remove all text lines between `\begin{itemize}` and `\end{itemize}` before further processing the file.
 
+### Ignoring macros
+
+The same can be done with macros:
+
+    $ java -jar textidote.jar --remove-macros foo myfile.tex
+
+This command will remove all occurrences of use-defined command `\foo` in the text. Alternate syntaxes like `\foo{bar}` and `\foo[x=y]{bar}` are also recognized and deleted.
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`

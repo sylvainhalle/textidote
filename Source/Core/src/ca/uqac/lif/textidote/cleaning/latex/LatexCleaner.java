@@ -61,6 +61,11 @@ public class LatexCleaner extends TextCleaner
 	/*@ non_null @*/ protected final Set<String> m_environmentsToIgnore = new HashSet<String>();
 	
 	/**
+	 * A set of additional macro names to remove when cleaning up
+	 */
+	/*@ non_null @*/ protected final Set<String> m_macrosToIgnore = new HashSet<String>();
+	
+	/**
 	 * A list of <em>non-commented</em> <tt>input</tt> and <tt>include</tt>
 	 * declarations found in the file to be cleaned.
 	 */
@@ -93,6 +98,28 @@ public class LatexCleaner extends TextCleaner
 		m_environmentsToIgnore.addAll(e_names);
 		return this;
 	}
+	
+	/**
+	 * Adds a new macro name to remove when cleaning up
+	 * @param m_name The name of the macro
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreMacro(/*@ non_null @*/ String m_name)
+	{
+		m_macrosToIgnore.add(m_name);
+		return this;
+	}
+	
+	/**
+	 * Adds new macro names to remove when cleaning up
+	 * @param m_names A collection of macro names
+	 * @return This cleaner
+	 */
+	public LatexCleaner ignoreMacros(/*@ non_null @*/ Collection<String> m_names)
+	{
+		m_macrosToIgnore.addAll(m_names);
+		return this;
+	}
 
 	@Override
 	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
@@ -102,9 +129,30 @@ public class LatexCleaner extends TextCleaner
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
+		new_as = removeMacros(new_as);
 		fetchIncludes(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
+		return new_as;
+	}
+	
+	/**
+	 * Remove user-defined macros that should not be interpreted as text
+	 * @param as The string to clean
+	 * @return A string with the macros removed
+	 */
+	protected AnnotatedString removeMacros(AnnotatedString as)
+	{
+		AnnotatedString new_as = new AnnotatedString(as);
+		for (String macro : m_macrosToIgnore)
+		{
+			new_as = new_as.replaceAll("\\\\" + macro + "\\s", "");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}\\s", "");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}(\\b)", "$1");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}\\s", "");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}(\\b)", "$1");
+			new_as = new_as.replaceAll("\\\\" + macro + "(\\b)", "$1");
+		}
 		return new_as;
 	}
 
