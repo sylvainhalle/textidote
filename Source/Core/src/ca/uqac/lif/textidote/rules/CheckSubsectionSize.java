@@ -39,7 +39,7 @@ public class CheckSubsectionSize extends Rule
 	/**
 	 * The pattern to detect a new section heading.
 	 */
-	protected Pattern m_headingPattern = Pattern.compile("\\\\(chapter|section|subsection|subsubsection)");
+	protected Pattern m_headingPattern = Pattern.compile("\\\\(chapter|section|subsection|subsubsection)\\s*\\{");
 
 	/**
 	 * The minimum number of words in a subdivision
