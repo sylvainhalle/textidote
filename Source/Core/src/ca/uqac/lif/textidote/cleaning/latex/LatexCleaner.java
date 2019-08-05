@@ -339,6 +339,9 @@ public class LatexCleaner extends TextCleaner
 		// Ligatures
 		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
 		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
+		// Escaped braces
+		as_out = as_out.replaceAll("\\\\\\{", "{");
+		as_out = as_out.replaceAll("\\\\\\}", "}");
 		// Line breaks and paragraphs
 		as_out = as_out.replaceAll("\\\\\\\\", "");
 		as_out = as_out.replaceAll("\\\\par(\\b)", "$1");
