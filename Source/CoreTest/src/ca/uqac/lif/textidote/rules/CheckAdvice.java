@@ -49,9 +49,9 @@ public class CheckAdvice
 	@Test
 	public void testEquals()
 	{
-		Advice ad1 = new Advice(new CheckNoBreak(), Range.make(0, 0, 10), "message", "resource", "line");
-		Advice ad2 = new Advice(new CheckNoBreak(), Range.make(1, 0, 10), "message", "resource", "line");
-		Advice ad3 = new Advice(new CheckStackedHeadings(), Range.make(0, 0, 10), "message", "resource", "line");
+		Advice ad1 = new Advice(new CheckNoBreak(), Range.make(0, 0, 10), "message", "resource", "line", 0);
+		Advice ad2 = new Advice(new CheckNoBreak(), Range.make(1, 0, 10), "message", "resource", "line", 0);
+		Advice ad3 = new Advice(new CheckStackedHeadings(), Range.make(0, 0, 10), "message", "resource", "line", 0);
 		assertTrue(ad1.equals(ad1));
 		assertFalse(ad1.equals(ad2));
 		assertFalse(ad1.equals(ad3));

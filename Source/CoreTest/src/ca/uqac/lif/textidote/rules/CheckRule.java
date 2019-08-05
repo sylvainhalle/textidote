@@ -40,7 +40,6 @@ public class CheckRule
 	
 	public static class DummyRule extends Rule
 	{
-
 		public DummyRule(String name)
 		{
 			super(name);
@@ -51,6 +50,13 @@ public class CheckRule
 		{
 			// Don't care
 			return null;
+		}
+		
+		@Override
+		public String getDescription()
+		{
+			// Don't care
+			return "";
 		}
 	}
 }

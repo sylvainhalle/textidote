@@ -53,9 +53,12 @@ public class SinglelineAdviceRendererTest {
       public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original) {
         return new ArrayList<Advice>();
       }
+      public String getDescription() {
+          return "";
+        }
     };
     ArrayList<Advice> adList = new ArrayList<Advice>();
-    Advice ad = new Advice(rule, range, message, filename, line2);
+    Advice ad = new Advice(rule, range, message, filename, line2, 0);
     adList.add(ad);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     AnsiPrinter printer = new AnsiPrinter(baos);
