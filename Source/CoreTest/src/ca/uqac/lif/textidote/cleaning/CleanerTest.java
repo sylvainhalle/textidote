@@ -48,10 +48,10 @@ public class CleanerTest
 	{
 		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test1.tex"))));
-		assertEquals("Hello " + CRLF + "World", as.toString());
+		assertEquals(CRLF + "Hello " + CRLF + "World" + CRLF, as.toString());
 		Position p = as.getSourcePosition(new Position(1, 1));
-		assertEquals(2, p.getLine());
-		assertEquals(9, p.getColumn());
+		assertEquals(1, p.getLine());
+		assertEquals(7, p.getColumn());
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ public class CleanerTest
 	{
 		LatexCleaner detexer = new LatexCleaner();
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(CleanerTest.class.getResourceAsStream("data/test2.tex"))));
-		Position p = as.getSourcePosition(new Position(5, 1));
+		Position p = as.getSourcePosition(new Position(12, 1));
 		assertEquals(22, p.getLine());
 		assertEquals(9, p.getColumn());
 	}
