@@ -339,6 +339,9 @@ public class LatexCleaner extends TextCleaner
 		// Ligatures
 		as_out = as_out.replaceAll("\\\\oe\\{\\}", "œ");
 		as_out = as_out.replaceAll("\\\\ae\\{\\}", "æ");
+		// Line breaks and paragraphs
+		as_out = as_out.replaceAll("\\\\\\\\", "");
+		as_out = as_out.replaceAll("\\\\par(\\b)", "$1");
 		// Common environments
 		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote|frame)\\}", "");
 		// List items
