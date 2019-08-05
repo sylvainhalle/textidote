@@ -50,9 +50,12 @@ public class SinglelineAdviceRendererTest {
     Position end = new Position(endLine, endCol);
     Range range = new Range(start, end);
     Rule rule = new Rule(rulename) {
-      public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original) {
+      @Override
+      public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original)
+      {
         return new ArrayList<Advice>();
       }
+      @Override
       public String getDescription() {
           return "";
         }

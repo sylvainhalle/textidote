@@ -40,7 +40,12 @@ public class CheckRegexTest
 	 * A map of all regex rule names to rule instances
 	 */
 	protected final Map<String,RegexRule> m_rules = Main.readRules(Main.REGEX_FILENAME);
-	
+
+	/**
+	 * A map of all detex regex rule names to rule instances
+	 */
+	protected final Map<String, RegexRule> m_detex_rules = Main.readRules(Main.REGEX_FILENAME_DETEX);
+
 	@Test
 	public void testGeneric1()
 	{
@@ -49,7 +54,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
-	
+
 	@Test
 	public void testGeneric2()
 	{
@@ -58,7 +63,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(2, ad_list.size());
 	}
-	
+
 	@Test
 	public void testCmul1()
 	{
@@ -67,7 +72,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
-	
+
 	@Test
 	public void testCmul2()
 	{
@@ -76,7 +81,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
-	
+
 	@Test
 	public void testCmul3()
 	{
@@ -85,7 +90,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
 	}
-	
+
 	@Test
 	public void testCmul4()
 	{
@@ -94,7 +99,7 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
 	}
-	
+
 	@Test
 	public void testCmul5()
 	{
@@ -181,6 +186,24 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g., foo"));
 		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+
+	@Test
+	public void testD002_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Hello world.Bye."));
+		Rule r = m_detex_rules.get("sh:d:002");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(1, ad_list.size());
+	}
+
+	@Test
+	public void testD002_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Foo e.g. bar"));
+		Rule r = m_detex_rules.get("sh:d:002");
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(0, ad_list.size());
 	}
