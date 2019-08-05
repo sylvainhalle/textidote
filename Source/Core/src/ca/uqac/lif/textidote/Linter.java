@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2019  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -121,13 +121,55 @@ public class Linter
 	
 	/**
 	 * Adds a list of rule IDs to ignore
-	 * @param list The list of rule IDs to ignore
+	 * @param list The list of rule IDs to ignore. IDs can also contain the
+	 * wildcard character <tt>*</tt>; this can be used to ignore multiple
+	 * rules at once.
 	 * @return This linter
 	 */
 	/*@ non_null @*/ public Linter addToBlacklist(/*@ non_null @*/ List<String> list)
 	{
-		m_blacklist.addAll(list);
+		for (String rule_pat : list)
+		{
+			if (rule_pat.contains("*"))
+			{
+				m_blacklist.addAll(getMatchingRules(rule_pat));
+			}
+			else
+			{
+				m_blacklist.add(rule_pat);
+			}
+		}
 		return this;
+	}
+	
+	/**
+	 * Gets all the rules whose name matches a pattern.
+	 * @param rule_pattern The pattern. The only special character allowed is
+	 * the wildcard (<tt>*</tt>), which can match zero or more arbitrary
+	 * characters in the rule's name.
+	 * @return The list of rules matching the pattern
+	 */
+	protected List<String> getMatchingRules(String rule_pattern)
+	{
+		List<String> list = new ArrayList<String>();
+		String regex_pat = rule_pattern.replaceAll("\\*", ".*");
+		for (Rule r : m_rules)
+		{
+			String r_name = r.getName();
+			if (r_name.matches(regex_pat))
+			{
+				list.add(r_name);
+			}
+		}
+		for (Rule r : m_rulesDetexed)
+		{
+			String r_name = r.getName();
+			if (r_name.matches(regex_pat))
+			{
+				list.add(r_name);
+			}
+		}
+		return list;
 	}
 	
 	/**
