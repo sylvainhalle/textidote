@@ -50,12 +50,19 @@ public class SinglelineAdviceRendererTest {
     Position end = new Position(endLine, endCol);
     Range range = new Range(start, end);
     Rule rule = new Rule(rulename) {
-      public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original) {
+      @Override
+      public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original)
+      {
         return new ArrayList<Advice>();
+      }
+      @Override
+      public String getDescription()
+      {
+        return "";
       }
     };
     ArrayList<Advice> adList = new ArrayList<Advice>();
-    Advice ad = new Advice(rule, range, message, filename, line2);
+    Advice ad = new Advice(rule, range, message, filename, line2, 0);
     adList.add(ad);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     AnsiPrinter printer = new AnsiPrinter(baos);
