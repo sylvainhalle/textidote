@@ -320,7 +320,13 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("~", " ");
 		// Dots
 		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
-		// Inline equations are replaced by "X"
+		// Inline display math with only digits and letters
+		as_out = as_out.replaceAll("\\\\\\(([A-Za-z0-9,\\.]*?)\\\\\\)", "$1");
+		// Otherwise, replace by X
+		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");
+		// Equations are removed
+		as_out = as_out.replaceAll("\\\\\\[.*?\\\\\\]", "");
+		// Inline equations in old TeX style ("$foo$")
 		as_out = replaceInlineEquations(as_out, line_pos);
 		/*as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		//as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
