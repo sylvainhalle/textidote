@@ -74,9 +74,10 @@ public class CheckSubsectionSize extends Rule
 	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
 	{
 		Stack<SectionInfo> sections = new Stack<SectionInfo>();
+		SectionInfo doc_head = new SectionInfo("", new Range(Position.ZERO, Position.ZERO));
 		List<Advice> out_list = new ArrayList<Advice>();
 		List<String> lines = s.getLines();
-		sections.push(new SectionInfo("", new Range(Position.ZERO, Position.ZERO)));
+		sections.push(doc_head);
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
 			String line = lines.get(line_cnt);
@@ -90,6 +91,7 @@ public class CheckSubsectionSize extends Rule
 				SectionInfo si_last = sections.peek();
 				if (SectionInfo.isMoveDown(si_last, si))
 				{
+					si_last.m_size++;
 					sections.push(si);
 				}
 				else
@@ -114,6 +116,16 @@ public class CheckSubsectionSize extends Rule
 								Range r2 = si_last.m_range;
 								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
 							}
+						}
+						if (sections.isEmpty())
+						{
+							sections.push(doc_head);
+						}
+						else
+						{
+							SectionInfo si_parent = sections.peek();
+							si_parent.m_size++;
+							sections.push(si);
 						}
 						sections.push(si);
 					}
