@@ -149,6 +149,8 @@ public class JsonAdviceRenderer extends AdviceRenderer
 	 * Renders a partial line of text surrounding the location of the advice.
 	 * @param line The line of text
 	 * @param range The range to highlight
+	 * @param line_width An approximate length for the line of text to produce
+	 * @return The excerpt
 	 */
 	protected String renderExcerpt(/*@ non_null @*/ String line, /*@ non_null @*/ Range range, int line_width)
 	{
