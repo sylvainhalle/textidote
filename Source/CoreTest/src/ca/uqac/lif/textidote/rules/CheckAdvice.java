@@ -29,7 +29,7 @@ import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
-public class CheckAdvice 
+public class CheckAdvice
 {
 	@Test
 	public void testToString()
@@ -40,12 +40,12 @@ public class CheckAdvice
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		Advice ad = ad_list.get(0);		
+		Advice ad = ad_list.get(0);
 		String s = ad.toString();
 		assertNotNull(s);
 		assertFalse(s.isEmpty());
 	}
-	
+
 	@Test
 	public void testEquals()
 	{
