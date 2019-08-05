@@ -51,4 +51,14 @@ public class CheckSubsectionSizeTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertTrue(ad_list.isEmpty());
 	}
+	
+	@Test
+	public void test3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-4.tex")));
+		CheckSubsectionSize r = new CheckSubsectionSize();
+		r.setMinNumWords(40);
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertFalse(ad_list.isEmpty());
+	}
 }
