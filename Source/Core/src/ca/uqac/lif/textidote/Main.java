@@ -498,10 +498,12 @@ public class Main
 		// Process files
 		int num_advice = 0;
 		int num_files = 0;
+		List<String> cmd_filenames = map.getOthers();
 		List<String> filenames = map.getOthers();
 		if (filenames.isEmpty())
 		{
 			filenames.add("--"); // This indicates: read from stdin
+			cmd_filenames.add("--");
 		}
 		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
@@ -560,7 +562,14 @@ public class Main
 				else
 				{
 					LatexCleaner latex_cleaner = new LatexCleaner();
-					latex_cleaner.setIgnoreBeforeDocument(!read_all);
+					if (cmd_filenames.contains(filename))
+					{
+						latex_cleaner.setIgnoreBeforeDocument(!read_all);
+					}
+					else
+					{
+						latex_cleaner.setIgnoreBeforeDocument(false);
+					}
 					latex_cleaner.ignoreEnvironments(env_blacklist);
 					latex_cleaner.ignoreMacros(mac_blacklist);
 					c_cleaner.add(latex_cleaner);
