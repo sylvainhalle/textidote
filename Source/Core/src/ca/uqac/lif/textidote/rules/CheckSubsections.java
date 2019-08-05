@@ -38,7 +38,7 @@ public class CheckSubsections extends Rule
 	/**
 	 * The pattern to detect a new section heading.
 	 */
-	protected Pattern m_headingPattern = Pattern.compile("\\\\(part|chapter|section|subsection|subsubsection|paragraph)");
+	protected Pattern m_headingPattern = Pattern.compile("\\\\(part|chapter|section|subsection|subsubsection|paragraph)\\s*\\{");
 
 	/**
 	 * Creates a new instance of the rule

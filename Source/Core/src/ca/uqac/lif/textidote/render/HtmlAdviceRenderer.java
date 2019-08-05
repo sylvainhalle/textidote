@@ -247,7 +247,8 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 		}
 		s = s.replaceAll("\\\\(textbf|emph|textit|section|subsection|subsubsection|paragraph|includegraphics|caption|label|maketitle|documentclass|item|documentclass|usepackage|title)", "<span class=\"keyword1\">\\\\$1</span>");
 		s = s.replaceAll("\\\\(begin|end)(\\{.*?\\})", "<span class=\"keyword2\">\\\\$1$2</span>");
-		s = s.replaceAll("(%.*)$", "<span class=\"comment\">$1</span>");
+		s = s.replaceAll("^(%.*)$", "<span class=\"comment\">$1</span>");
+		s = s.replaceAll("([^\\\\])(%.*)$", "$1<span class=\"comment\">$2</span>");
 		return s;
 	}
 
