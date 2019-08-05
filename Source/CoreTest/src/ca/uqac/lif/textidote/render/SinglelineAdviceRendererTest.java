@@ -55,6 +55,7 @@ public class SinglelineAdviceRendererTest {
       {
         return new ArrayList<Advice>();
       }
+      @Override
       public String getDescription() {
           return "";
         }
