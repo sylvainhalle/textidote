@@ -135,7 +135,7 @@ public class Advice implements Comparable<Advice>
 	
 	/**
 	 * Sets a list of replacements for this advice
-	 * @param message The replacements
+	 * @param replacements The replacements
 	 */
 	public void setReplacements(/*@ null @*/ List<String> replacements)
 	{
