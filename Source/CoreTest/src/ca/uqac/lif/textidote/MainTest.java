@@ -77,7 +77,7 @@ public class MainTest
 		int ret_code = Main.mainLoop(new String[] {"--output", "html", "--read-all"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
-		assertEquals(4, ret_code);
+		assertTrue(ret_code > 0);
 	}
 
 	@Test(timeout = 2000)
