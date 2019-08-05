@@ -556,6 +556,10 @@ public class LatexCleaner extends TextCleaner
 			if (mat.find())
 			{
 				String filename = mat.group(2).trim();
+				if (!filename.endsWith(".tex"))
+				{
+					filename += ".tex";
+				}
 				m_innerFiles.add(filename);
 			}
 		}
