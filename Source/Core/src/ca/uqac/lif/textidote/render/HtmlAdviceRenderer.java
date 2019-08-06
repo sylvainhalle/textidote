@@ -30,7 +30,7 @@ import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.util.AnsiPrinter;
 
-public class HtmlAdviceRenderer extends AdviceRenderer 
+public class HtmlAdviceRenderer extends AdviceRenderer
 {
 	/**
 	 * Creates a new HTML advice renderer
@@ -43,7 +43,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 	}
 
 	@Override
-	public void render() 
+	public void render()
 	{
 		printFromInternalFile("preamble.html");
 		boolean map_single = m_advice.size() <= 1;
@@ -61,6 +61,10 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 			m_printer.println("<p>Found " + list.size() + " warning(s)</p>");
 			m_printer.println("<div class=\"original-file\">");
 			int num_digits = (int) Math.ceil((Math.log10(original_string.lineCount())));
+			if (num_digits == 0)
+			{
+				num_digits = 1;
+			}
 			for (int cur_line_nb = 0; cur_line_nb < original_string.lineCount(); cur_line_nb++)
 			{
 				String cur_line = original_string.getLine(cur_line_nb);
@@ -128,7 +132,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 				m_printer.print(highlightLatex(a_cur_line.toString()));
 				m_printer.println("</div><div class=\"clear\"></div>");
 			}
-			m_printer.println("</div>");			
+			m_printer.println("</div>");
 		}
 		printFromInternalFile("postamble.html");
 	}
@@ -171,7 +175,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 			String line = scanner.nextLine();
 			m_printer.println(line);
 		}
-		scanner.close();	
+		scanner.close();
 	}
 
 	/**
@@ -183,7 +187,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 	 */
 	/*@ pure non_null @*/ protected Map<Integer,List<Advice>> groupAdviceByStartLine(/*@ non_null @*/ List<Advice> list, AnnotatedString original_string)
 	{
-		Map<Integer,List<Advice>> map = new HashMap<Integer,List<Advice>>(); 
+		Map<Integer,List<Advice>> map = new HashMap<Integer,List<Advice>>();
 		for (Advice ad : list)
 		{
 			Position start_pos = ad.getRange().getStart();
@@ -254,7 +258,7 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 
 	protected static String printLineNumber(int n, int width)
 	{
-		StringBuilder out = new StringBuilder(); 
+		StringBuilder out = new StringBuilder();
 		out.append("<div class=\"linenb\">");
 		String number = String.format("%" + width + "d", n);
 		number = number.replaceAll(" ", "&nbsp;");
