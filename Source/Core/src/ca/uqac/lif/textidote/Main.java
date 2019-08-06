@@ -81,7 +81,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	public static final String VERSION_STRING = "0.8";
+	public static final String VERSION_STRING = "0.8.1";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -508,6 +508,7 @@ public class Main
 		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
 		filename_queue.addAll(filenames);
+		String top_level_filename = null;
 		while (!filename_queue.isEmpty())
 		{
 			String filename = filename_queue.remove();
@@ -516,6 +517,11 @@ public class Main
 				continue;
 			}
 			processed_filenames.add(filename);
+			if (top_level_filename == null || cmd_filenames.contains(filename))
+			{
+				// This is a top level filename
+				top_level_filename = filename;
+			}
 			Scanner scanner = null;
 			try
 			{
@@ -608,7 +614,15 @@ public class Main
 				List<Advice> all_advice = linter.evaluateAll(last_string);
 				renderer.addAdvice(filename, last_string, all_advice);
 				num_advice += all_advice.size();
-				addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, filename);
+				int added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename);
+				if (added > 0 && cmd_filenames.size() > 1)
+				{
+					// Corner case where file checking does not work
+					stderr.println("Warning: one of the input files refers to sub-files, and");
+					stderr.println("more than one file is specified on the command line. When");
+					stderr.println("using sub-files, you should provide a single root document.");
+					return -5;
+				}
 			}
 			catch (LinterException e)
 			{
@@ -845,10 +859,12 @@ public class Main
 	 * This object is modified by the current method (new filenames can be
 	 * added to it).
 	 * @param current_filename The name of the file currently being processed
+	 * @return The number of new files added to the queue
 	 */
-	protected static void addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames,
+	protected static int addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames,
 			Queue<String> file_queue, String current_filename)
 	{
+		int added = 0;
 		File f = new File(current_filename);
 		String parent_path = f.getParent();
 		if (parent_path == null)
@@ -869,7 +885,9 @@ public class Main
 			if (!processed_filenames.contains(filename))
 			{
 				file_queue.add(parent_path + filename);
+				added++;
 			}
 		}
+		return added;
 	}
 }
