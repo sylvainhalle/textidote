@@ -167,6 +167,11 @@ associated to each message back into line/column numbers of the original
 source file. For more information about the kind of verifications made by
 Language Tool, please refer to [its website](https://languagetool.org).
 
+Additionally, the `--firstlang lang` option can be used to make Language Tool check for false friends in your first language.
+For example, to check a text in english, when your first language is german, you may run:
+
+    java -jar textidote.jar --check en --firstlang de example.tex
+
 The language codes you can use are:
 
 - `de`: (Germany) German, and the variants `de_AT` (Austrian) and `de_CH`

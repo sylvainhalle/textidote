@@ -149,6 +149,7 @@ public class Main
 		// Setup command line parser and arguents
 		CliParser cli_parser = new CliParser();
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
+		cli_parser.addArgument(new Argument().withLongName("firstlang").withArgument("lang").withDescription("Checks for false friends with the author's first language lang and the language specified in --check"));
 		cli_parser.addArgument(new Argument().withLongName("clean").withDescription("Remove markup from input file"));
 		cli_parser.addArgument(new Argument().withLongName("dict").withArgument("file").withDescription("Load dictionary from file"));
 		cli_parser.addArgument(new Argument().withLongName("help").withDescription("\tShow command line usage"));
@@ -429,6 +430,7 @@ public class Main
 		// Do we check the language?
 		List<String> dictionary = new ArrayList<String>();
 		String lang_s = "";
+		String firstlang_s = "";
 		if (map.hasOption("check"))
 		{
 			lang_s = map.getOptionValue("check");
@@ -444,6 +446,10 @@ public class Main
 			catch (FileNotFoundException e)
 			{
 				// Do nothing
+			}
+			if (map.hasOption("firstlang"))
+			{
+				firstlang_s = map.getOptionValue("firstlang");
 			}
 			if (map.hasOption("dict"))
 			{
@@ -587,7 +593,7 @@ public class Main
 				{
 					try
 					{
-						CheckLanguage cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary);
+						CheckLanguage cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), LanguageFactory.getLanguageFromString(firstlang_s), dictionary);
 						if (f_ngram_dir != null)
 						{
 							cl.activateLanguageModelRules(f_ngram_dir);
