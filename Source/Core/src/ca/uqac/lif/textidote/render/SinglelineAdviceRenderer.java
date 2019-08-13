@@ -73,14 +73,18 @@ public class SinglelineAdviceRenderer extends AdviceRenderer {
 		m_printer.setForegroundColor(Color.WHITE);
 		Position start = range.getStart();
 		Position end = range.getEnd();
-		if(start.compareTo(end) < 0)
+		if (start.compareTo(end) < 0 && start.getColumn() <= line.length())
 		{
 			m_printer.print(line.substring(0, start.getColumn()));
 			m_printer.setForegroundColor(Color.LIGHT_RED);
-			m_printer.print(line.substring(start.getColumn(), end.getColumn() + 1));
-			m_printer.setForegroundColor(Color.WHITE);
-			if(end.getColumn() + 1 < line.length())
+			if (start.getLine() != end.getLine() || end.getColumn() + 1 >= line.length())
 			{
+				m_printer.print(line.substring(start.getColumn(), line.length()));
+			}
+			else
+			{
+				m_printer.print(line.substring(start.getColumn(), end.getColumn() + 1));
+				m_printer.setForegroundColor(Color.WHITE);
 				m_printer.print(line.substring(end.getColumn() + 1, line.length()));
 			}
 		}
