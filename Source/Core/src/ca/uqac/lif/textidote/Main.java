@@ -107,6 +107,7 @@ public class Main
 	 * @param args Command-line arguments
 	 * @throws IOException Thrown if some file cannot be found or open
 	 */
+	@SuppressWarnings({"squid:S106"})
 	public static void main(String[] args) throws IOException
 	{
 		System.exit(mainLoop(args, System.in, System.out, System.err));
