@@ -26,6 +26,7 @@ import org.languagetool.language.Dutch;
 import org.languagetool.language.French;
 import org.languagetool.language.GermanyGerman;
 import org.languagetool.language.Portuguese;
+import org.languagetool.language.BrazilianPortuguese;
 import org.languagetool.language.Spanish;
 import org.languagetool.language.SwissGerman;
 
@@ -83,6 +84,10 @@ public class LanguageFactory
 		if (s.compareToIgnoreCase("pt") == 0)
 		{
 			return new Portuguese();
+		}
+		if (s.compareToIgnoreCase("pt_BR") == 0)
+		{
+			return new BrazilianPortuguese();
 		}
 		return null;
 	}
