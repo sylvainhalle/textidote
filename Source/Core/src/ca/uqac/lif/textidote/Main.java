@@ -110,21 +110,7 @@ public class Main
 	@SuppressWarnings({"squid:S106"})
 	public static void main(String[] args) throws IOException
 	{
-		System.exit(mainLoop(args, System.in, System.out, System.err));
-	}
-
-	/**
-	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, Class)}.
-	 * @param args Command-line arguments
-	 * @param in A stream corresponding to the standard input
-	 * @param out A stream corresponding to the standard output
-	 * @param err A stream corresponding to the standard error
-	 * @return An exit code
-	 * @throws IOException Thrown if some file cannot be found or open
-	 */
-	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
-	{
-		return mainLoop(args, in, out, err, null);
+		mainLoop(args, System.in, System.out, System.err, null);
 	}
 
 	/**
@@ -142,7 +128,7 @@ public class Main
 	 * @return An exit code
 	 * @throws IOException Thrown if some file cannot be found or open
 	 */
-	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
+	public static void mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
 	{
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
@@ -203,7 +189,7 @@ public class Main
 		if (map == null)
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", err);
-			return -1;
+			return;
 		}
 		if (map.hasOption("name"))
 		{
@@ -224,7 +210,7 @@ public class Main
 		if (map.hasOption("version"))
 		{
 			printGreeting(stdout);
-			return 0;
+			return;
 		}
 		if (map.hasOption("quiet"))
 		{
@@ -292,7 +278,7 @@ public class Main
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", stderr);
 			stdout.close();
-			return 0;
+			return;
 		}
 		if (map.hasOption("type"))
 		{
@@ -390,7 +376,7 @@ public class Main
 				catch (TextCleanerException e)
 				{
 					stderr.print(e.getMessage());
-					return -1;
+					return;
 				}
 				catch (FileNotFoundException e)
 				{
@@ -405,7 +391,7 @@ public class Main
 				}
 			}
 			stdout.close();
-			return 0;
+			return;
 		}
 
 		// Create a linter
@@ -607,7 +593,7 @@ public class Main
 					{
 						stderr.println("Unknown language: " + map.getOptionValue("check"));
 						stdout.close();
-						return -1;
+						return;
 					}
 				}
 				AnnotatedString last_string = AnnotatedString.read(scanner);
@@ -622,13 +608,13 @@ public class Main
 					stderr.println("Warning: one of the input files refers to sub-files, and");
 					stderr.println("more than one file is specified on the command line. When");
 					stderr.println("using sub-files, you should provide a single root document.");
-					return -5;
+					return;
 				}
 			}
 			catch (LinterException e)
 			{
 				stderr.print(e.getMessage());
-				return -1;
+				return;
 			}
 			catch (FileNotFoundException e)
 			{
@@ -646,7 +632,7 @@ public class Main
 		{
 			// No file was processed
 			stdout.close();
-			return -1;
+			return;
 		}
 		long end_time = System.currentTimeMillis();
 		stderr.println("Found " + num_advice + " warning(s)");
@@ -655,9 +641,6 @@ public class Main
 
 		// Render all the advice
 		renderer.render();
-
-		// The exit code is the number of warnings raised
-		return num_advice;
 	}
 
 	/**
