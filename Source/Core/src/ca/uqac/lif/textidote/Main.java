@@ -110,7 +110,21 @@ public class Main
 	@SuppressWarnings({"squid:S106"})
 	public static void main(String[] args) throws IOException
 	{
-		mainLoop(args, System.in, System.out, System.err, null);
+		System.exit(mainLoop(args, System.in, System.out, System.err));
+	}
+
+	/**
+	 * Delegate method of {@link #mainLoop(String[], InputStream, PrintStream, PrintStream, Class)}.
+	 * @param args Command-line arguments
+	 * @param in A stream corresponding to the standard input
+	 * @param out A stream corresponding to the standard output
+	 * @param err A stream corresponding to the standard error
+	 * @return An exit code
+	 * @throws IOException Thrown if some file cannot be found or open
+	 */
+	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err) throws IOException
+	{
+		return mainLoop(args, in, out, err, null);
 	}
 
 	/**
@@ -128,7 +142,7 @@ public class Main
 	 * @return An exit code
 	 * @throws IOException Thrown if some file cannot be found or open
 	 */
-	public static void mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
+	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
 	{
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
@@ -153,6 +167,10 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
+		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
+
+		// Check if we are using textidote in a CI tool
+		boolean usingCI = false;
 
 		// Check if there is a parameter filename
 		ArgumentMap map = null;
@@ -189,7 +207,7 @@ public class Main
 		if (map == null)
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", err);
-			return;
+			return -1;
 		}
 		if (map.hasOption("name"))
 		{
@@ -210,7 +228,7 @@ public class Main
 		if (map.hasOption("version"))
 		{
 			printGreeting(stdout);
-			return;
+			return 0;
 		}
 		if (map.hasOption("quiet"))
 		{
@@ -278,7 +296,7 @@ public class Main
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", stderr);
 			stdout.close();
-			return;
+			return 0;
 		}
 		if (map.hasOption("type"))
 		{
@@ -376,7 +394,7 @@ public class Main
 				catch (TextCleanerException e)
 				{
 					stderr.print(e.getMessage());
-					return;
+					return -1;
 				}
 				catch (FileNotFoundException e)
 				{
@@ -391,7 +409,7 @@ public class Main
 				}
 			}
 			stdout.close();
-			return;
+			return 0;
 		}
 
 		// Create a linter
@@ -476,6 +494,10 @@ public class Main
 				stdout.disableColors();
 				renderer = new JsonAdviceRenderer(stdout, lang_s);
 			}
+		}
+		if (map.hasOption("ci"))
+		{
+			usingCI = true;
 		}
 		else
 		{
@@ -593,7 +615,7 @@ public class Main
 					{
 						stderr.println("Unknown language: " + map.getOptionValue("check"));
 						stdout.close();
-						return;
+						return -1;
 					}
 				}
 				AnnotatedString last_string = AnnotatedString.read(scanner);
@@ -608,13 +630,13 @@ public class Main
 					stderr.println("Warning: one of the input files refers to sub-files, and");
 					stderr.println("more than one file is specified on the command line. When");
 					stderr.println("using sub-files, you should provide a single root document.");
-					return;
+					return -5;
 				}
 			}
 			catch (LinterException e)
 			{
 				stderr.print(e.getMessage());
-				return;
+				return -1;
 			}
 			catch (FileNotFoundException e)
 			{
@@ -632,7 +654,7 @@ public class Main
 		{
 			// No file was processed
 			stdout.close();
-			return;
+			return -1;
 		}
 		long end_time = System.currentTimeMillis();
 		stderr.println("Found " + num_advice + " warning(s)");
@@ -641,6 +663,9 @@ public class Main
 
 		// Render all the advice
 		renderer.render();
+
+		// The exit code is the number of warnings raised
+		return usingCI ? 0 : num_advice;
 	}
 
 	/**
