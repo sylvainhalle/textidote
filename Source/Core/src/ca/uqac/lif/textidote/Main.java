@@ -167,6 +167,10 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
+		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
+
+		// Check if we are using textidote in a CI tool
+		boolean usingCI = false;
 
 		// Check if there is a parameter filename
 		ArgumentMap map = null;
@@ -491,6 +495,10 @@ public class Main
 				renderer = new JsonAdviceRenderer(stdout, lang_s);
 			}
 		}
+		if (map.hasOption("ci"))
+		{
+			usingCI = true;
+		}
 		else
 		{
 			renderer = new AnsiAdviceRenderer(stdout);
@@ -657,7 +665,7 @@ public class Main
 		renderer.render();
 
 		// The exit code is the number of warnings raised
-		return num_advice;
+		return usingCI ? 0 : num_advice;
 	}
 
 	/**
