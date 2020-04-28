@@ -391,7 +391,7 @@ Make this file executable by typing at the command line:
 
     sudo chmod +x /usr/local/bin/textidote
 
-(These two operations also require root previliges.) From then on, you can
+(These two operations also require root privileges.) From then on, you can
 invoke TeXtidote on the command line from any folder by simply typing
 `textidote`, e.g.:
 
