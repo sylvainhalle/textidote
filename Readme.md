@@ -345,7 +345,7 @@ you follow a few formatting conventions when writing your LaTeX file:
   nonsensical warnings.
 - Do not hard-wrap your paragraphs. It is easier for TeXtidote to detect
   paragraphs if they have no hard carriage returns inside. (If you need word
-  wrapping, it is preferrable to enable it in your text editor.)
+  wrapping, it is preferable to enable it in your text editor.)
 - Put headings like `\section` or `\paragraph` alone on their line and
   separate them from the text below by a blank line.
 
