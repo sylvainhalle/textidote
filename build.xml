@@ -69,7 +69,7 @@
   <property name="coverage.reportdir" value="tests/coverage"/>
   
   <!-- The project's main class. This is used for the generation of the
-       runable JAR file in the "jar" target -->
+       runnable JAR file in the "jar" target -->
   <property name="build.mainclass" value="ca.uqac.lif.antrun.Main"/>
   
   <!-- Debug level. If set to true, will produce more detailed reports
