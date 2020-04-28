@@ -116,7 +116,7 @@ public class JsonAdviceRenderer extends AdviceRenderer
 				match.put("sentence", excerpt);
 				{
 					JsonMap type = new JsonMap();
-					type.put("typeName", "Other"); // Havent't seen any other value
+					type.put("typeName", "Other"); // Haven't seen any other value
 					match.put("type", type);
 				}
 				{
