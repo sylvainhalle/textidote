@@ -93,7 +93,7 @@ file `report.html` (using the *File/Open* menu). You should see something like t
 ![Screenshot](https://raw.githubusercontent.com/sylvainhalle/textidote/master/docs/assets/images/Screenshot.png)
 
 As you can see, the page shows your original LaTeX source file, where some
-portions have been highlighted in various colors. These correpond to regions
+portions have been highlighted in various colors. These correspond to regions
 in the file where an issue was found. You can hover your mouse over these
 colored regions; a tooltip will show a message that describes the problem.
 
