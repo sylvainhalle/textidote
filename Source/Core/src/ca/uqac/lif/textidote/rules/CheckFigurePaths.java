@@ -70,7 +70,7 @@ public class CheckFigurePaths extends Rule
 				String path = mat.group(2).trim();
 				if (isAbsolute(path))
 				{
-					// Aboslute path
+					// Absolute path
 					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2)));
 					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2) + mat.group(2).length()));
 					Range r = new Range(start_pos, end_pos);
