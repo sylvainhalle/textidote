@@ -508,7 +508,7 @@ If the `--check` option is used, you can add the `--languagemodel xx` option to 
 - There should not be a jump down between two non-successive section
   levels (e.g. a `\section` followed by a `\subsubsection` without a
   `\subsection` in between). [sh:secskip]
-- You should avoid stacked headings, i.e. consecutive headings wihtout
+- You should avoid stacked headings, i.e. consecutive headings without
   text in between. [sh:stacked]
 
 ### Hard-coding
