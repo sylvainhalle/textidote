@@ -337,7 +337,7 @@ Simply call TeXtidote with a Markdown input file instead of a LaTeX file. The fo
 It order to get the best results when using TeXtidote, it is advisable that
 you follow a few formatting conventions when writing your LaTeX file:
 
-- Avoid putting multiple `\begin{envionment}` and/or `\end{environment}` on
+- Avoid putting multiple `\begin{environment}` and/or `\end{environment}` on
   the same line
 - Keep the arguments of a command on a single line. Commands (such as
   `\title{}`) that have their opening and closing braces on different lines
