@@ -572,7 +572,7 @@ TeXtidote can test itself by running:
     ant test
 
 Unit tests are run with [jUnit](http://junit.org); a detailed report of
-these tests in HTML format is availble in the folder `tests/junit`, which
+these tests in HTML format is available in the folder `tests/junit`, which
 is automatically created. Code coverage is also computed with
 [JaCoCo](http://www.eclemma.org/jacoco/); a detailed report is available
 in the folder `tests/coverage`.
