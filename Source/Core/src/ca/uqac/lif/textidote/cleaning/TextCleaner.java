@@ -48,7 +48,7 @@ public abstract class TextCleaner
 	/*@ non_null @*/ public abstract AnnotatedString clean(/*@ non_null @*/ AnnotatedString s) throws TextCleanerException;
 	
 	/**
-	 * Removes portions of the string indentified as comments, but keeps all
+	 * Removes portions of the string identified as comments, but keeps all
 	 * other markup.
 	 * @param s The original string. Note that this string can be modified
 	 * by the method.
