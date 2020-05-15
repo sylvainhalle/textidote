@@ -441,9 +441,14 @@ public class Main
 			try
 			{
 				String dict_filename = ASPELL_DICT_FILENAME.replace("XX", lang_s);
-				if (dictionary.addAll(readDictionary(dict_filename)))
+				Set<String> dict = readDictionary(dict_filename);
+				if (dictionary.addAll(dict))
 				{
 					stderr.println("Found local Aspell dictionary in " + dict_filename);
+				}
+				if (dict.isEmpty())
+				{
+					stderr.println("Warning: nothing read from local dictionary. Is the file written with the proper encoding?");
 				}
 			}
 			catch (FileNotFoundException e)
@@ -454,7 +459,12 @@ public class Main
 			{
 				try
 				{
-					dictionary.addAll(readDictionary(map.getOptionValue("dict")));
+					Set<String> dict = readDictionary(map.getOptionValue("dict"));
+					dictionary.addAll(dict);
+					if (dict.isEmpty())
+					{
+						stderr.println("Warning: nothing read from dictionary file. Is the file written with the proper encoding?");
+					}
 				}
 				catch (FileNotFoundException e)
 				{
