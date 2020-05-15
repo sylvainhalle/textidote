@@ -30,30 +30,39 @@ import ca.uqac.lif.util.AnsiPrinter.Color;
 /**
  * Renders advice to a terminal (such as {@code stdin}), printing a single line
  * per advice, using colored output.
+ * 
  * @author toolcreator
  */
-public class SinglelineAdviceRenderer extends AdviceRenderer {
+public class SinglelineAdviceRenderer extends AdviceRenderer
+{
 	/**
 	 * Creates a new advice renderer
 	 *
-	 * @param printer The printer to which the advice will be printed
+	 * @param printer
+	 *          The printer to which the advice will be printed
 	 */
-	public SinglelineAdviceRenderer(AnsiPrinter printer) {
+	public SinglelineAdviceRenderer(AnsiPrinter printer)
+	{
 		super(printer);
 	}
 
 	@Override
-	public void render() {
-		for (Map.Entry<String, List<Advice>> entry : m_advice.entrySet()) {
+	public void render()
+	{
+		for (Map.Entry<String, List<Advice>> entry : m_advice.entrySet())
+		{
 			String filename = entry.getKey();
 			List<Advice> list = entry.getValue();
-			if (!list.isEmpty()) {
-				for (Advice ad : list) {
+			if (!list.isEmpty())
+			{
+				for (Advice ad : list)
+				{
 					m_printer.setForegroundColor(Color.YELLOW);
 					m_printer.print(filename + "(" + ad.getRange() + ")");
 					m_printer.resetColors();
 					m_printer.print(": ");
-					m_printer.print(ad.getMessage().replaceAll("<suggestion>", "").replaceAll("</suggestion", "").trim());
+					m_printer.print(
+							ad.getMessage().replaceAll("<suggestion>", "").replaceAll("</suggestion", "").trim());
 					renderExcerpt(ad.getLine(), ad.getRange());
 					m_printer.println();
 				}
@@ -62,12 +71,15 @@ public class SinglelineAdviceRenderer extends AdviceRenderer {
 	}
 
 	/**
-	 * Renders a line of text and "highlights" a portion of it. The highlight
-	 * here is represented by printing the text red:
-	 * @param line The line of text
-	 * @param range The range to highlight
+	 * Renders a line of text and "highlights" a portion of it. The highlight here
+	 * is represented by printing the text red:
+	 * 
+	 * @param line
+	 *          The line of text
+	 * @param range
+	 *          The range to highlight
 	 */
-	protected void renderExcerpt(/*@ non_null @*/ String line, /*@ non_null @*/ Range range)
+	protected void renderExcerpt(/* @ non_null @ */ String line, /* @ non_null @ */ Range range)
 	{
 		m_printer.print(" \"");
 		m_printer.setForegroundColor(Color.WHITE);

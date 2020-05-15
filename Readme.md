@@ -145,10 +145,15 @@ example.tex(L38C1-L38C29): A section title should not end with a punctuation sym
 example.tex(L15C94-L15C99): Add a space before citation or reference. "things, like a citation\cite{my:paper} .The text"
 ```
 
-Each line corresponds to a warning, and is parseable by regular expressions easily, e.g., for further processing in another tool.
-The file is given at the beginning of the line, followed by the position in parentheses.
-Then, the warning message is given, and the excerpt causing the warning is printed in double quotes ("").
-Note, that sometimes it may happen that a position cannot be determined. In this case, instead of LxxCyy, ? is printed.
+Each line corresponds to a warning, and is parseable by regular expressions
+easily, e.g., for further processing in another tool. The file is given at the
+beginning of the line, followed by the position in parentheses. Then, the
+warning message is given, and the excerpt causing the warning is printed in
+double quotes (""). Note, that sometimes it may happen that a position cannot
+be determined. In this case, instead of LxxCyy, ? is printed.
+
+You can disable the use of color in any form of command-line output using the
+`--no-color` switch.
 
 ### Spelling, grammar and style
 
