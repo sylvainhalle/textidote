@@ -214,7 +214,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[.*"))
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[[^\\]]*"))
 		{
 			return true;
 		}
