@@ -74,4 +74,13 @@ public class CheckCaptionsTest
 		List<Advice> ad_list = rule.evaluate(as, as);
 		assertEquals(0, ad_list.size());
 	}
+	
+	@Test
+	public void test6()
+	{
+		CheckCaptions rule = new CheckCaptions();
+		AnnotatedString as = AnnotatedString.read(new Scanner("\\captionsetup{whatever}"));
+		List<Advice> ad_list = rule.evaluate(as, as);
+		assertEquals(0, ad_list.size());
+	}
 }

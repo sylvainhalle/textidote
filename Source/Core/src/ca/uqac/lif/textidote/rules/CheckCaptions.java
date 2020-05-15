@@ -56,6 +56,11 @@ public class CheckCaptions extends Rule
 			{
 				continue;
 			}
+			if (line.substring(start_pos).matches("\\\\captionsetup.*"))
+			{
+				// We consider caption, but we ignore captionsetup
+				continue;
+			}
 			boolean period_seen = false;
 			int level = 0;
 			for (int i = start_pos + 1; i < line.length(); i++)
