@@ -207,4 +207,31 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(0, ad_list.size());
 	}
+	
+	@Test
+	public void testD003_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is 0.5."));
+		Rule r = m_detex_rules.get("sh:d:003");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+	
+	@Test
+	public void testD003_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is .5."));
+		Rule r = m_detex_rules.get("sh:d:003");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
+	
+	@Test
+	public void testD004_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is 0,5."));
+		Rule r = m_detex_rules.get("sh:d:003");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
 }
