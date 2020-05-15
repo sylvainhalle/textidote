@@ -378,7 +378,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("^\\$([^\\$]|\\.)*\\$", "X");
 		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");*/
 		// Commands we can ignore
-		as_out = as_out.replaceAll("\\\\\\w+\\{", "");
+		as_out = as_out.replaceAll("\\\\\\w+\\*{0,1}\\{", "");
 		//as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|section|subsection|subsubsection|paragraph)", "");
 		// Curly brackets
 		as_out = as_out.replaceAll("\\{|\\}", "");

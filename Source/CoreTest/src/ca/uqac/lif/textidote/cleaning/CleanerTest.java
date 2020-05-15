@@ -65,6 +65,22 @@ public class CleanerTest
 	}
 	
 	@Test
+	public void testRemoveMarkup4() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\section{Hello}")));
+		assertEquals("Hello", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMarkup5() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\section*{Hello}")));
+		assertEquals("Hello", as.toString());
+	}
+	
+	@Test
 	public void testRemoveMathMarkup1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
