@@ -285,8 +285,8 @@ document. You can get this mapping by using the `--map` option:
     java -jar textidote.jar --clean --map map.txt example.tex > clean.txt
 
 The `--map` parameter is given the name of a file. TeXtidote will put in this
-file the list correspondences between character ranges. This file is made of
-lines that look like this:
+file the list of correspondences between character ranges. This file is made
+of lines that look like this:
 
 ```
 L1C1-L1C24=L1C5-L128
@@ -459,6 +459,10 @@ Users of [Zsh](https://zsh.org) can also enable auto-completion; in your
 
 (Create the file if it does not exist.) You must then restart your Zsh shell
 for the changes to take effect.
+
+### Visual Studio Code integration
+
+Users of Visual Studio Code can integrate TeXtidote by calling it with the `--output singleline` and `--no-color` options and parse its results. Moreover, user [cphyc](https://github.com/cphyc) also wrote a nice [build task](https://github.com/sylvainhalle/textidote/issues/125#issue-603278987).
 
 ## Rules checked by TeXtidote
 
