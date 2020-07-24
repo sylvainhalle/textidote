@@ -352,7 +352,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref|vref|Vref)\\{.*?\\}", "X");
 		// Titles
 		as_out = as_out.replaceAll("\\\\maketitle|\\\\newpage", "");
 		// Font commands
