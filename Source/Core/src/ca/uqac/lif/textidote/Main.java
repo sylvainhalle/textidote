@@ -505,13 +505,13 @@ public class Main
 				renderer = new JsonAdviceRenderer(stdout, lang_s);
 			}
 		}
-		if (map.hasOption("ci"))
-		{
-			usingCI = true;
-		}
 		else
 		{
 			renderer = new AnsiAdviceRenderer(stdout);
+		}
+		if (map.hasOption("ci"))
+		{
+			usingCI = true;
 		}
 
 		// Process files
