@@ -1,4 +1,6 @@
 language: java
+jdk:
+- openjdk8
 dist: trusty
 git:
   depth: false
