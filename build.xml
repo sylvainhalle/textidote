@@ -191,7 +191,9 @@
       srcdir="${build.srcdir}"
       destdir="${build.bindir}"
       debug="${build.debug}"
-      includeantruntime="false">
+      includeantruntime="false"
+      encoding="utf-8"
+    >
       <classpath refid="build.classpath"/>
     </javac>
     <copy todir="${build.bindir}" includeemptydirs="false">
