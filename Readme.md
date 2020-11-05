@@ -304,6 +304,12 @@ original file by something else). Conversely, it is also possible that
 characters in the original file do not correspond to anything in the clean
 file (this happens when the cleaner deletes characters from the original).
 
+### Character encodings
+
+TeXtidote uses the OS default encoding when reading files (e.g. `utf-8` in Linux, `cp1252` in Windows). You can override this setting using the `--encoding` command line option:
+
+    java -jar textidote.jar --encoding cp1252 example.tex
+
 ### Using a configuration file
 
 If you need to run TeXtidote with many command line arguments (for example:
