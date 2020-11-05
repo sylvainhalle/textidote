@@ -168,6 +168,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
 		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
+		cli_parser.addArgument(new Argument().withLongName("encoding").withArgument("x").withDescription("Read files using encoding x"));
 
 		// Check if we are using textidote in a CI tool
 		boolean usingCI = false;
@@ -314,6 +315,11 @@ public class Main
 				input_type = Linter.Language.TEXT;
 			}
 		}
+		String encoding = "utf-8";
+		if (map.hasOption("encoding"))
+		{
+			encoding = map.getOptionValue("encoding");
+		}
 
 		// Only detex input
 		if (map.hasOption("clean"))
@@ -329,7 +335,7 @@ public class Main
 				}
 				else
 				{
-					Scanner scanner = new Scanner(f);
+					Scanner scanner = new Scanner(f, encoding);
 					cleaner.add(ReplacementCleaner.create(scanner));
 					stderr.println("Using replacement file " + replacement_filename);
 				}
@@ -348,7 +354,7 @@ public class Main
 					if (filename.compareTo("--") == 0)
 					{
 						// Open scanner on stdin
-						scanner = new Scanner(in);
+						scanner = new Scanner(in, encoding);
 					}
 					else
 					{
@@ -359,7 +365,7 @@ public class Main
 						}
 						else
 						{
-							scanner = new Scanner(f);
+							scanner = new Scanner(f, encoding);
 						}
 					}
 					// Create cleaner based on file extension
