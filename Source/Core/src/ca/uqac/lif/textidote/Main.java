@@ -17,6 +17,7 @@
  */
 package ca.uqac.lif.textidote;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -319,6 +320,21 @@ public class Main
 		if (map.hasOption("encoding"))
 		{
 			encoding = map.getOptionValue("encoding");
+			// Try to create a scanner with specified encoding
+			Scanner temp_scanner = null;
+			try
+			{
+				temp_scanner = new Scanner(new ByteArrayInputStream("foo".getBytes()), encoding);
+			}
+			catch (IllegalArgumentException e)
+			{
+				stderr.println("Invalid encoding: " + encoding);
+				return 9;
+			}
+			if (temp_scanner != null)
+			{
+				temp_scanner.close();
+			}
 		}
 
 		// Only detex input
