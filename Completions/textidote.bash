@@ -36,7 +36,7 @@ _textidote()
     #
     #  The basic options we'll complete.
     #
-    opts="--check --detex --dict --help --html --no-color --map --quiet --read-all --replace --type"
+    opts="--check --clean --dict --help --ignore --languagemodel --map --no-color --no-config --output --quiet --read-all --remove --remove-macros --replace --type"
     
     #
     #  Complete the arguments to some of the basic commands.
@@ -53,6 +53,11 @@ _textidote()
             ;;
         --map)
             completeFiles
+            return 0
+            ;;
+        --output)
+            local methods="html json plain singleline"
+            COMPREPLY=( $(compgen -W "${methods}" -- ${cur}) )
             return 0
             ;;
         --replace)
@@ -81,7 +86,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --detex --dict --help --html --no-color --map --quiet --read-all --replace --type
+	compadd --check --clean --dict --help --ignore --languagemodel --map --no-color --no-config --output --quiet --read-all --remove --remove-macros --replace --type
 }
 
 # Register the goto completions.
