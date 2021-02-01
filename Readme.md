@@ -93,7 +93,7 @@ file `report.html` (using the *File/Open* menu). You should see something like t
 ![Screenshot](https://raw.githubusercontent.com/sylvainhalle/textidote/master/docs/assets/images/Screenshot.png)
 
 As you can see, the page shows your original LaTeX source file, where some
-portions have been highlighted in various colors. These correpond to regions
+portions have been highlighted in various colors. These correspond to regions
 in the file where an issue was found. You can hover your mouse over these
 colored regions; a tooltip will show a message that describes the problem.
 
@@ -353,7 +353,7 @@ Simply call TeXtidote with a Markdown input file instead of a LaTeX file. The fo
 It order to get the best results when using TeXtidote, it is advisable that
 you follow a few formatting conventions when writing your LaTeX file:
 
-- Avoid putting multiple `\begin{envionment}` and/or `\end{environment}` on
+- Avoid putting multiple `\begin{environment}` and/or `\end{environment}` on
   the same line
 - Keep the arguments of a command on a single line. Commands (such as
   `\title{}`) that have their opening and closing braces on different lines
@@ -361,7 +361,7 @@ you follow a few formatting conventions when writing your LaTeX file:
   nonsensical warnings.
 - Do not hard-wrap your paragraphs. It is easier for TeXtidote to detect
   paragraphs if they have no hard carriage returns inside. (If you need word
-  wrapping, it is preferrable to enable it in your text editor.)
+  wrapping, it is preferable to enable it in your text editor.)
 - Put headings like `\section` or `\paragraph` alone on their line and
   separate them from the text below by a blank line.
 
@@ -407,7 +407,7 @@ Make this file executable by typing at the command line:
 
     sudo chmod +x /usr/local/bin/textidote
 
-(These two operations also require root previliges.) From then on, you can
+(These two operations also require root privileges.) From then on, you can
 invoke TeXtidote on the command line from any folder by simply typing
 `textidote`, e.g.:
 
@@ -528,7 +528,7 @@ If the `--check` option is used, you can add the `--languagemodel xx` option to 
 - There should not be a jump down between two non-successive section
   levels (e.g. a `\section` followed by a `\subsubsection` without a
   `\subsection` in between). [sh:secskip]
-- You should avoid stacked headings, i.e. consecutive headings wihtout
+- You should avoid stacked headings, i.e. consecutive headings without
   text in between. [sh:stacked]
 
 ### Hard-coding
@@ -592,7 +592,7 @@ TeXtidote can test itself by running:
     ant test
 
 Unit tests are run with [jUnit](http://junit.org); a detailed report of
-these tests in HTML format is availble in the folder `tests/junit`, which
+these tests in HTML format is available in the folder `tests/junit`, which
 is automatically created. Code coverage is also computed with
 [JaCoCo](http://www.eclemma.org/jacoco/); a detailed report is available
 in the folder `tests/coverage`.

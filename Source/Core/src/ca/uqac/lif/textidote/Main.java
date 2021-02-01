@@ -148,7 +148,7 @@ public class Main
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
 
-		// Setup command line parser and arguents
+		// Setup command line parser and arguments
 		CliParser cli_parser = new CliParser();
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
 		cli_parser.addArgument(new Argument().withLongName("firstlang").withArgument("lang").withDescription("Checks for false friends with the author's first language lang and the language specified in --check"));

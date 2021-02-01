@@ -774,7 +774,7 @@ public class AnnotatedString
 	}
 
 	/**
-	 * Resizes a source range, by mirrorring the resizing done to the key
+	 * Resizes a source range, by mirroring the resizing done to the key
 	 * range after an intersection
 	 * @param orig_key_range The original key range
 	 * @param resized_key_range The resized key range
