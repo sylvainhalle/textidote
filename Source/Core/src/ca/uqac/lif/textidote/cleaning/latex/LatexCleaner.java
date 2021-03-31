@@ -349,7 +349,7 @@ public class LatexCleaner extends TextCleaner
 		// Footnotes (ignore)
 		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(cite|citep|citel|parencite)(\\[.*?\\])*\\{.*?\\}", "[0]");
+		as_out = as_out.replaceAll("\\\\(cite|citep|citel|parencite|textcite)(\\[.*?\\])*\\{.*?\\}", "[0]");
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");

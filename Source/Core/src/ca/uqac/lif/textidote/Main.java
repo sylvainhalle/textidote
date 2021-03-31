@@ -150,6 +150,7 @@ public class Main
 
 		// Setup command line parser and arguments
 		CliParser cli_parser = new CliParser();
+		//cli_parser.addArgument(new Argument().withLongName("autocheck").withDescription("Checks grammar in auto-detected language"));
 		cli_parser.addArgument(new Argument().withLongName("check").withArgument("lang").withDescription("Checks grammar in language lang"));
 		cli_parser.addArgument(new Argument().withLongName("firstlang").withArgument("lang").withDescription("Checks for false friends with the author's first language lang and the language specified in --check"));
 		cli_parser.addArgument(new Argument().withLongName("clean").withDescription("Remove markup from input file"));
@@ -458,9 +459,12 @@ public class Main
 		List<String> dictionary = new ArrayList<String>();
 		String lang_s = "";
 		String firstlang_s = "";
-		if (map.hasOption("check"))
+		if (map.hasOption("check") || map.hasOption("autocheck"))
 		{
-			lang_s = map.getOptionValue("check");
+			if (map.hasOption("check"))
+			{
+				lang_s = map.getOptionValue("check");
+			}
 			// Try to read dictionary from an Aspell file
 			try
 			{

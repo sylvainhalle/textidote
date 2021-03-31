@@ -265,10 +265,10 @@ public class CheckRegexTest
 	@Test
 	public void testNoin3()
 	{
-		AnnotatedString in_string = AnnotatedString.read(new Scanner("from~\\cite{foo}"));
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\cite[Section 1.2]{foo}"));
 		Rule r = m_rules.get("sh:c:noin");
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
-		assertFalse(ad_list.isEmpty());
+		assertTrue(ad_list.isEmpty());
 	}
 	
 	@Test
