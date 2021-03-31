@@ -108,6 +108,15 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(1, ad_list.size());
 	}
+	
+	@Test
+	public void testCmulP1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Antarctica mass change shows clear regional differences between \\gls{eais},\\gls{wais}, and \\gls{ap} \\citep{schroder_four_2019}"));
+		Rule r = m_rules.get("sh:c:mulp");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertEquals(0, ad_list.size());
+	}
 
 	@Test
 	public void test010_1()
@@ -233,5 +242,59 @@ public class CheckRegexTest
 		Rule r = m_detex_rules.get("sh:d:003");
 		List<Advice> ad_list = r.evaluate(in_string, in_string);
 		assertEquals(0, ad_list.size());
+	}
+	
+	@Test
+	public void testNoin1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\cite{foo}"));
+		Rule r = m_rules.get("sh:c:noin");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertFalse(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testNoin2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\citet{foo}"));
+		Rule r = m_rules.get("sh:c:noin");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testSH011_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e. something"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertFalse(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testSH011_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.: something"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testSH011_3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.; something"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void testSH011_4()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.\\ something"));
+		Rule r = m_rules.get("sh:011");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertTrue(ad_list.isEmpty());
 	}
 }
