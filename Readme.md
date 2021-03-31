@@ -624,4 +624,11 @@ If you like TeXtidote, you might also want to look at
 [PaperShell](https://github.com/sylvainhalle/PaperShell), a template
 environment for writing scientific papers in LaTeX.
 
+Why is it called TeXtidote?
+---------------------------
+
+TeXtidote is a play on *Antidote*, which is a spelling/grammar checker well
+known to French-speaking users and works with word processors. So TeXtidote is
+like a version of Antidote for TeX.
+
 <!-- :maxLineLen=78:wrap=soft: -->
