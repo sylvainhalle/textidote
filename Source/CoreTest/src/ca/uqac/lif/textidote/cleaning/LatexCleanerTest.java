@@ -97,6 +97,14 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveMarkup8() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\parencite[p. 12-25]{source}")));
+		assertEquals("[0]", as.toString());
+	}
+	
+	@Test
 	public void testRemoveMathMarkup1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);

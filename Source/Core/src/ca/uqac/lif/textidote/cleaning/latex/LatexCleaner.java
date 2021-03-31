@@ -54,17 +54,17 @@ public class LatexCleaner extends TextCleaner
 	 * <tt>\begin{document}</tt>
 	 */
 	protected boolean m_ignoreBeforeDocument = true;
-	
+
 	/**
 	 * A set of additional environment names to remove when cleaning up
 	 */
 	/*@ non_null @*/ protected final Set<String> m_environmentsToIgnore = new HashSet<String>();
-	
+
 	/**
 	 * A set of additional macro names to remove when cleaning up
 	 */
 	/*@ non_null @*/ protected final Set<String> m_macrosToIgnore = new HashSet<String>();
-	
+
 	/**
 	 * A list of <em>non-commented</em> <tt>input</tt> and <tt>include</tt>
 	 * declarations found in the file to be cleaned.
@@ -76,7 +76,7 @@ public class LatexCleaner extends TextCleaner
 	 * declarations in a line of markup.
 	 */
 	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
-	
+
 	/**
 	 * Adds a new environment name to remove when cleaning up
 	 * @param e_name The name of the environment
@@ -87,7 +87,7 @@ public class LatexCleaner extends TextCleaner
 		m_environmentsToIgnore.add(e_name);
 		return this;
 	}
-	
+
 	/**
 	 * Adds new environment names to remove when cleaning up
 	 * @param e_names A collection of environment names
@@ -98,7 +98,7 @@ public class LatexCleaner extends TextCleaner
 		m_environmentsToIgnore.addAll(e_names);
 		return this;
 	}
-	
+
 	/**
 	 * Adds a new macro name to remove when cleaning up
 	 * @param m_name The name of the macro
@@ -109,7 +109,7 @@ public class LatexCleaner extends TextCleaner
 		m_macrosToIgnore.add(m_name);
 		return this;
 	}
-	
+
 	/**
 	 * Adds new macro names to remove when cleaning up
 	 * @param m_names A collection of macro names
@@ -135,7 +135,7 @@ public class LatexCleaner extends TextCleaner
 		//new_as = simplifySpaces(new_as);
 		return new_as;
 	}
-	
+
 	/**
 	 * Remove user-defined macros that should not be interpreted as text
 	 * @param as The string to clean
@@ -206,7 +206,7 @@ public class LatexCleaner extends TextCleaner
 		}
 		return as;
 	}
-	
+
 	/**
 	 * Determines if the current line contains the start of an environment
 	 * to remove from the markup
@@ -230,7 +230,7 @@ public class LatexCleaner extends TextCleaner
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Determines if the current line contains the end of an environment
 	 * to remove from the markup
@@ -349,7 +349,7 @@ public class LatexCleaner extends TextCleaner
 		// Footnotes (ignore)
 		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
 		// Replace citations by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(cite|citep|citel)(\\[.*?\\])*\\{.*?\\}", "[0]");
+		as_out = as_out.replaceAll("\\\\(cite|citep|citel|parencite)(\\[.*?\\])*\\{.*?\\}", "[0]");
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\+[^\\+]*?\\+", "[0]");
 		as_out = as_out.replaceAll("\\\\verb\"[^\"]*?\"", "[0]");
@@ -368,6 +368,9 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\,", " ");
 		// Dots
 		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
+		// Commands we can ignore
+		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|texttt|textsc)", "");
+		as_out = as_out.replaceAll("\\\\\\w+\\*{0,1}\\{", "");
 		// Inline display math with only digits and letters
 		as_out = as_out.replaceAll("\\\\\\(([A-Za-z0-9,\\.]*?)\\\\\\)", "$1");
 		// Otherwise, replace by X
@@ -380,9 +383,6 @@ public class LatexCleaner extends TextCleaner
 		//as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		as_out = as_out.replaceAll("^\\$([^\\$]|\\.)*\\$", "X");
 		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");*/
-		// Commands we can ignore
-		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|texttt|textsc)", "");
-		as_out = as_out.replaceAll("\\\\\\w+\\*{0,1}\\{", "");
 		// Curly brackets
 		for (int i = 0; i < 5; i++)
 		{
@@ -390,7 +390,7 @@ public class LatexCleaner extends TextCleaner
 		}
 		return as_out;
 	}
-	
+
 	protected AnnotatedString replaceInlineEquations(AnnotatedString as_out, int line_pos)
 	{
 		Match m = null;
@@ -429,7 +429,7 @@ public class LatexCleaner extends TextCleaner
 		}
 		return as_out;
 	}
-	
+
 	/**
 	 * Replaces escaped accented character sequences by their proper character
 	 * @param as_out The string to replace from
@@ -479,7 +479,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\'\\{u\\}", "ú");
 		as_out = as_out.replaceAll("\\\\^\\{u\\}", "û");
 		as_out = as_out.replaceAll("\\\\~\\{u\\}", "ũ");
-		
+
 		// Without braces
 		as_out = as_out.replaceAll("\\\\`A", "À");
 		as_out = as_out.replaceAll("\\\\'A", "Á");
@@ -544,7 +544,7 @@ public class LatexCleaner extends TextCleaner
 		m_ignoreBeforeDocument = b;
 		return this;
 	}
-	
+
 	/**
 	 * Populates a list of <em>non-commented</em> <tt>input</tt> and
 	 * <tt>include</tt> declarations found in the file to be cleaned.
@@ -567,7 +567,7 @@ public class LatexCleaner extends TextCleaner
 			}
 		}
 	}
-	
+
 	/**
 	 * Returns the list of <em>non-commented</em> <tt>input</tt> and
 	 * <tt>include</tt> declarations found in the file to be cleaned.
