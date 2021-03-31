@@ -263,6 +263,15 @@ public class CheckRegexTest
 	}
 	
 	@Test
+	public void testNoin3()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("from~\\cite{foo}"));
+		Rule r = m_rules.get("sh:c:noin");
+		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		assertFalse(ad_list.isEmpty());
+	}
+	
+	@Test
 	public void testSH011_1()
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e. something"));
