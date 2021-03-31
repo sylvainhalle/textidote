@@ -244,6 +244,27 @@ The same can be done with macros:
 
 This command will remove all occurrences of use-defined command `\foo` in the text. Alternate syntaxes like `\foo{bar}` and `\foo[x=y]{bar}` are also recognized and deleted.
 
+### Replacing strings
+
+Before TeXtidote analyses a file, you can ask it to apply a set of
+find/replace operations (for example, to replace a macro by some predefined
+character string). You can write these patterns into a text file and pass them
+to the program at the command line:
+
+    $ java -jar textidote.jar --replace replacements.txt
+
+Here, `replacements.txt` is the file that contains the find/replace patterns,
+fomatted as follows:
+
+```
+# Empty lines beginning with a pound sign are ignored
+# Search and replace patterns are separated by a tab
+find	replace
+foo		bar
+# Patterns can also be regular expressions
+abc\d+[^x]	123
+```
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`
