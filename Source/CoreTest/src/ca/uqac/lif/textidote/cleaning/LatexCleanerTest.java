@@ -145,6 +145,14 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveMathMarkup6() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Consider the following: Let" + CRLF + "$x=7$ and blahblah $y=5$ in the above.")));
+		assertEquals("Consider the following: Let" + CRLF + "X and blahblah X in the above.", as.toString());
+	}
+	
+	@Test
 	public void testRemoveEnvironments1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();

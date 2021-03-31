@@ -395,6 +395,22 @@ public class LatexCleaner extends TextCleaner
 	{
 		Match m = null;
 		Position p = Position.ZERO;
+		// Do it one last time for equations at the beginning of a line		
+		m = as_out.find("^\\$.*?[^\\\\]\\$", p);
+		if (m != null)
+		{
+			p = m.getPosition();
+			String s_from = m.getMatch();
+			String s_to = "X";
+			String s_inside = s_from.substring(1, s_from.length() - 1);
+			if (s_inside.matches("[\\dA-Za-z\\.,]+"))
+			{
+				s_to = s_inside;
+			}
+			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
+		}
+		m = null;
+		p = Position.ZERO;
 		do
 		{
 			m = as_out.find("[^\\\\]\\$.*?[^\\\\]\\$", p);
@@ -413,20 +429,6 @@ public class LatexCleaner extends TextCleaner
 			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
 			p = p.moveBy(1); // To ensure progress
 		} while (m != null);
-		// Do it one last time for equations at the beginning of a line		
-		m = as_out.find("^\\$.*?[^\\\\]\\$", p);
-		if (m != null)
-		{
-			p = m.getPosition();
-			String s_from = m.getMatch();
-			String s_to = "X";
-			String s_inside = s_from.substring(1, s_from.length() - 1);
-			if (s_inside.matches("[\\dA-Za-z\\.,]+"))
-			{
-				s_to = s_inside;
-			}
-			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
-		}
 		return as_out;
 	}
 
