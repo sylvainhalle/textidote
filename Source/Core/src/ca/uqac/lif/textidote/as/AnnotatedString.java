@@ -606,7 +606,7 @@ public class AnnotatedString
 		int max_iterations = 10000;
 		AnnotatedString replaced = this;
 		Position last_pos = Position.ZERO;
-		int i = 0;
+		int i = 0, tolen = to.length();
 		for (; i < max_iterations; i++)
 		{
 			Match m = replaced.find(regex, last_pos);
@@ -618,7 +618,7 @@ public class AnnotatedString
 			Position new_pos = m.getPosition();
 			AnnotatedString rep = replaced.replace(regex, to, last_pos);
 			replaced = rep;
-			last_pos = new_pos.moveBy(1);
+			last_pos = new_pos.moveBy(tolen);
 		}
 		return replaced;
 	}
