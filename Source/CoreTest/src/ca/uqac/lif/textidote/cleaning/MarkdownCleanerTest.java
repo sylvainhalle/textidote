@@ -44,4 +44,12 @@ public class MarkdownCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is `foo`.")));
 		assertEquals("This is X.", as.toString());
 	}
+	
+	@Test
+	public void testRemoveIndentedBlocks1() throws TextCleanerException
+	{
+		MarkdownCleaner detexer = new MarkdownCleaner();
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Here are a few words." + CRLF + CRLF + "    Some code block" + CRLF + CRLF + "Here are some more.")));
+		assertEquals("Here are a few words." + CRLF + CRLF + CRLF + CRLF + "Here are some more.", as.toString());
+	}
 }

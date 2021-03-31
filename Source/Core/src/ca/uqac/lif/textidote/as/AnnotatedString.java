@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -72,6 +72,11 @@ public class AnnotatedString
 	 * The size (in bytes) of the OS-dependent line separator
 	 */
 	public static final transient int CRLF_SIZE = System.getProperty("line.separator").length();
+	
+	/**
+	 * The OS-dependent line separator, expressed as a regular expression
+	 */
+	public static final transient String CRLF_REGEX = getCrlfRegex(CRLF);
 
 	/**
 	 * Creates a new empty annotated string
@@ -907,5 +912,23 @@ public class AnnotatedString
 			}
 		}
 		return -1;
+	}
+	
+	/**
+	 * Turns the OS-dependent CRLF character into a regular expression. 
+	 * @param s The character
+	 * @return The regex
+	 */
+	protected static String getCrlfRegex(String s)
+	{
+		if (s.compareTo("\\r\\n") == 0)
+		{
+			return ("\\\\r\\\\n");
+		}
+		if (s.compareTo("\\r") == 0)
+		{
+			return ("\\\\r");
+		}
+		return ("\\\\n");
 	}
 }

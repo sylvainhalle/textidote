@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2019  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -122,6 +122,7 @@ public class MarkdownCleaner extends TextCleaner
 		as_out = as_out.replaceAll("`.*?`", "X");
 		as_out = as_out.replaceAll("!\\[(.*?)\\]\\(.*?\\)", "$1"); // images
 		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1"); // links
+		as_out = as_out.replaceAll("^    .*$", ""); // indented code blocks
 		as_out = as_out.replaceAll("^\\s*?- ", "• ");
 		as_out = as_out.replaceAll("^\\s*#*\\s*", "");
 		as_out = as_out.replaceAll("^\\s*=*\\s*$", "");
