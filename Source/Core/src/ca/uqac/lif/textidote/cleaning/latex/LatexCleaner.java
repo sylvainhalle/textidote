@@ -363,6 +363,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces
 		as_out = as_out.replaceAll("~", " ");
+		as_out = as_out.replaceAll("\\\\,", " ");
 		// Dots
 		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
 		// Inline display math with only digits and letters

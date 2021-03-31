@@ -82,7 +82,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	public static final String VERSION_STRING = "0.8.1";
+	public static final String VERSION_STRING = "0.8.2";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
