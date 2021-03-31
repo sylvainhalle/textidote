@@ -36,4 +36,12 @@ public class MarkdownCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is **bold**.")));
 		assertEquals("This is bold.", as.toString());
 	}
+	
+	@Test
+	public void testRemoveBackticks1() throws TextCleanerException
+	{
+		MarkdownCleaner detexer = new MarkdownCleaner();
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is `foo`.")));
+		assertEquals("This is X.", as.toString());
+	}
 }
