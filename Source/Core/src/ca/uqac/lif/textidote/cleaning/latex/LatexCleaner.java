@@ -223,7 +223,7 @@ public class LatexCleaner extends TextCleaner
 		for (String e_name : m_environmentsToIgnore)
 		{
 			// Also loop through user-specified environments
-			if (line.matches(".*\\\\begin\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			if (line.matches(".*\\\\begin\\s*\\{\\s*" + Pattern.quote(e_name) + "\\s*\\}.*"))
 			{
 				return true;
 			}
@@ -247,7 +247,7 @@ public class LatexCleaner extends TextCleaner
 		for (String e_name : m_environmentsToIgnore)
 		{
 			// Also loop through user-specified environments
-			if (line.matches(".*\\\\end\\s*\\{\\s*" + e_name + "\\s*\\}.*"))
+			if (line.matches(".*\\\\end\\s*\\{\\s*" + Pattern.quote(e_name) + "\\s*\\}.*"))
 			{
 				return true;
 			}

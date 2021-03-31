@@ -180,6 +180,16 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveEnvironments4() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		detexer.ignoreEnvironment("IEEEeqnarray*");
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/test4.tex"))));
+		assertTrue(as.isEmpty());
+	}
+	
+	@Test
 	public void testRemoveAccents1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();
