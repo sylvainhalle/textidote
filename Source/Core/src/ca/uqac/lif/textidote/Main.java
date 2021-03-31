@@ -812,8 +812,11 @@ public class Main
 		sc = new Scanner(f);
 		while (sc.hasNextLine())
 		{
-			String line = sc.nextLine();
-			dict.add(line.trim());
+			String line = sc.nextLine().trim();
+			if (!line.isEmpty())
+			{
+				dict.add(line);
+			}
 		}
 		sc.close();
 		return dict;
