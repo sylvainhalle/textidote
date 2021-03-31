@@ -1,4 +1,4 @@
-.TH TEXTIDOTE 1 "2019-08-06" "GNU" "TeXtidote Abbreviated User's Manual"
+.TH TEXTIDOTE 1 "2021-03-31" "GNU" "TeXtidote Abbreviated User's Manual"
 .SH NAME
 textidote \- proof reader for LaTeX and Markdown files
 .SH SYNOPSIS
@@ -59,7 +59,9 @@ Use \fIfile\fR as a dictionary. This option only has an effect when used with
 list of words that will be ignored by the spell checker.
 .TP
 \fB--replace\fP \fIfile\fR
-Apply find/replace patterns described in \fIfile\fR.
+Apply find/replace patterns described in \fIfile\fR. This file should contain
+one pattern per line, with the search pattern separated by a tab from the
+replacement pattern. Both search and replace can be regular expressions.
 .TP
 \fB--remove\fP \fIenvs\fR
 Remove environments provided in the comma-separated list \fIenvs\fR.
