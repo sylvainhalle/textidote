@@ -438,16 +438,25 @@ invoke TeXtidote on the command line from any folder by simply typing
 
 If you use a desktop environment such as Gnome or Xfce, you can automate
 this even further by creating a TeXtidote icon on your desktop. First,
-create a file called `/opt/textidote/textidote.sh` with the following
+create a file called `/opt/textidote/textidote-desktop.sh` with the following
 contents, and make this file executable:
 
 ```
-#! /bin/bash
+#!/bin/sh
+if [ -x /usr/bin/notify-send ]; then
+  err() { notify-send -a TeXtidote -i /opt/textidote/textidote-icon.svg "$*"; }
+else
+  err() { printf "%s\n" "$*" >&2; }
+fi
+
+[ $# -lt 1 ] && err "At least one file should be provided as input" && exit
 dir=$(dirname "$1")
-pushd $dir
+
+pushd $dir || err "$dir does not exist" || exit
 java -jar /opt/textidote/textidote.jar --check en --output html "$@" > /tmp/textidote.html
-popd
-sensible-browser /tmp/textidote.html &
+popd || exit
+
+xdg-open /tmp/textidote.html &
 ```
 
 This script enters into the directory of the file passed as an argument,
