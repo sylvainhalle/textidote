@@ -441,8 +441,8 @@ this even further by creating a TeXtidote icon on your desktop. First,
 create a file called `/opt/textidote/textidote-desktop.sh` with the following
 contents, and make this file executable:
 
-```
-#!/bin/sh
+```bash
+#!/bin/bash
 if [ -x /usr/bin/notify-send ]; then
   err() { notify-send -a TeXtidote -i /opt/textidote/textidote-icon.svg "$*"; }
 else
@@ -452,7 +452,7 @@ fi
 [ $# -lt 1 ] && err "At least one file should be provided as input" && exit
 dir=$(dirname "$1")
 
-pushd $dir || err "$dir does not exist" || exit
+pushd "$dir" || err "$dir does not exist" && exit
 java -jar /opt/textidote/textidote.jar --check en --output html "$@" > /tmp/textidote.html
 popd || exit
 
@@ -466,7 +466,7 @@ default web browser to show that report.
 Then, on your desktop (typically in your `~/Desktop` folder), create another
 file called `TeXtidote.desktop` with the following contents:
 
-```
+```ini
 [Desktop Entry]
 Version=1.0
 Type=Application
