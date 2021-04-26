@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2019  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -216,7 +216,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\[[^\\]]*"))
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray).*") || line.matches(".*\\\\\\[[^\\]]*"))
 		{
 			return true;
 		}
@@ -240,7 +240,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentEnd(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure).*") || line.matches(".*\\\\\\].*"))
+		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray).*") || line.matches(".*\\\\\\].*"))
 		{
 			return true;
 		}
@@ -339,7 +339,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\\\\\", "");
 		as_out = as_out.replaceAll("\\\\par(\\b)", "$1");
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|eqnarray|compactitem|query|center|minipage|quote|frame)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|compactitem|query|center|minipage|quote|frame)\\}", "");
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
