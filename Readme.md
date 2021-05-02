@@ -2,7 +2,7 @@ TeXtidote: a correction tool for LaTeX documents and other formats
 ==================================================================
 
 [![Travis](https://img.shields.io/travis/sylvainhalle/textidote.svg?style=flat-square)](https://travis-ci.org/sylvainhalle/textidote)
-[![SonarQube Coverage](https://sonarcloud.io/api/project_badges/measure?project=sylvainhalle%3Atextidote&metric=coverage)](https://sonarcloud.io/dashboard?id=sylvainhalle%3Atextidote)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sylvainhalle_textidote&metric=coverage)](https://sonarcloud.io/dashboard?id=sylvainhalle_textidote)
 <img src="http://leduotang.ca/textidote.svg" height="16" alt="Downloads"/>
 
 Have you ever thought of using a grammar checker on LaTeX files?
