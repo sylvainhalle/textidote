@@ -3,22 +3,19 @@ dist: bionic
 git:
   depth: false
   quiet: true
-# Only build master branch
 branches:
   only:
   - master
-before_install:
-- sudo apt-get install ant-optional
-install: ant download-deps
-notifications:
-  # Email notifications are disabled to not annoy anybody.
-  email: false 
-# Run SonarQube on code
 addons:
   sonarcloud:
     organization: "sylvainhalle-github"
     token:
-      secure: c11f78b32f6c5a83c760c5b6d6ea388e166b07f7 # encrypted value of your token
+      secure: IV+3495+DLofyAub7uFMfqL3k9yPUeVM8BkjNlezyDS1qbw0so5XVhEfCkZxFj97cLjzlWLS7kNPvg1S6gHDPhqakRBKRAkasr+qxaVAHZs9++Gr3/Mg9OoUiSixa/H/Uhbh1iSXHiflyscBizxkolUr4kopQzG8Q3YPbYAjB2R5aIN8FKqegJPULAPdutpug6NwccTaO3sScRx4OotweuC5zMq0KsCULJbaXrLue3+9BxqT86dYauUboSHdXFFHC5neoadOEyVIMqECYyb1tP1WBVnA78vrxt/XDdF67ZSmfbSxLiuFLI1xhVrwFKq1vtAZsYXEAOTJ1UUFzqz4nNvU4tkX4IUDoJhRtv5ltoTML7hDTUNBfcUMxKjGE00DMJodeJZF8IH9T7AaQ8fjqO8m1DOzZdEnh9t9hHgrb+oMJ/Hm0Ro05jC0CjX1RmmJZr00Ay+GCOTm+dSJEYyhjIPUrRZsG/xq9X1+QHTo5xZKvZsYTDxynK4USZVu4x/NNitvuk4MJW0C0n2xmCQkGrEfU+YsNH0PAq9uyNnDJgqSXY1cgd/ZXYWA1hd8EasKwoVUIPHKl7CPqmtSw9SZYrit/nOahPCMkr0Cr1ayrn1PUBRs3o8vATUbCEeIydTfCC5YXG1X6H1wiA3pvUujwxnzwXhN8631xbaCis7YC00=
+before_install:
+- sudo apt-get install ant-optional
+install: ant download-deps
+notifications:
+  email: false
 script:
-  - ant test
-  - sonar-scanner
+- ant test
+- sonar-scanner
