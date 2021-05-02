@@ -1,7 +1,5 @@
 language: java
-jdk:
-- openjdk8
-dist: trusty
+dist: bionic
 git:
   depth: false
   quiet: true
@@ -9,16 +7,18 @@ git:
 branches:
   only:
   - master
+before_install:
+- sudo apt-get install ant-optional
 install: ant download-deps
 notifications:
   # Email notifications are disabled to not annoy anybody.
   email: false 
 # Run SonarQube on code
 addons:
-  sonarqube:
+  sonarcloud:
+    organization: "sylvainhalle-github"
     token:
       secure: c11f78b32f6c5a83c760c5b6d6ea388e166b07f7 # encrypted value of your token
 script:
-  # other script steps might be done before running the actual SonarQube analysis
   - ant test
   - sonar-scanner
