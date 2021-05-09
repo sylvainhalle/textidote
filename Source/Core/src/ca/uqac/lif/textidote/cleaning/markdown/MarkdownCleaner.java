@@ -17,41 +17,135 @@
  */
 package ca.uqac.lif.textidote.cleaning.markdown;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class MarkdownCleaner extends TextCleaner
 {
-	/**
-	 * The string to look for to tell TeXtidote to start ignoring lines
-	 */
-	public static final String IGNORE_BEGIN = "<!-- textidote: ignore begin -->";
-
-	/**
-	 * The string to look for to tell TeXtidote to stop ignoring lines
-	 */
-	public static final String IGNORE_END = "<!-- textidote: ignore end -->";
 
 	@Override
 	/*@ non_null @*/ public AnnotatedString clean(/*@ non_null @*/ AnnotatedString as) throws TextCleanerException
 	{
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
-		as = removeEnvironments(new_as);
+		new_as = removeEnvironments(new_as);
 		new_as = removeAllMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;
 	}
 
-	/*@ non_null @*/ public AnnotatedString cleanComments(AnnotatedString in)
-	{
-		in = in.replaceAll("<!--.*?-->", "");
-		return in;
+	private enum CommentStates {SINGLE_LINE, MULTILINE, INLINE, IGNORE, NONE}
+	/*@ non_null @*/
+
+	/**
+	 * Clean regular, inline and multiline comments
+	 * Also takes into account Ignore comment sections
+	 *
+	 * @param as Annotated String to clean
+	 *
+	 * @return Annotated String without comments
+	 */
+	public AnnotatedString cleanComments(AnnotatedString as) {
+		String singleLineCommentRegEx = "^<!--(.*?)-->$";
+		String markdownFrontMatterRegEx = "^---$";
+
+		String singleInlineCommentRegEx = "<!--(.*?)-->";
+		Pattern singleInlineCommentPattern = Pattern.compile(singleInlineCommentRegEx);
+
+		String ignoreStartRegEx = "<!--\\s*" + IGNORE_BEGIN + "\\s*-->";
+		Pattern ignoreStartPattern = Pattern.compile(ignoreStartRegEx);
+		String ignoreEndRegEx = "<!--\\s*" + IGNORE_END + "\\s*-->";
+		Pattern ignoreEndRegExPattern = Pattern.compile(ignoreEndRegEx);
+
+		String beginMultilineComment = "<!--";
+		Pattern beginMultilinePattern = Pattern.compile(beginMultilineComment);
+		String endMultilineComment = "-->";
+		Pattern endMultilinePattern = Pattern.compile(endMultilineComment);
+
+		CommentStates commentState = CommentStates.NONE;
+		// Tracks whether we are in a front matter block
+		boolean inFrontMatterContent = false;
+
+		for (int i = 0; i < as.lineCount(); i++) {
+			String line = as.getLine(i);
+
+			Matcher singleInlineCommentMatcher = singleInlineCommentPattern.matcher(line);
+
+			Matcher beginMultilineMatcher = beginMultilinePattern.matcher(line);
+			Matcher endMultilineMatcher = endMultilinePattern.matcher(line);
+
+			Matcher ignoreStartMatcher = ignoreStartPattern.matcher(line);
+			Matcher ignoreEndRegExMatcher = ignoreEndRegExPattern.matcher(line);
+
+			// Search and handle comment type
+			if (commentState == CommentStates.IGNORE || commentState == CommentStates.MULTILINE) {
+				// We're in a multiline comment or ignore block. Clean.
+				i = cleanLine(as, i);
+			} else {
+				if (ignoreStartMatcher.find() || line.matches(markdownFrontMatterRegEx)) {
+					// This case when either front matter section or an ignore comment is found
+					commentState = CommentStates.IGNORE;
+					i = cleanLine(as, i);
+				} else if (line.matches(singleLineCommentRegEx)) {
+					commentState = CommentStates.SINGLE_LINE;
+					i = cleanLine(as, i);
+				} else if (singleInlineCommentMatcher.find()) {
+					commentState = CommentStates.INLINE;
+					int pos = line.indexOf("<!--", 0);
+					if (pos > 0) {
+						// Remove inline comment
+						as = as.replace(singleInlineCommentRegEx, "", new Position(i, pos));
+					}
+				} else if (beginMultilineMatcher.find()) {
+					commentState = CommentStates.MULTILINE;
+					int pos = line.indexOf("<!--", 0);
+					if (pos >= 0) {
+						// Remove everything from the beginning of the comment till the end of the line
+						as = as.replace("<!--.*", "", new Position(i, pos));
+						i--; // Step counter back so next loop is at same index
+					}
+				}
+			}
+
+			// Check for end of multiline comment or ignore block
+			// For that, the state has to fit and pattern catch
+			boolean multilineCommentDone = commentState == CommentStates.MULTILINE && endMultilineMatcher.find();
+			// Ignore done when ignore end comment or the second closing front matter comment reached
+			boolean ignoreCommentDone =
+					(commentState == CommentStates.IGNORE && ignoreEndRegExMatcher.find()) || (inFrontMatterContent && line.matches(markdownFrontMatterRegEx));
+			// If we are in front matter content, search for the front matter end block
+			if (line.matches(markdownFrontMatterRegEx)) inFrontMatterContent = true;
+
+			if (multilineCommentDone || ignoreCommentDone) {
+				// Replace everything till the end of the multiline comment
+				if (commentState == CommentStates.MULTILINE) as = as.replace(".*-->", "", new Position(i, 0));
+
+				if (line.matches(markdownFrontMatterRegEx)) inFrontMatterContent = false;
+				commentState = CommentStates.NONE;
+			}
+		}
+		return as;
+	}
+
+	/**
+	 * Cleans a line in an Annotated String
+	 *
+	 * @param as            Reference to the annotated String to clean
+	 * @param lineReference Line reference to clean
+	 *
+	 * @return Line Reference on the removed line
+	 */
+	private int cleanLine(AnnotatedString as, int lineReference) {
+		as.removeLine(lineReference);
+		lineReference--; // Step counter back so next loop is at same index
+		return lineReference;
 	}
 
 	/**
@@ -83,7 +177,7 @@ public class MarkdownCleaner extends TextCleaner
 		}
 		return as;
 	}
-	
+
 	/**
 	 * Removes Markdown specific markup
 	 * @param as The string to replace from
@@ -115,7 +209,7 @@ public class MarkdownCleaner extends TextCleaner
 		}
 		return as_out;
 	}
-	
+
 	/*@ non_null @*/ protected AnnotatedString removeMarkup(/*@ non_null @*/ AnnotatedString as_out, int line_nb)
 	{
 		as_out = as_out.replaceAll("\\*", "");

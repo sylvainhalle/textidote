@@ -403,7 +403,14 @@ understand...
 ```
 
 The lines between `textidote: ignore begin` and `textidote: ignore end` will
-be handled by TeXtidote as if they were comment lines.
+be handled by TeXtidote as if they were comment lines.  
+When you are using markdown you can also selectively ignore parts of the document:
+
+```markdown
+<!-- textidote: ignore begin -->
+This should be ignored
+<!-- textidote: ignore end -->
+```
 
 ## Linux shortcuts
 
