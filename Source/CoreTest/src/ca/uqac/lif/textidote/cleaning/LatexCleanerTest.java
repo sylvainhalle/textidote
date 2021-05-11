@@ -268,7 +268,16 @@ public class LatexCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\caption{Hello world. \\label{foo}}")));
 		assertEquals("Hello world. ", as.toString());
 	}
-	
+
+	@Test
+	public void testRemoveReference() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\href{http://example.org/index.html}{Hello world. }")));
+		assertEquals("Hello world. ", as.toString());
+	}
+
 	@Test
 	public void testRemoveMacros1() throws TextCleanerException
 	{
