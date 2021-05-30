@@ -539,9 +539,8 @@ public class Main
 			filenames.add("--"); // This indicates: read from stdin
 			cmd_filenames.add("--");
 		}
-		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
-		filename_queue.addAll(filenames);
+		Queue<String> filename_queue = new ArrayDeque<String>(filenames);
 		String top_level_filename = null;
 		while (!filename_queue.isEmpty())
 		{
