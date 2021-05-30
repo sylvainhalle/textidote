@@ -17,6 +17,7 @@
 /lib/
 /deps/
 /tests/
+/out/
 
 # Top-level jar, but not jars in subfolders (if any)
 *.jar
