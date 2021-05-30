@@ -592,7 +592,6 @@ public class Main
 				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
 				{
 					MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
-					linter = new Linter(c_cleaner);
 					c_cleaner.add(markdown_cleaner);
 					linter = new Linter(c_cleaner);
 					populateMarkdownRules(linter);
