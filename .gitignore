@@ -51,6 +51,10 @@ jacoco.exec
 # vscode-specific
 /.vscode/
 
+# IntelliJ specific
+/.idea
+*.iml
+
 # External tool builders
 **/.externalToolBuilders/
 
