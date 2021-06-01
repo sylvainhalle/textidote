@@ -217,16 +217,8 @@ public class Main
 		{
 			app_name = map.getOptionValue("name");
 		}
-		boolean read_all = false;
-		if (map.hasOption("read-all"))
-		{
-			read_all = true;
-		}
-		boolean enable_colors = true;
-		if (map.hasOption("no-color"))
-		{
-			enable_colors = false;
-		}
+		boolean read_all = map.hasOption("read-all");
+		boolean enable_colors = !map.hasOption("no-color");
 		AnsiPrinter stdout = new AnsiPrinter(out);
 		AnsiPrinter stderr = null;
 		if (map.hasOption("version"))
@@ -248,30 +240,21 @@ public class Main
 		if (map.hasOption("ignore"))
 		{
 			String[] ids = map.getOptionValue("ignore").split(",");
-			for (String id : ids)
-			{
-				rule_blacklist.add(id);
-			}
+			Collections.addAll(rule_blacklist, ids);
 		}
 		// User has specified environments to remove
 		List<String> env_blacklist = new ArrayList<String>();
 		if (map.hasOption("remove"))
 		{
 			String[] ids = map.getOptionValue("remove").split(",");
-			for (String id : ids)
-			{
-				env_blacklist.add(id);
-			}
+			Collections.addAll(env_blacklist, ids);
 		}
 		// User has specified environments to remove
 		List<String> mac_blacklist = new ArrayList<String>();
 		if (map.hasOption("remove-macros"))
 		{
 			String[] ids = map.getOptionValue("remove-macros").split(",");
-			for (String id : ids)
-			{
-				mac_blacklist.add(id);
-			}
+			Collections.addAll(mac_blacklist, ids);
 		}
 		// User uses n-gram
 		String ngram_dir = "";
@@ -556,9 +539,8 @@ public class Main
 			filenames.add("--"); // This indicates: read from stdin
 			cmd_filenames.add("--");
 		}
-		Queue<String> filename_queue = new ArrayDeque<String>();
 		Set<String> processed_filenames = new HashSet<String>();
-		filename_queue.addAll(filenames);
+		Queue<String> filename_queue = new ArrayDeque<String>(filenames);
 		String top_level_filename = null;
 		while (!filename_queue.isEmpty())
 		{
@@ -610,7 +592,6 @@ public class Main
 				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
 				{
 					MarkdownCleaner markdown_cleaner = new MarkdownCleaner();
-					linter = new Linter(c_cleaner);
 					c_cleaner.add(markdown_cleaner);
 					linter = new Linter(c_cleaner);
 					populateMarkdownRules(linter);
