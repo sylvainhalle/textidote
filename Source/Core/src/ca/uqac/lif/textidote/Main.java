@@ -561,7 +561,7 @@ public class Main
 				if (filename.compareTo("--") == 0)
 				{
 					// Open scanner on stdin
-					scanner = new Scanner(in);
+					scanner = new Scanner(in, encoding);
 				}
 				else
 				{
@@ -573,7 +573,7 @@ public class Main
 							stderr.println("File " + filename + " not found (skipping)");
 							continue;
 						}
-						scanner = new Scanner(is);
+						scanner = new Scanner(is, encoding);
 					}
 					else
 					{
@@ -583,7 +583,7 @@ public class Main
 							stderr.println("File " + filename + " not found (skipping)");
 							continue;
 						}
-						scanner = new Scanner(f);
+						scanner = new Scanner(f, encoding);
 					}
 				}
 				num_files++;
