@@ -28,6 +28,7 @@ import org.languagetool.language.GermanyGerman;
 import org.languagetool.language.Portuguese;
 import org.languagetool.language.BrazilianPortuguese;
 import org.languagetool.language.Spanish;
+import org.languagetool.language.Polish;
 import org.languagetool.language.SwissGerman;
 
 /**
@@ -56,6 +57,10 @@ public class LanguageFactory
 		if (s.compareToIgnoreCase("en_UK") == 0)
 		{
 			return new BritishEnglish();
+		}
+		if (s.compareToIgnoreCase("pl") == 0)
+		{
+			return new Polish();
 		}
 		if (s.compareToIgnoreCase("fr") == 0 || s.compareToIgnoreCase("fr_CA") == 0)
 		{
