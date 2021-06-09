@@ -43,7 +43,7 @@ _textidote()
     #
     case "${prev}" in
         --check)
-            local langs="de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt"
+            local langs="de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt pl"
             COMPREPLY=( $(compgen -W "${langs}" -- ${cur}) )
             return 0
             ;;
