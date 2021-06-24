@@ -150,9 +150,11 @@ public class LatexCleaner extends TextCleaner
 			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}\\s", "");
 			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}([\\.,;:])", "$1");
 			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}(\\b)", "$1");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\{.*?\\}$", "");
 			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}\\s", "");
 			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}([\\\\.,;:])", "$1");
 			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}(\\b)", "$1");
+			new_as = new_as.replaceAll("\\\\" + macro + "\\[.*?\\]\\{.*?\\}$", "");
 			new_as = new_as.replaceAll("\\\\" + macro + "(\\b)", "$1");
 		}
 		return new_as;

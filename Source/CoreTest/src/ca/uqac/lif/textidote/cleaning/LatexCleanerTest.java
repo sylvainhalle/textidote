@@ -337,6 +337,16 @@ public class LatexCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is a poorly worded sentence \\todo{rewrite this sentence}.")));
 		assertEquals("This is a poorly worded sentence .", as.toString());	
 	}
+	
+	@Test
+	public void testRemoveMacros7() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreMacro("foo");
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\foo{Hello worlf!}")));
+		assertEquals("", as.toString());	
+	}
 
 	@Test
 	public void testReplacementCleaner1() throws TextCleanerException

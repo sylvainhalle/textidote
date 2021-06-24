@@ -279,6 +279,15 @@ public class AnnotatedStringTest
 		assertEquals(1, p.getLine());
 		assertEquals(0, p.getColumn());
 	}
+	
+	@Test
+	public void testFind2()
+	{
+		AnnotatedString as = new AnnotatedString();
+		as.append("Ends foo with \\foo");
+		Match m = as.find("\\\\foo$");
+		assertNotNull(m);
+	}
 
 	@Test
 	public void testReplace1()
@@ -352,6 +361,15 @@ public class AnnotatedStringTest
 		p = as_rep.getSourcePosition(new Position(1, 2));
 		assertEquals(0, p.getLine());
 		assertEquals(8, p.getColumn());
+	}
+	
+	@Test
+	public void testReplaceAll2()
+	{
+		AnnotatedString as_orig = new AnnotatedString();
+		as_orig.append("Ends foo with \\foo");
+		AnnotatedString as_rep = as_orig.replaceAll("\\\\foo$", "");
+		assertEquals("Ends foo with ", as_rep.toString());
 	}
 
 	@Test
