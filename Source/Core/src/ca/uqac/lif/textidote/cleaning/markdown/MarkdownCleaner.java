@@ -84,8 +84,12 @@ public class MarkdownCleaner extends TextCleaner
 			Matcher ignoreStartMatcher = ignoreStartPattern.matcher(line);
 			Matcher ignoreEndRegExMatcher = ignoreEndRegExPattern.matcher(line);
 
+			// Check for end of multiline comment or ignore block
+			// For that, the state has to fit and pattern catch
+			boolean multilineCommentDone = commentState == CommentStates.MULTILINE && endMultilineMatcher.find();
+
 			// Search and handle comment type
-			if (commentState == CommentStates.IGNORE || commentState == CommentStates.MULTILINE) {
+			if (commentState == CommentStates.IGNORE || commentState == CommentStates.MULTILINE && !multilineCommentDone) {
 				// We're in a multiline comment or ignore block. Clean.
 				i = cleanLine(as, i);
 			} else {
@@ -109,14 +113,10 @@ public class MarkdownCleaner extends TextCleaner
 					if (pos >= 0) {
 						// Remove everything from the beginning of the comment till the end of the line
 						as = as.replace("<!--.*", "", new Position(i, pos));
-						i--; // Step counter back so next loop is at same index
 					}
 				}
 			}
 
-			// Check for end of multiline comment or ignore block
-			// For that, the state has to fit and pattern catch
-			boolean multilineCommentDone = commentState == CommentStates.MULTILINE && endMultilineMatcher.find();
 			// Ignore done when ignore end comment or the second closing front matter comment reached
 			boolean ignoreCommentDone =
 					(commentState == CommentStates.IGNORE && ignoreEndRegExMatcher.find()) || (inFrontMatterContent && line.matches(markdownFrontMatterRegEx));

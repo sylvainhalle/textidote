@@ -9,9 +9,9 @@ layout: default_layout
 <!-- this is a regular comment before -->
 foo <!-- this is an inline comment --> bar
 <!-- this is a regular comment after -->
-<!-- A
+Begin of multiline <!-- A
 multiline
-comment -->
+comment --> end comment
 
 ## Second comment
 
