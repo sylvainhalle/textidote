@@ -17,19 +17,15 @@
  */
 package ca.uqac.lif.textidote.cleaning.latex;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Match;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Removes LaTeX markup from an input string, and generates an annotated
@@ -39,15 +35,6 @@ import ca.uqac.lif.textidote.cleaning.TextCleanerException;
  */
 public class LatexCleaner extends TextCleaner
 {
-	/**
-	 * The string to look for to tell TeXtidote to start ignoring lines
-	 */
-	public static final String IGNORE_BEGIN = "textidote: ignore begin";
-
-	/**
-	 * The string to look for to tell TeXtidote to stop ignoring lines
-	 */
-	public static final String IGNORE_END = "textidote: ignore end";
 
 	/**
 	 * Whether the detexer will remove all lines before seeing
@@ -299,7 +286,7 @@ public class LatexCleaner extends TextCleaner
 	}
 
 	/**
-	 * Removes LaTeX commands from a string 
+	 * Removes LaTeX commands from a string
 	 * @param as The string to clean
 	 * @return A string with the environments removed
 	 */
@@ -399,7 +386,7 @@ public class LatexCleaner extends TextCleaner
 	{
 		Match m = null;
 		Position p = Position.ZERO;
-		// Do it one last time for equations at the beginning of a line		
+		// Do it one last time for equations at the beginning of a line
 		m = as_out.find("^\\$.*?[^\\\\]\\$", p);
 		if (m != null)
 		{

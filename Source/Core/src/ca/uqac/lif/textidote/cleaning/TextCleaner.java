@@ -17,9 +17,9 @@
  */
 package ca.uqac.lif.textidote.cleaning;
 
-import java.util.List;
-
 import ca.uqac.lif.textidote.as.AnnotatedString;
+
+import java.util.List;
 
 /**
  * Removes markup from a text file. A text cleaner can perform two kinds
@@ -32,11 +32,20 @@ import ca.uqac.lif.textidote.as.AnnotatedString;
  * <li>A cleanup that only removes blocks of text identified as comments.
  * What a "comment" means depends on the markup language, and some languages
  * may not have comments at all.</li>
- * </ul> 
+ * </ul>
  * @author Sylvain Hallé
  */
-public abstract class TextCleaner 
+public abstract class TextCleaner
 {
+	/**
+	 * The string to look for to tell TeXtidote to start ignoring lines
+	 */
+	public static final String IGNORE_BEGIN = "textidote: ignore begin";
+
+	/**
+	 * The string to look for to tell TeXtidote to stop ignoring lines
+	 */
+	public static final String IGNORE_END = "textidote: ignore end";
 	/**
 	 * Removes markup from a string.
 	 * @param s The original string. Note that this string can be modified
@@ -46,7 +55,7 @@ public abstract class TextCleaner
 	 * @throws TextCleanerException If a problem occurs when cleaning
 	 */
 	/*@ non_null @*/ public abstract AnnotatedString clean(/*@ non_null @*/ AnnotatedString s) throws TextCleanerException;
-	
+
 	/**
 	 * Removes portions of the string identified as comments, but keeps all
 	 * other markup.
@@ -57,7 +66,7 @@ public abstract class TextCleaner
 	 * @throws TextCleanerException If a problem occurs when cleaning
 	 */
 	/*@ non_null @*/ public abstract AnnotatedString cleanComments(/*@ non_null @*/ AnnotatedString s) throws TextCleanerException;
-	
+
 	/**
 	 * Returns the list of inner files included in the file to be cleaned.
 	 * Currently, this only has a meaning for cleaners based on LaTeX,

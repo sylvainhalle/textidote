@@ -17,17 +17,17 @@
  */
 package ca.uqac.lif.textidote.cleaning;
 
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
+import org.junit.Test;
+
+import java.util.Objects;
+import java.util.Scanner;
+
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Scanner;
-
-import org.junit.Test;
-
-import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
-
-public class MarkdownCleanerTest 
+public class MarkdownCleanerTest
 {
 	@Test
 	public void testRemoveBold1() throws TextCleanerException
@@ -36,7 +36,7 @@ public class MarkdownCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is **bold**.")));
 		assertEquals("This is bold.", as.toString());
 	}
-	
+
 	@Test
 	public void testRemoveBackticks1() throws TextCleanerException
 	{
@@ -44,7 +44,7 @@ public class MarkdownCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("This is `foo`.")));
 		assertEquals("This is X.", as.toString());
 	}
-	
+
 	@Test
 	public void testRemoveIndentedBlocks1() throws TextCleanerException
 	{
@@ -52,4 +52,30 @@ public class MarkdownCleanerTest
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("Here are a few words." + CRLF + CRLF + "    Some code block" + CRLF + CRLF + "Here are some more.")));
 		assertEquals("Here are a few words." + CRLF + CRLF + CRLF + CRLF + "Here are some more.", as.toString());
 	}
+
+    @Test
+    public void testMarkdownCommentsAndFrontMatter() throws TextCleanerException {
+        MarkdownCleaner markdownCleaner = new MarkdownCleaner();
+        AnnotatedString as =
+                markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
+                        "/markdown-test-1.md")))));
+        assertEquals("Test with comments" + CRLF  + CRLF + "foo  bar" + CRLF + "Begin of multiline " + " end " +
+						"comment" + CRLF + CRLF +
+						"Second " +
+						"comment" + CRLF + CRLF +
+                        "Some " +
+                        "other text",
+                as.toString());
+    }
+
+    @Test
+    public void testMarkdownIgnoreComments() throws TextCleanerException {
+        MarkdownCleaner markdownCleaner = new MarkdownCleaner();
+        AnnotatedString as =
+                markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
+                        "/markdown-test-2.md")))));
+        assertEquals("TexTidote ignore test file" + CRLF + CRLF + "some words" + CRLF + CRLF + "Ignore everything " +
+                        "below" + CRLF,
+                as.toString());
+    }
 }
