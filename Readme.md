@@ -513,6 +513,28 @@ for the changes to take effect.
 
 Users of Visual Studio Code can integrate TeXtidote by calling it with the `--output singleline` and `--no-color` options and parse its results. Moreover, user [cphyc](https://github.com/cphyc) also wrote a nice [build task](https://github.com/sylvainhalle/textidote/issues/125#issue-603278987).
 
+### Emacs integration
+
+Emacs users can benefit from TeXtidote through [flycheck](https://www.flycheck.org/en/latest/).  
+A dedicated `flycheck-checker` can be defined as in the following `init.el/.emacs` snippet (by user [soli](https://github.com/soli)).
+
+```emacs-lisp
+(flycheck-define-checker tex-textidote
+    "A LaTeX grammar/spelling checker using textidote.
+
+    See https://github.com/sylvainhalle/textidote"
+    :modes (latex-mode plain-tex-mode)
+    :command ("java" "-jar" (eval (expand-file-name "~/PATH/TO/textidote.jar")) "--read-all"
+              "--check" (eval (if ispell-current-dictionary (substring ispell-current-dictionary 0 2) "en"))
+              "--no-color" source-inplace)
+    :error-patterns (
+                     (warning line-start "* L" line "C" column "-" (one-or-more alphanumeric) " "
+                              (message (one-or-more (not (any "]"))) "]")))
+							  
+(add-to-list 'flycheck-checkers   'tex-textidote)							  
+
+```
+
 ## Rules checked by TeXtidote
 
 Here is a list of the rules that are checked on your LaTeX file by TeXtidote.
