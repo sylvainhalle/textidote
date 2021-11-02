@@ -266,6 +266,9 @@ foo		bar
 abc\d+[^x]	123
 ```
 
+Replacement rules are applied line-wise, so multiline replacements are not
+possible.
+
 ### Reading a sub-file
 
 By default, TeXtidote ignores everything before the `\begin{document}`
