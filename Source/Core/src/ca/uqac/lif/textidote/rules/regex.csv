@@ -4,7 +4,7 @@ sh:003		\\(sub)*section\{[A-Z0-9\s,:;]*?\}		A section title should not be writte
 sh:007		\\paragraph\{\s*[a-z].*?\}				A paragraph heading should start with a capital letter.
 sh:008		\\paragraph\{.*?[\.,;:]\s*\}			A paragraph heading should not end with a punctuation symbol.
 sh:009		\\paragraph\{[A-Z0-9\s,:;]*?\}			A paragraph heading should not be written in all caps. The LaTeX stylesheet takes care of rendering titles in caps if needed.
-sh:010		et al\.[^\\,]							Use a backslash or comma after the period; otherwise LaTeX will think it is a full stop ending a sentence.
+sh:010		et al\.[^\\,~]							Use a backslash, comma, or tilde after the period; otherwise LaTeX will think it is a full stop ending a sentence.
 sh:011		(i\.e\.|e\.g\.)[^\\,:;]					Use a backslash or comma after the second period; otherwise LaTeX will think it is a full stop ending a sentence.
 sh:012		\\fg\s									Utilisez '\fg{}' au lieu de '\fg'; sinon le mot suivant sera collé au guillemet fermant. 
 
