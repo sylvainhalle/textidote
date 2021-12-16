@@ -63,7 +63,7 @@
       <name>Bullwinkle</name>
       <classname>ca.uqac.lif.bullwinkle.BnfParser</classname>
       <files>
-        <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.3/bullwinkle-1.4.3.zip</zip>
+        <zip>https://github.com/sylvainhalle/Bullwinkle/releases/download/v1.4.6/bullwinkle-1.4.6.zip</zip>
       </files>
       <bundle>true</bundle>
     </dependency>
@@ -74,7 +74,7 @@
       <name>Language Tool</name>
       <classname>org.languagetool.JLanguageTool</classname>
       <files>
-        <jar>https://github.com/sylvainhalle/languagetool/releases/download/v4.6a-standalone/languagetool-bundle-4.6a.jar</jar>
+        <jar>https://github.com/sylvainhalle/languagetool-bundle/releases/download/v5.6/languagetool-bundle-5.6.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
@@ -85,7 +85,7 @@
       <name>json-lif</name>
       <classname>ca.uqac.lif.json.JsonElement</classname>
       <files>
-        <zip>https://github.com/liflab/json-lif/releases/download/v1.6.3/json-lif-1.6.3.zip</zip>
+        <zip>https://github.com/liflab/json-lif/releases/download/v1.6.4/json-lif-1.6.4.zip</zip>
       </files>
       <bundle>true</bundle>
     </dependency>
