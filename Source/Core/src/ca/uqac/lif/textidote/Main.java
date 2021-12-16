@@ -82,7 +82,7 @@ public class Main
 	/**
 	 * A version string
 	 */
-	public static final String VERSION_STRING = "0.8.2";
+	public static final String VERSION_STRING = "0.8.3";
 
 	/**
 	 * The name of the Aspell dictionary file to look for in a folder
@@ -532,8 +532,10 @@ public class Main
 		// Process files
 		int num_advice = 0;
 		int num_files = 0;
-		List<String> cmd_filenames = map.getOthers();
-		List<String> filenames = map.getOthers();
+		List<String> filenames = new ArrayList<String>();
+		List<String> cmd_filenames = new ArrayList<String>();
+		filenames.addAll(map.getOthers());
+		cmd_filenames.addAll(map.getOthers());
 		if (filenames.isEmpty())
 		{
 			filenames.add("--"); // This indicates: read from stdin
