@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2019  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -177,16 +177,31 @@ public class MainTest
 		assertTrue(ret_code > 0);
 		assertFalse(output.trim().isEmpty());
 	}
+	
+	@Test(timeout = 10000)
+	public void testCheck1() throws IOException
+	{
+		ByteArrayOutputStream baos_out = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos_out);
+		ByteArrayOutputStream baos_err = new ByteArrayOutputStream();
+		PrintStream err = new PrintStream(baos_err);
+		InputStream is = MainTest.class.getResourceAsStream("rules/data/test-input1.tex");
+		Main.mainLoop(new String[] {"--check", "fr", "--read-all"}, is, out, err, MainTest.class);
+		String output = new String(baos_out.toByteArray());
+		assertNotNull(output);
+		assertFalse(output.trim().isEmpty());
+	}
 
 	@Test(timeout = 5000)
 	public void testNgrams1() throws IOException
 	{
 		// We instruct Textidote to read from a non-existent n-gram directory (.)
 		// This will still trigger the initialization of the n-gram
-		// functionality
+		// functionality and check that it works
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		Main.mainLoop(new String[] {"--check", "fr", "--languagemodel", ".", "--read-all", "rules/data/test-input1.tex"}, null, out, new NullPrintStream(), MainTest.class);
+		InputStream is = MainTest.class.getResourceAsStream("rules/data/test-input1.tex");
+		Main.mainLoop(new String[] {"--check", "fr", "--languagemodel", "/foo", "--read-all"}, is, out, new NullPrintStream(), MainTest.class);
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		assertFalse(output.trim().isEmpty());
