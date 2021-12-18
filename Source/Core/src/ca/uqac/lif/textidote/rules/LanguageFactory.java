@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package ca.uqac.lif.textidote.rules;
 
 import org.languagetool.Language;
 import org.languagetool.language.AmericanEnglish;
+import org.languagetool.language.Arabic;
 import org.languagetool.language.AustrianGerman;
 import org.languagetool.language.BritishEnglish;
 import org.languagetool.language.CanadianEnglish;
@@ -49,6 +50,10 @@ public class LanguageFactory
 		if (s.compareToIgnoreCase("en") == 0 || s.compareToIgnoreCase("en_US") == 0)
 		{
 			return new AmericanEnglish();
+		}
+		if (s.compareToIgnoreCase("ar") == 0)
+		{
+			return new Arabic();
 		}
 		if (s.compareToIgnoreCase("en_CA") == 0)
 		{
