@@ -20,7 +20,7 @@ package ca.uqac.lif.textidote.rules;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 
 /**
  * Information on a section heading inside a document.

@@ -20,12 +20,12 @@ package ca.uqac.lif.textidote.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.as.Match;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
 
 /**
  * Rule based on a regular expression pattern to be found in the text.
@@ -87,11 +87,10 @@ public class RegexRule extends Rule
 	}
 
 	@Override
-	/*@ non_null @*/ public List<Advice> evaluate(/*@ non_null @*/ AnnotatedString s,
-			/*@ non_null @*/ AnnotatedString original)
+	/*@ non_null @*/ public List<Advice> evaluate(/*@ non_null @*/ AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		Position pos = Position.ZERO;
+		int pos = 0;
 		for (int num_iterations = 0; num_iterations < MAX_ITERATIONS; num_iterations++)
 		{
 			Match match = s.find(m_pattern, pos);
@@ -106,28 +105,28 @@ public class RegexRule extends Rule
 				continue;
 			}
 			String message = createMessage(match);
-			Position start_pos = match.getPosition();
-			Position end_pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length());
-			Position source_start_pos = s.getSourcePosition(start_pos);
-			Position source_end_pos = s.getSourcePosition(end_pos);
-			Range r = null;
-			String original_line = "";
-			if (source_start_pos.equals(Position.NOWHERE))
+			int start_pos = match.getPosition();
+			int end_pos = start_pos + match.getMatch().length();
+			Range r = s.findOriginalRange(new Range(start_pos, end_pos - 1));
+			Line original_line = null;
+			boolean original_range = true;
+			if (r != null)
 			{
-				r = Range.make(0, 0, 0);
+				// Found a range in the original string
+				original_line = s.getOriginalLineOf(r.getStart());
 			}
 			else
 			{
-				original_line = original.getLine(source_start_pos.getLine());
-				if (source_end_pos.equals(Position.NOWHERE))
-				{
-					source_end_pos = source_start_pos;
-				}
-				r = new Range(source_start_pos, source_end_pos);
+				// Did not find a range in the original string, use the clean string instead
+				r = new Range(match.getPosition(), match.getPosition() + match.getMatch().length() - 1);
+				original_line = s.getLineOf(match.getPosition());
+				original_range = false;
 			}
 			assert r != null;
-			out_list.add(new Advice(this, r, message, s.getResourceName(), original_line, original.getOffset(source_start_pos)));
-			pos = new Position(start_pos.getLine(), start_pos.getColumn() + match.getMatch().length());;
+			Advice a = new Advice(this, r, message, s, original_line);
+			a.setOriginal(original_range);
+			out_list.add(a);
+			pos = start_pos + match.getMatch().length();
 		}
 		return out_list;
 	}

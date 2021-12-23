@@ -28,11 +28,12 @@ import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
+import ca.uqac.lif.textidote.as.PositionRange;
 
 /**
  * Checks the text for spelling, grammar and style errors. This rule is a
@@ -136,7 +137,7 @@ public class CheckLanguage extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
 		String s_to_check = s.toString();
@@ -156,43 +157,22 @@ public class CheckLanguage extends Rule
 		}
 		for (RuleMatch rm : matches)
 		{
-			String line = "";
-			Position start_src_pos = Position.NOWHERE, end_src_pos = Position.NOWHERE;
-			Position start_pos = s.getPosition(rm.getFromPos());
-			if (!start_pos.equals(Position.NOWHERE))
-			{
-				start_src_pos = s.getSourcePosition(start_pos);
-			}
-			Position end_pos = s.getPosition(rm.getToPos());
-			if (!end_pos.equals(Position.NOWHERE))
-			{
-				end_src_pos = s.getSourcePosition(end_pos);
-			}
-			Range r = null;
+			Line line = null;
+			int start_pos = rm.getFromPos();
+			int end_pos = rm.getToPos();
+			Range r = s.findOriginalRange(new Range(start_pos, end_pos - 1));
 			boolean original_range = true;
-			if (start_src_pos.equals(Position.NOWHERE))
+			if (r == null)
 			{
+				// Can't find the text in the original: used detexed
 				original_range = false;
-				if (start_pos != null)
-				{
-					// Can't find the text in the original: used detexed
-					line = s.getLine(start_pos.getLine());
-					start_src_pos = start_pos;
-					end_src_pos = end_pos;
-				}
-				r = Range.make(0, 0, 0);
+				line = s.getLineOf(start_pos);
+				r = new Range(-1, -1);
 			}
 			else
 			{
-				line = original.getLine(start_src_pos.getLine());
-				if (end_src_pos.equals(Position.NOWHERE))
-				{
-					r = Range.make(start_src_pos.getLine(), start_src_pos.getColumn(), start_src_pos.getColumn());
-				}
-				else
-				{
-					r = new Range(start_src_pos, end_src_pos);
-				}
+				PositionRange source_pr = s.getOriginalPositionRange(r.getStart(), r.getEnd());
+				line = s.getOriginalLine(source_pr.getStart().getLine());
 			}
 			// Exception for the disable unpaired rule
 			if (m_disableUnpaired && rm.getRule().getId().startsWith("EN_UNPAIRED_BRACKETS"))
@@ -204,11 +184,12 @@ public class CheckLanguage extends Rule
 				}
 			}
 			// Exception if spelling mistake and a dictionary is provided
-			String clean_line = s.getLine(start_pos.getLine());
+			Line cl = s.getLine(s.getPosition(start_pos).getLine());
+			String clean_line = cl.toString();
 			int end_p = 0;
-			if (end_pos != null)
+			if (end_pos >= 0)
 			{
-				end_p = end_pos.getColumn();
+				end_p = end_pos;
 			}
 			if (end_p > 0)
 			{
@@ -218,11 +199,11 @@ public class CheckLanguage extends Rule
 				}
 			}
 			// Exception for false alarm regarding "smart quotes"
-			end_p = r.getEnd().getColumn();
-			if (end_p > line.length() - 1)
+			end_p = r.getEnd();
+			/*if (end_p > line.length() - 1)
 			{
 				end_p = line.length() - 1;
-			}
+			}*/
 			if (rm.getRule().getId().startsWith("FRENCH_WHITESPACE"))
 			{
 				// LaTeX takes care of whitespace, so ignore LT's advice
@@ -230,9 +211,11 @@ public class CheckLanguage extends Rule
 			}
 			if (rm.getRule().getId().startsWith("EN_QUOTES") && rm.getMessage().contains("Use a smart opening quote"))
 			{
-				if (line.length() > 0)
+				if (line.toString().length() > 0)
 				{
-					String word = line.substring(Math.min(line.length() - 1, r.getStart().getColumn()), end_p).trim();
+					int word_start = Math.min(line.toString().length() - 1, r.getStart() - line.getOffset());
+					int word_end = end_p - line.getOffset();
+					String word = line.toString().substring(word_start, word_end).trim();
 					if (word.contains("``"))
 					{
 						// This type of quote is OK in LaTeX: ignore
@@ -249,7 +232,7 @@ public class CheckLanguage extends Rule
 				advice_message.append(". Suggestions: ").append(replacements.toString());
 			}
 			advice_message.append(" (").append(rm.getFromPos()).append(")");
-			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId(), rm.getRule().getDescription()), r, advice_message.toString(), s.getResourceName(), line, original.getOffset(start_src_pos));
+			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId(), rm.getRule().getDescription()), r, advice_message.toString(), s, line);
 			ad.setOriginal(original_range);
 			ad.setShortMessage("LanguageTool rule");
 			out_list.add(ad);
@@ -312,7 +295,7 @@ public class CheckLanguage extends Rule
 		}
 
 		@Override
-		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+		public List<Advice> evaluate(AnnotatedString s)
 		{
 			// No need to implement, this is just a placeholder
 			return null;

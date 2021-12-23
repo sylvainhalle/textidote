@@ -22,11 +22,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 
 /**
  * Checks that included figures are not referenced  by an absolute local path.
@@ -57,13 +58,14 @@ public class CheckFigurePaths extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		List<String> lines = s.getLines();
+		List<Line> lines = s.getLines();
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
-			String line = lines.get(line_cnt);
+			Line l = lines.get(line_cnt);
+			String line = l.toString();
 			Matcher mat = m_figurePattern.matcher(line);
 			if (mat.find())
 			{
@@ -71,10 +73,12 @@ public class CheckFigurePaths extends Rule
 				if (isAbsolute(path))
 				{
 					// Absolute path
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2)));
-					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(2) + mat.group(2).length()));
-					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not use an absolute path for a figure", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));	
+					int start_pos = mat.start(2);
+					int end_pos = mat.start(2) + mat.group(2).length() - 1;
+					int start_p = s.findOriginalIndex(new Position(line_cnt, start_pos));
+					int end_p = s.findOriginalIndex(new Position(line_cnt, end_pos));
+					Range r = new Range(start_p, end_p);
+					out_list.add(new Advice(this, r, "Do not use an absolute path for a figure", s, l));	
 				}
 			}
 		}

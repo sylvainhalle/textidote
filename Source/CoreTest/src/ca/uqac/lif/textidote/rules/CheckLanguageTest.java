@@ -38,7 +38,7 @@ public class CheckLanguageTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckLanguageTest.class.getResourceAsStream("data/test-lt-1.tex")));
 		Rule r = new CheckLanguage(LanguageFactory.getLanguageFromString("en"));
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -47,7 +47,7 @@ public class CheckLanguageTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckLanguageTest.class.getResourceAsStream("data/test-lt-2.tex")));
 		Rule r = new CheckLanguage(LanguageFactory.getLanguageFromString("en"));
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -59,7 +59,7 @@ public class CheckLanguageTest
 		dict.add("foo");
 		dict.add("foagzx");
 		Rule r = new CheckLanguage(LanguageFactory.getLanguageFromString("en"), dict);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}	
 }

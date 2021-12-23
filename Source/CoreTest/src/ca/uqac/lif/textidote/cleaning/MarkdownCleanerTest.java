@@ -53,29 +53,29 @@ public class MarkdownCleanerTest
 		assertEquals("Here are a few words." + CRLF + CRLF + CRLF + CRLF + "Here are some more.", as.toString());
 	}
 
-    @Test
-    public void testMarkdownCommentsAndFrontMatter() throws TextCleanerException {
-        MarkdownCleaner markdownCleaner = new MarkdownCleaner();
-        AnnotatedString as =
-                markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
-                        "/markdown-test-1.md")))));
-        assertEquals("Test with comments" + CRLF  + CRLF + "foo  bar" + CRLF + "Begin of multiline " + " end " +
-						"comment" + CRLF + CRLF +
-						"Second " +
-						"comment" + CRLF + CRLF +
-                        "Some " +
-                        "other text",
-                as.toString());
-    }
+	@Test
+	public void testMarkdownCommentsAndFrontMatter() throws TextCleanerException {
+		MarkdownCleaner markdownCleaner = new MarkdownCleaner();
+		AnnotatedString as =
+				markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
+						"/markdown-test-1.md")))));
+		assertEquals("Test with comments" + CRLF  + CRLF + "foo  bar" + CRLF + CRLF + "Begin of multiline " + CRLF + " end " +
+				"comment" + CRLF + CRLF +
+				"Second " +
+				"comment" + CRLF + CRLF +
+				"Some " +
+				"other text",
+				as.toString());
+	}
 
-    @Test
-    public void testMarkdownIgnoreComments() throws TextCleanerException {
-        MarkdownCleaner markdownCleaner = new MarkdownCleaner();
-        AnnotatedString as =
-                markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
-                        "/markdown-test-2.md")))));
-        assertEquals("TexTidote ignore test file" + CRLF + CRLF + "some words" + CRLF + CRLF + "Ignore everything " +
-                        "below" + CRLF,
-                as.toString());
-    }
+	@Test
+	public void testMarkdownIgnoreComments() throws TextCleanerException {
+		MarkdownCleaner markdownCleaner = new MarkdownCleaner();
+		AnnotatedString as =
+				markdownCleaner.clean(AnnotatedString.read(new Scanner(Objects.requireNonNull(MarkdownCleanerTest.class.getResourceAsStream("data" +
+						"/markdown-test-2.md")))));
+		assertEquals("TexTidote ignore test file" + CRLF + CRLF + "some words" + CRLF + CRLF + "Ignore everything " +
+				"below" + CRLF,
+				as.toString());
+	}
 }

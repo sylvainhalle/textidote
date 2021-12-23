@@ -35,8 +35,8 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.cleaning.CompositeCleaner;
 import ca.uqac.lif.textidote.cleaning.ReplacementCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;

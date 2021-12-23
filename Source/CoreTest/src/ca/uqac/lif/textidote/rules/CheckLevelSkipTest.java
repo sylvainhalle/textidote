@@ -38,7 +38,7 @@ public class CheckLevelSkipTest
 				"\\subsection{bar}\n" + 
 				"\\chapter{baz}"));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertFalse(containsSkipAdvice(ad_list));
 	}
 	
@@ -49,7 +49,7 @@ public class CheckLevelSkipTest
 				"\\subsubsection{bar}\n" + 
 				"\\section{baz}"));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(containsSkipAdvice(ad_list));
 	}
 	

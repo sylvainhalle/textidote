@@ -36,10 +36,10 @@ public class CheckSubsectionsTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-1.tex")));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 		Advice ad = ad_list.get(0);
-		assertEquals(2, ad.getRange().getStart().getLine());
+		assertEquals(2, in_string.getPosition(ad.getRange().getStart()).getLine());
 	}
 	
 	@Test
@@ -47,7 +47,7 @@ public class CheckSubsectionsTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-2.tex")));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -56,7 +56,7 @@ public class CheckSubsectionsTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-3.tex")));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(containsAdviceWithLabel(ad_list, "sh:secorder"));
 	}
 	

@@ -40,7 +40,7 @@ public class HtmlRenderTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test4.tex")));
 		Rule r = new CheckFigureReferences();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		AnsiPrinter ansi_p = new AnsiPrinter(out);

@@ -34,10 +34,10 @@ public class CheckStackedHeadingsTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckStackedHeadingsTest.class.getResourceAsStream("data/test-stacked-1.tex")));
 		CheckStackedHeadings r = new CheckStackedHeadings();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 		Advice ad = ad_list.get(0);
-		assertEquals(4, ad.getRange().getStart().getLine());
+		assertEquals(4, in_string.getPosition(ad.getRange().getStart()).getLine());
 	}
 	
 	@Test
@@ -45,7 +45,7 @@ public class CheckStackedHeadingsTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckStackedHeadingsTest.class.getResourceAsStream("data/test-stacked-0.tex")));
 		CheckStackedHeadings r = new CheckStackedHeadings();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 }

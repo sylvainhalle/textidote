@@ -18,7 +18,7 @@
 package ca.uqac.lif.textidote.cleaning.markdown;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 
@@ -36,14 +36,13 @@ public class MarkdownCleaner extends TextCleaner
 		AnnotatedString new_as = new AnnotatedString(as);
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
-		new_as = removeAllMarkup(new_as);
+		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;
 	}
 
 	private enum CommentStates {SINGLE_LINE, MULTILINE, INLINE, IGNORE, NONE}
-	/*@ non_null @*/
-
+	
 	/**
 	 * Clean regular, inline and multiline comments
 	 * Also takes into account Ignore comment sections
@@ -52,7 +51,9 @@ public class MarkdownCleaner extends TextCleaner
 	 *
 	 * @return Annotated String without comments
 	 */
-	public AnnotatedString cleanComments(AnnotatedString as) {
+	@Override
+	/*@ non_null @*/ public AnnotatedString cleanComments(AnnotatedString as) 
+	{
 		String singleLineCommentRegEx = "^<!--(.*?)-->$";
 		String markdownFrontMatterRegEx = "^---$";
 
@@ -73,8 +74,10 @@ public class MarkdownCleaner extends TextCleaner
 		// Tracks whether we are in a front matter block
 		boolean inFrontMatterContent = false;
 
-		for (int i = 0; i < as.lineCount(); i++) {
-			String line = as.getLine(i);
+		for (int i = 0; i < as.lineCount(); i++) 
+		{
+			Line l = as.getLine(i);
+			String line = l.toString();
 
 			Matcher singleInlineCommentMatcher = singleInlineCommentPattern.matcher(line);
 
@@ -89,30 +92,42 @@ public class MarkdownCleaner extends TextCleaner
 			boolean multilineCommentDone = commentState == CommentStates.MULTILINE && endMultilineMatcher.find();
 
 			// Search and handle comment type
-			if (commentState == CommentStates.IGNORE || commentState == CommentStates.MULTILINE && !multilineCommentDone) {
+			if (commentState == CommentStates.IGNORE || commentState == CommentStates.MULTILINE && !multilineCommentDone)
+			{
 				// We're in a multiline comment or ignore block. Clean.
 				i = cleanLine(as, i);
-			} else {
-				if (ignoreStartMatcher.find() || line.matches(markdownFrontMatterRegEx)) {
+			}
+			else 
+			{
+				if (ignoreStartMatcher.find() || line.matches(markdownFrontMatterRegEx)) 
+				{
 					// This case when either front matter section or an ignore comment is found
 					commentState = CommentStates.IGNORE;
 					i = cleanLine(as, i);
-				} else if (line.matches(singleLineCommentRegEx)) {
+				} 
+				else if (line.matches(singleLineCommentRegEx)) 
+				{
 					commentState = CommentStates.SINGLE_LINE;
 					i = cleanLine(as, i);
-				} else if (singleInlineCommentMatcher.find()) {
+				} 
+				else if (singleInlineCommentMatcher.find()) 
+				{
 					commentState = CommentStates.INLINE;
 					int pos = line.indexOf("<!--", 0);
-					if (pos > 0) {
+					if (pos > 0) 
+					{
 						// Remove inline comment
-						as = as.replace(singleInlineCommentRegEx, "", new Position(i, pos));
+						as = as.replace(singleInlineCommentRegEx, "", l.getOffset() + pos);
 					}
-				} else if (beginMultilineMatcher.find()) {
+				}
+				else if (beginMultilineMatcher.find()) 
+				{
 					commentState = CommentStates.MULTILINE;
 					int pos = line.indexOf("<!--", 0);
-					if (pos >= 0) {
+					if (pos >= 0)
+					{
 						// Remove everything from the beginning of the comment till the end of the line
-						as = as.replace("<!--.*", "", new Position(i, pos));
+						as = as.replace("<!--.*", "", l.getOffset() + pos);
 					}
 				}
 			}
@@ -123,11 +138,17 @@ public class MarkdownCleaner extends TextCleaner
 			// If we are in front matter content, search for the front matter end block
 			if (line.matches(markdownFrontMatterRegEx)) inFrontMatterContent = true;
 
-			if (multilineCommentDone || ignoreCommentDone) {
+			if (multilineCommentDone || ignoreCommentDone) 
+			{
 				// Replace everything till the end of the multiline comment
-				if (commentState == CommentStates.MULTILINE) as = as.replace(".*-->", "", new Position(i, 0));
-
-				if (line.matches(markdownFrontMatterRegEx)) inFrontMatterContent = false;
+				if (commentState == CommentStates.MULTILINE) 
+				{
+					as = as.replace(".*-->", "", l.getOffset() + 0);
+				}
+				if (line.matches(markdownFrontMatterRegEx)) 
+				{
+					inFrontMatterContent = false;
+				}
 				commentState = CommentStates.NONE;
 			}
 		}
@@ -142,7 +163,8 @@ public class MarkdownCleaner extends TextCleaner
 	 *
 	 * @return Line Reference on the removed line
 	 */
-	private int cleanLine(AnnotatedString as, int lineReference) {
+	private int cleanLine(AnnotatedString as, int lineReference) 
+	{
 		as.removeLine(lineReference);
 		lineReference--; // Step counter back so next loop is at same index
 		return lineReference;
@@ -164,7 +186,8 @@ public class MarkdownCleaner extends TextCleaner
 			{
 				break;
 			}
-			String line = as.getLine(i);
+			Line l = as.getLine(i);
+			String line = l.toString();
 			if (line.trim().startsWith("```"))
 			{
 				in_environment = !in_environment;
@@ -178,48 +201,16 @@ public class MarkdownCleaner extends TextCleaner
 		return as;
 	}
 
-	/**
-	 * Removes Markdown specific markup
-	 * @param as The string to replace from
-	 * @return The replaced string
-	 */
-	/*@ non_null @*/ protected AnnotatedString removeAllMarkup(AnnotatedString as)
-	{
-		AnnotatedString as_out = new AnnotatedString();
-		boolean first_line = true;
-		for (int line_pos = 0; line_pos < as.lineCount(); line_pos++)
-		{
-			String orig_source_line = as.getLine(line_pos);
-			if (orig_source_line.trim().isEmpty())
-			{
-				as_out.appendNewLine();
-				continue;
-			}
-			AnnotatedString source_line = as.substring(new Position(line_pos, 0), new Position(line_pos, orig_source_line.length()));
-			AnnotatedString clean_line = removeMarkup(source_line, line_pos);
-			if (first_line)
-			{
-				first_line = false;
-			}
-			else
-			{
-				as_out.appendNewLine();
-			}
-			as_out.append(clean_line);
-		}
-		return as_out;
-	}
-
-	/*@ non_null @*/ protected AnnotatedString removeMarkup(/*@ non_null @*/ AnnotatedString as_out, int line_nb)
+	/*@ non_null @*/ protected AnnotatedString removeMarkup(/*@ non_null @*/ AnnotatedString as_out)
 	{
 		as_out = as_out.replaceAll("\\*", "");
 		as_out = as_out.replaceAll("`.*?`", "X");
 		as_out = as_out.replaceAll("!\\[(.*?)\\]\\(.*?\\)", "$1"); // images
 		as_out = as_out.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1"); // links
-		as_out = as_out.replaceAll("^    .*$", ""); // indented code blocks
-		as_out = as_out.replaceAll("^\\s*?- ", "• ");
-		as_out = as_out.replaceAll("^\\s*#*\\s*", "");
-		as_out = as_out.replaceAll("^\\s*=*\\s*$", "");
+		as_out = as_out.replaceAll("(?m)^    .*$", ""); // indented code blocks
+		as_out = as_out.replaceAll("(?m)^[ \\t]*?- ", "• ");
+		as_out = as_out.replaceAll("(?m)^[ \\t]*#+[ \\t]*", "");
+		as_out = as_out.replaceAll("(?m)^[ \\\\t]*=+[ \\t]*$", "");
 		return as_out;
 	}
 

@@ -20,6 +20,7 @@ package ca.uqac.lif.textidote.cleaning.latex;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Match;
 import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 
@@ -118,7 +119,8 @@ public class LatexCleaner extends TextCleaner
 		new_as = removeEnvironments(new_as);
 		new_as = removeMacros(new_as);
 		fetchIncludes(new_as);
-		new_as = removeAllMarkup(new_as);
+		//new_as = removeAllMarkup(new_as);
+		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;
 	}
@@ -164,7 +166,8 @@ public class LatexCleaner extends TextCleaner
 			{
 				break;
 			}
-			String line = as.getLine(i);
+			Line l = as.getLine(i);
+			String line = l.toString();
 			if (m_ignoreBeforeDocument && !in_document)
 			{
 				if (line.matches("[^%]*\\\\begin\\s*\\{\\s*document.*"))
@@ -250,7 +253,8 @@ public class LatexCleaner extends TextCleaner
 		boolean in_comment = false;
 		for (int i = 0; i < as.lineCount(); i++)
 		{
-			String line = as.getLine(i);
+			Line l = as.getLine(i);
+			String line = l.toString();
 			if (line.matches(".*\\\\begin\\s*\\{\\s*comment.*") || line.matches("\\s*%+.*" + IGNORE_BEGIN + ".*"))
 			{
 				in_comment = true;
@@ -272,7 +276,7 @@ public class LatexCleaner extends TextCleaner
 					}
 					if (line.substring(pos - 1, pos).compareTo("\\") != 0)
 					{
-						as = as.trimFrom(new Position(i, pos));
+						as = as.trimFrom(l.getOffset() + pos);
 						break;
 					}
 				}
@@ -290,32 +294,10 @@ public class LatexCleaner extends TextCleaner
 	 * @param as The string to clean
 	 * @return A string with the environments removed
 	 */
-	protected AnnotatedString removeAllMarkup(AnnotatedString as)
-	{
-		AnnotatedString as_out = new AnnotatedString();
-		boolean first_line = true;
-		for (int line_pos = 0; line_pos < as.lineCount(); line_pos++)
-		{
-			String orig_source_line = as.getLine(line_pos);
-			AnnotatedString source_line = as.substring(new Position(line_pos, 0), new Position(line_pos, orig_source_line.length()));
-			AnnotatedString clean_line = removeMarkup(source_line, line_pos);
-			if (first_line)
-			{
-				first_line = false;
-			}
-			else
-			{
-				as_out.appendNewLine();
-			}
-			as_out.append(clean_line);
-		}
-		return as_out;
-	}
-
-	protected AnnotatedString removeMarkup(AnnotatedString as_out, int line_pos)
+	protected AnnotatedString removeMarkup(AnnotatedString as_out)
 	{
 		// French quotes
-		as_out = replaceAccents(as_out, line_pos);
+		as_out = replaceAccents(as_out);
 		as_out = as_out.replaceAll("\\\\og\\{\\}", "«");
 		as_out = as_out.replaceAll("\\\\fg\\{\\}", "»");
 		// Ligatures
@@ -369,7 +351,7 @@ public class LatexCleaner extends TextCleaner
 		// Equations are removed
 		as_out = as_out.replaceAll("\\\\\\[.*?\\\\\\]", "");
 		// Inline equations in old TeX style ("$foo$")
-		as_out = replaceInlineEquations(as_out, line_pos);
+		as_out = replaceInlineEquations(as_out);
 		/*as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
 		//as_out = as_out.replaceAll("^\\$.*?[^\\\\]\\$", "X");
 		as_out = as_out.replaceAll("^\\$([^\\$]|\\.)*\\$", "X");
@@ -382,10 +364,10 @@ public class LatexCleaner extends TextCleaner
 		return as_out;
 	}
 
-	protected AnnotatedString replaceInlineEquations(AnnotatedString as_out, int line_pos)
+	protected AnnotatedString replaceInlineEquations(AnnotatedString as_out)
 	{
 		Match m = null;
-		Position p = Position.ZERO;
+		int p = 0;
 		// Do it one last time for equations at the beginning of a line
 		m = as_out.find("^\\$.*?[^\\\\]\\$", p);
 		if (m != null)
@@ -401,7 +383,7 @@ public class LatexCleaner extends TextCleaner
 			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
 		}
 		m = null;
-		p = Position.ZERO;
+		p = 0;
 		do
 		{
 			m = as_out.find("[^\\\\]\\$.*?[^\\\\]\\$", p);
@@ -418,7 +400,7 @@ public class LatexCleaner extends TextCleaner
 				s_to = s_from.substring(0, 1) + s_inside;
 			}
 			as_out = as_out.replaceAll(Pattern.quote(s_from), s_to);
-			p = p.moveBy(1); // To ensure progress
+			p++; // To ensure progress
 		} while (m != null);
 		return as_out;
 	}
@@ -426,10 +408,9 @@ public class LatexCleaner extends TextCleaner
 	/**
 	 * Replaces escaped accented character sequences by their proper character
 	 * @param as_out The string to replace from
-	 * @param line_pos The line number of the line to process
 	 * @return The replaced string
 	 */
-	protected AnnotatedString replaceAccents(AnnotatedString as_out, int line_pos)
+	protected AnnotatedString replaceAccents(AnnotatedString as_out)
 	{
 		// With braces
 		as_out = as_out.replaceAll("\\\\`\\{A\\}", "À");
@@ -546,8 +527,9 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
 	{
-		for (String line : as.getLines())
+		for (Line l : as.getLines())
 		{
+			String line = l.toString();
 			Matcher mat = m_includePattern.matcher(line);
 			if (mat.find())
 			{

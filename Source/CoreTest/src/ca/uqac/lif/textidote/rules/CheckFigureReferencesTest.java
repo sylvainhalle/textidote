@@ -36,7 +36,7 @@ public class CheckFigureReferencesTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test4.tex")));
 		Rule r = new CheckFigureReferences();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -45,7 +45,7 @@ public class CheckFigureReferencesTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test5.tex")));
 		Rule r = new CheckFigureReferences();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -54,7 +54,7 @@ public class CheckFigureReferencesTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-3.tex")));
 		Rule r = new CheckSubsections();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(containsAdviceWithLabel(ad_list, "sh:secorder"));
 	}
 	

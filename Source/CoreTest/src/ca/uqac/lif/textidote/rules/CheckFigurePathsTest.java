@@ -38,7 +38,7 @@ public class CheckFigurePathsTest
 				"\\includegraphics{path/to/file.pdf}\n" + 
 				"\\end{figure}"));
 		Rule r = new CheckFigurePaths();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -49,7 +49,7 @@ public class CheckFigurePathsTest
 				"\\includegraphics{D:\\Sylvain\\file.pdf}\n" + 
 				"\\end{figure}"));
 		Rule r = new CheckFigurePaths();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -60,7 +60,7 @@ public class CheckFigurePathsTest
 				"\\includegraphics{/home/Sylvain/file.pdf}\n" + 
 				"\\end{figure}"));
 		Rule r = new CheckFigurePaths();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 }

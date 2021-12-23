@@ -46,7 +46,7 @@ public class CheckRule
 		}
 		
 		@Override
-		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+		public List<Advice> evaluate(AnnotatedString s)
 		{
 			// Don't care
 			return null;

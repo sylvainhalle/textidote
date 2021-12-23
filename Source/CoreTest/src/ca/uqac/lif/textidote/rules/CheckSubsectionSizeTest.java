@@ -36,10 +36,10 @@ public class CheckSubsectionSizeTest
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-1.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 		Advice ad = ad_list.get(0);		
-		assertEquals(17, ad.getRange().getStart().getLine());
+		assertEquals(17, in_string.getPosition(ad.getRange().getStart()).getLine());
 	}
 	
 	@Test
@@ -48,7 +48,7 @@ public class CheckSubsectionSizeTest
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-2.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -58,7 +58,7 @@ public class CheckSubsectionSizeTest
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionSizeTest.class.getResourceAsStream("data/test-subsec-4.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertFalse(ad_list.isEmpty());
 	}
 }

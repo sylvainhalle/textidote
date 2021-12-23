@@ -38,11 +38,9 @@ public abstract class Rule
 	/**
 	 * Evaluates the rule on a string
 	 * @param s The string on which to evaluate the rule
-	 * @param original The original (untransformed) piece of text
 	 * @return A list of advice generated from the evaluation of the rule
 	 */
-	public abstract List<Advice> evaluate(/*@ non_null @*/ AnnotatedString s, 
-			/*@ non_null @*/ AnnotatedString original);
+	public abstract List<Advice> evaluate(/*@ non_null @*/ AnnotatedString s);
 	
 	/**
 	 * Creates a new rule

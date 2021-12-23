@@ -38,7 +38,7 @@ public class CheckCiteMixTest
 				"\\cite{bar}\n" + 
 				"\\cite{baz}"));
 		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -49,7 +49,7 @@ public class CheckCiteMixTest
 				"\\citep{bar}\n" + 
 				"\\citet{baz}"));
 		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -60,7 +60,7 @@ public class CheckCiteMixTest
 				"\\citep{bar}\n" + 
 				"\\cite{baz}"));
 		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -71,7 +71,7 @@ public class CheckCiteMixTest
 				"\\citet{bar}\n" + 
 				"\\citep{baz}"));
 		Rule r = new CheckCiteMix();
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 }

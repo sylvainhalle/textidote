@@ -25,54 +25,58 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.textidote.render.SinglelineAdviceRenderer;
 
+import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
+
 public class SinglelineAdviceRendererTest {
-  @Test
-  public void test1() {
-    String filename = "file";
-    String rulename = "rule";
-    String line1 = "foo";
-    String line2 = "bar";
-    String message = "warning message";
-    AnnotatedString as = new AnnotatedString().append(line1).appendNewLine().append(line2).appendNewLine();
-    int startLine = 1;
-    int startCol = 0;
-    int endLine = 1;
-    int endCol = 2;
-    Position start = new Position(startLine, startCol);
-    Position end = new Position(endLine, endCol);
-    Range range = new Range(start, end);
-    Rule rule = new Rule(rulename) {
-      @Override
-      public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s, /* @ non_null @ */ AnnotatedString original)
-      {
-        return new ArrayList<Advice>();
-      }
-      @Override
-      public String getDescription() {
-          return "";
-        }
-    };
-    ArrayList<Advice> adList = new ArrayList<Advice>();
-    Advice ad = new Advice(rule, range, message, filename, line2, 0);
-    adList.add(ad);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    AnsiPrinter printer = new AnsiPrinter(baos);
-    printer.disableColors();
-    SinglelineAdviceRenderer renderer = new SinglelineAdviceRenderer(printer);
-    renderer.addAdvice(filename, as, adList);
-    renderer.render();
-    String output = new String(baos.toByteArray());
-    assertNotNull(output);
-    String expected = String.format(filename + "(L" + (startLine + 1) + "C" + (startCol + 1) + "-L" + (endLine + 1)
-        + "C" + (endCol + 1) + "): " + message + " \"" + line2 + "\"%n");
-    assertEquals(expected, output);
-  }
+	@Test
+	public void test1() {
+		String filename = "file";
+		String rulename = "rule";
+		String line1 = "foo";
+		String line2 = "bar";
+		String message = "warning message";
+		AnnotatedString as = new AnnotatedString(line1 + CRLF + line2 + CRLF);
+		int startLine = 1;
+		int startCol = 0;
+		int endLine = 1;
+		int endCol = 2;
+		Position start = new Position(startLine, startCol);
+		Position end = new Position(endLine, endCol);
+		Range range = new Range(as.getIndex(start), as.getIndex(end));
+		Rule rule = new Rule(rulename)
+		{
+			@Override
+			public List<Advice> evaluate(/* @ non_null @ */ AnnotatedString s)
+			{
+				return new ArrayList<Advice>();
+			}
+			@Override
+			public String getDescription() 
+			{
+				return "";
+			}
+		};
+		ArrayList<Advice> adList = new ArrayList<Advice>();
+		Advice ad = new Advice(rule, range, message, as, as.getLine(1));
+		adList.add(ad);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		AnsiPrinter printer = new AnsiPrinter(baos);
+		printer.disableColors();
+		SinglelineAdviceRenderer renderer = new SinglelineAdviceRenderer(printer);
+		renderer.addAdvice(filename, as, adList);
+		renderer.render();
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		String expected = String.format(filename + "(L" + (startLine + 1) + "C" + (startCol + 1) + "-L" + (endLine + 1)
+				+ "C" + (endCol + 1) + "): " + message + " \"" + line2 + "\"%n");
+		assertEquals(expected, output);
+	}
 }

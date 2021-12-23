@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 
 /**
  * Checks that stacked headings are not present.
@@ -48,23 +48,24 @@ public class CheckStackedHeadings extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
+	public List<Advice> evaluate(AnnotatedString s) 
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		List<String> lines = s.getLines();
+		List<Line> lines = s.getLines();
 		boolean found_text = true;
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
-			String line = lines.get(line_cnt);
+			Line l = lines.get(line_cnt);
+			String line = l.toString();
 			Matcher mat = m_headingPattern.matcher(line);
 			if (mat.find())
 			{
 				if (!found_text)
 				{
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1)));
-					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1) + mat.group(1).length()));
+					int start_pos = l.getOffset() + mat.start(1);
+					int end_pos = l.getOffset() + mat.start(1) + mat.group(1).length();
 					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(CheckStackedHeadingsAdvice.instance, r, "Avoid stacked headings, i.e. consecutive headings without text in between.", original.getResourceName(), original.getLine(r.getStart().getLine()), original.getOffset(start_pos)));
+					out_list.add(new Advice(CheckStackedHeadingsAdvice.instance, r, "Avoid stacked headings, i.e. consecutive headings without text in between.", s, l));
 				}
 				found_text = false;
 			}
@@ -93,7 +94,7 @@ public class CheckStackedHeadings extends Rule
 		}
 		
 		@Override
-		public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
+		public List<Advice> evaluate(AnnotatedString s) 
 		{
 			// Do nothing; this is a placeholder
 			return new ArrayList<Advice>(0);

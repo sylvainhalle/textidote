@@ -20,11 +20,12 @@ package ca.uqac.lif.textidote.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
 
 /**
  * Checks that captions end with a period. This rule does not evaluate a
@@ -44,13 +45,14 @@ public class CheckCaptions extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		List<String> lines = s.getLines();
+		List<Line> lines = s.getLines();
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
-			String line = lines.get(line_cnt);
+			Line l = lines.get(line_cnt);
+			String line = l.toString();
 			int start_pos = line.indexOf("\\caption");
 			if (start_pos < 0)
 			{
@@ -76,10 +78,10 @@ public class CheckCaptions extends Rule
 					level--;
 					if (level == 0 && !period_seen)
 					{
-						Position start_p = s.getSourcePosition(new Position(line_cnt, start_pos));
-						Position end_p = s.getSourcePosition(new Position(line_cnt, i));
+						int start_p = s.findOriginalIndex(new Position(line_cnt, start_pos));
+						int end_p = s.findOriginalIndex(new Position(line_cnt, i));
 						Range r = new Range(start_p, end_p);
-						out_list.add(new Advice(this, r, "A caption should end with a period", original.getResourceName(), original.getLine(line_cnt), original.getOffset(start_p)));
+						out_list.add(new Advice(this, r, "A caption should end with a period", s, s.findOriginalLine(line_cnt)));
 						break;
 					}
 					period_seen = false;

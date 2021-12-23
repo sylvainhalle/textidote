@@ -18,6 +18,7 @@
 package ca.uqac.lif.textidote.cleaning;
 
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
+import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_S;
 import static org.junit.Assert.*;
 
 import java.util.HashSet;
@@ -48,8 +49,13 @@ public class LatexCleanerTest
 	{
 		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/test1.tex"))));
+		AnnotatedString original = AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/test1.tex")));
 		assertEquals(CRLF + "Hello " + CRLF + "World" + CRLF, as.toString());
-		Position p = as.getSourcePosition(new Position(1, 1));
+		int out_index = as.getIndex(new Position(1, 1));
+		assertEquals(CRLF_S + 1, out_index);
+		int index = as.findOriginalIndex(out_index);
+		Position p = original.getPosition(index);
+		assertNotNull(p);
 		assertEquals(1, p.getLine());
 		assertEquals(7, p.getColumn());
 	}
@@ -59,7 +65,9 @@ public class LatexCleanerTest
 	{
 		LatexCleaner detexer = new LatexCleaner();
 		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/test2.tex"))));
-		Position p = as.getSourcePosition(new Position(12, 1));
+		AnnotatedString original = AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/test2.tex")));
+		Position p = original.getPosition(as.findOriginalIndex(new Position(12, 1)));
+		assertNotNull(p);
 		assertEquals(22, p.getLine());
 		assertEquals(9, p.getColumn());
 	}

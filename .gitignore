@@ -8,6 +8,7 @@
 *.swp
 *.bak
 *.old
+\#*
 
 # MacOS !#@$ files
 .DS_Store

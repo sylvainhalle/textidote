@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +19,10 @@ package ca.uqac.lif.textidote;
 
 import java.util.List;
 
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.petitpoucet.function.strings.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
+import ca.uqac.lif.textidote.as.PositionRange;
 
 /**
  * A comment or suggestion on a portion of text. An advice applies to
@@ -32,6 +35,11 @@ import ca.uqac.lif.textidote.as.Range;
 public class Advice implements Comparable<Advice>
 {
 	/**
+	 * The string on which this advice applies.
+	 */
+	protected AnnotatedString m_reference;
+
+	/**
 	 * The range in the file where the advice applies
 	 */
 	protected Range m_range;
@@ -40,7 +48,7 @@ public class Advice implements Comparable<Advice>
 	 * The message associated with the advice
 	 */
 	protected String m_message;
-	
+
 	/**
 	 * The short message associated with the advice
 	 */
@@ -52,21 +60,10 @@ public class Advice implements Comparable<Advice>
 	protected Rule m_rule;
 
 	/**
-	 * The name of the resource (e.g. filename) this advice refers to 
-	 */
-	protected String m_resource;
-
-	/**
 	 * The line where the advice applies
 	 */
-	protected String m_line;
-	
-	/**
-	 * The number of characters from the beginning of the original
-	 * text
-	 */
-	protected int m_offset = -1;
-	
+	protected Line m_line;
+
 	/**
 	 * A list of possible replacements for this message
 	 */
@@ -82,34 +79,55 @@ public class Advice implements Comparable<Advice>
 	 * @param rule The rule from which this advice was generated
 	 * @param range The range in the file where the advice applies
 	 * @param message The message associated with the advice
-	 * @param resource The name of the resource (e.g. filename) this
+	 * @param resource The resource (e.g. filename) this
 	 * advice refers to
 	 * @param line The line of text on which the advice applies
 	 * @param offset The position (in characters from the beginning of the
-	 * text) where this advices starts
+	 * text) where this advice starts
 	 */
 	public Advice(/*@ non_null @*/ Rule rule, /*@ non_null @*/ Range range, 
-			/*@ non_null @*/ String message, /*@ non_null @*/ String resource,
-			/*@ non_null @*/ String line, int offset)
+			/*@ non_null @*/ String message, /*@ non_null @*/ AnnotatedString resource,
+			/*@ non_null @*/ Line line)
 	{
 		super();
 		m_rule = rule;
 		m_range = range;
 		m_message = message;
-		m_resource = resource;
+		m_reference = resource;
 		m_line = line;
 		m_replacements = null;
-		m_offset = offset;
 		m_shortMessage = "TeXtidote rule";
 	}
 
 	/**
-	 * Gets the range in the file where the advice applies
+	 * Gets the reference string this advice applies to
+	 * @return The string
+	 */
+	/*@ non_null @*/ public AnnotatedString getReferenceString()
+	{
+		return m_reference;
+	}
+
+	/**
+	 * Gets the linear range in the file where the advice applies
 	 * @return The range
 	 */
 	/*@ pure non_null @*/ public Range getRange()
 	{
 		return m_range;
+	}
+
+	/**
+	 * Gets the line/column range in the file where the advice applies
+	 * @return The range
+	 */
+	/*@ pure non_null @*/ public PositionRange getPositionRange()
+	{
+		if (m_originalRange)
+		{
+			return m_reference.getOriginalPositionRange(m_range.getStart(), m_range.getEnd());
+		}
+		return m_reference.getPositionRange(m_range.getStart(), m_range.getEnd());
 	}
 
 	/**
@@ -123,7 +141,7 @@ public class Advice implements Comparable<Advice>
 		m_originalRange = b;
 		return this;
 	}
-	
+
 	/**
 	 * Sets a short message for this advice
 	 * @param message The message
@@ -132,7 +150,7 @@ public class Advice implements Comparable<Advice>
 	{
 		m_shortMessage = message;
 	}
-	
+
 	/**
 	 * Sets a list of replacements for this advice
 	 * @param replacements The replacements
@@ -141,7 +159,7 @@ public class Advice implements Comparable<Advice>
 	{
 		m_replacements = replacements;
 	}
-	
+
 	/**
 	 * Gets a list of replacements for this advice
 	 * @return The replacements; may be null
@@ -155,7 +173,7 @@ public class Advice implements Comparable<Advice>
 	 * Gets the line in the file where the advice applies
 	 * @return The line
 	 */
-	/*@ pure non_null @*/ public String getLine()
+	/*@ pure non_null @*/ public Line getLine()
 	{
 		return m_line;
 	}
@@ -168,7 +186,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_message;
 	}
-	
+
 	/**
 	 * Gets the short message for this advice
 	 * @return The short message
@@ -193,7 +211,7 @@ public class Advice implements Comparable<Advice>
 	 */
 	/*@ pure non_null @*/ public String getResource()
 	{
-		return m_resource;
+		return m_reference.getResourceName();
 	}
 
 	@Override
@@ -222,7 +240,7 @@ public class Advice implements Comparable<Advice>
 		}
 		Advice a = (Advice) o;
 		return m_range.equals(a.m_range) && m_rule.equals(a.m_rule) 
-				&& m_resource.compareTo(a.m_resource) == 0;
+				&& m_reference.getResourceName().compareTo(a.getResource()) == 0;
 	}
 
 	@Override
@@ -230,7 +248,7 @@ public class Advice implements Comparable<Advice>
 	{
 		return m_range.compareTo(a.m_range);
 	}
-	
+
 	/**
 	 * Gets the offset corresponding to the start of the advice
 	 * @return The number of characters from the beginning of the original
@@ -238,6 +256,6 @@ public class Advice implements Comparable<Advice>
 	 */
 	public int getOffset()
 	{
-		return m_offset;
+		return m_line.getOffset();
 	}
 }

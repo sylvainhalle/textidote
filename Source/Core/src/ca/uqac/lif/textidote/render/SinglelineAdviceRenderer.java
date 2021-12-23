@@ -20,9 +20,11 @@ package ca.uqac.lif.textidote.render;
 import java.util.List;
 import java.util.Map;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.AdviceRenderer;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.util.AnsiPrinter;
 import ca.uqac.lif.util.AnsiPrinter.Color;
@@ -58,12 +60,12 @@ public class SinglelineAdviceRenderer extends AdviceRenderer
 				for (Advice ad : list)
 				{
 					m_printer.setForegroundColor(Color.YELLOW);
-					m_printer.print(filename + "(" + ad.getRange() + ")");
+					m_printer.print(filename + "(" + ad.getPositionRange() + ")");
 					m_printer.resetColors();
 					m_printer.print(": ");
 					m_printer.print(
 							ad.getMessage().replaceAll("<suggestion>", "").replaceAll("</suggestion", "").trim());
-					renderExcerpt(ad.getLine(), ad.getRange());
+					renderExcerpt(ad.getReferenceString(), ad.getLine(), ad.getRange());
 					m_printer.println();
 				}
 			}
@@ -79,12 +81,13 @@ public class SinglelineAdviceRenderer extends AdviceRenderer
 	 * @param range
 	 *          The range to highlight
 	 */
-	protected void renderExcerpt(/* @ non_null @ */ String line, /* @ non_null @ */ Range range)
+	protected void renderExcerpt(/*@ non_null @*/ AnnotatedString as, /* @ non_null @ */ Line l, /* @ non_null @ */ Range range)
 	{
+		String line = l.toString();
 		m_printer.print(" \"");
 		m_printer.setForegroundColor(Color.WHITE);
-		Position start = range.getStart();
-		Position end = range.getEnd();
+		Position start = as.getPosition(range.getStart());
+		Position end = as.getPosition(range.getEnd());
 		if (start.compareTo(end) < 0 && start.getColumn() <= line.length())
 		{
 			m_printer.print(line.substring(0, start.getColumn()));

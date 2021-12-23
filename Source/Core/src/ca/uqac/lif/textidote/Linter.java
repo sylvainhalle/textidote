@@ -34,12 +34,12 @@ import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 public class Linter 
 {
 	/**
-	 * The list of rules that will be evaluated
+	 * The list of rules that will be evaluated on the original text
 	 */
 	protected List<Rule> m_rules;
 	
 	/**
-	 * The list of rules that will be evaluated
+	 * The list of rules that will be evaluated on the plain text
 	 */
 	protected List<Rule> m_rulesDetexed;
 	
@@ -188,12 +188,12 @@ public class Linter
 			AnnotatedString s_decommented = m_cleaner.cleanComments(new AnnotatedString(s));
 			for (Rule r : m_rules)
 			{
-				filterAdvice(out_list, r.evaluate(s_decommented, s));
+				filterAdvice(out_list, r.evaluate(s_decommented));
 			}
 			AnnotatedString s_detexed = m_cleaner.clean(s);
 			for (Rule r : m_rulesDetexed)
 			{
-				filterAdvice(out_list, r.evaluate(s_detexed, s));
+				filterAdvice(out_list, r.evaluate(s_detexed));
 			}
 			return out_list;
 		}

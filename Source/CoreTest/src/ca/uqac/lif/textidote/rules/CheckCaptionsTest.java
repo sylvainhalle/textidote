@@ -35,7 +35,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\caption{Hello world }"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -44,7 +44,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\caption{Hello world. }"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -53,7 +53,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\caption{Hello \textbf{world }}"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -62,7 +62,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\caption{Hello \textbf{world.}}"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -71,7 +71,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\caption{Hello \textbf{world }.}"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -80,7 +80,7 @@ public class CheckCaptionsTest
 	{
 		CheckCaptions rule = new CheckCaptions();
 		AnnotatedString as = AnnotatedString.read(new Scanner("\\captionsetup{whatever}"));
-		List<Advice> ad_list = rule.evaluate(as, as);
+		List<Advice> ad_list = rule.evaluate(as);
 		assertEquals(0, ad_list.size());
 	}
 }

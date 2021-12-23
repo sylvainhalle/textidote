@@ -30,7 +30,7 @@ public class Match
 	/**
 	 * The position where the match occurred 
 	 */
-	private final Position m_position;
+	private final int m_position;
 	
 	/**
 	 * The string that matched the regular expression
@@ -47,7 +47,7 @@ public class Match
 	 * @param match The position where the match occurred
 	 * @param pos The string that matched the regular expression
 	 */
-	public Match(String match, Position pos)
+	public Match(String match, int pos)
 	{
 		super();
 		m_match = match;
@@ -56,10 +56,10 @@ public class Match
 	}
 	
 	/**
-	 * Gets the position where the match occurred
+	 * Gets the linear position where the match occurred
 	 * @return The position
 	 */
-	public Position getPosition()
+	public int getPosition()
 	{
 		return m_position;
 	}

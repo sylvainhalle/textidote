@@ -19,14 +19,12 @@ package ca.uqac.lif.textidote.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.Match;
 
 /**
  * Checks that a document does not mix occurrences of <tt>\cite</tt>
@@ -36,57 +34,21 @@ import ca.uqac.lif.textidote.as.Range;
  */
 public class CheckCiteMix extends Rule 
 {
-	/**
-	 * The pattern for finding {@code \cite} references
-	 */
-	Pattern m_citePattern = Pattern.compile("\\\\cite[^pt]");
-	
-	/**
-	 * The pattern for finding {@code \citep} and {@code \citet}
-	 * references
-	 */
-	Pattern m_citepPattern = Pattern.compile("\\\\cite(p|t)");
-
 	public CheckCiteMix()
 	{
 		super("sh:c:itemix");
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		boolean found_citep = false, found_cite = false;
-		List<String> lines = s.getLines();
-		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
+		Match m1 = s.find("\\\\cite(p|t)");
+		Match m2 = s.find("\\\\cite[^pt]");
+		if (m1 != null && m2 != null)
 		{
-			String line = lines.get(line_cnt);
-			Matcher mat = m_citePattern.matcher(line);
-			if (mat.find())
-			{
-				found_cite = true;
-				if (found_citep && found_cite)
-				{
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
-					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + 6)); // 6 = length("\cite")
-					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));
-					break; // A single warning is enough
-				}
-			}
-			mat = m_citepPattern.matcher(line);
-			if (mat.find())
-			{
-				found_citep = true;
-				if (found_citep && found_cite)
-				{
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
-					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + 7)); // 6 = length("\citep")
-					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));
-					break; // A single warning is enough
-				}
-			}
+			Range r = s.findOriginalRange(new Range(m1.getPosition(), m1.getPosition() + m1.getMatch().length()));
+			out_list.add(new Advice(this, r, "Do not mix \\cite with \\citep or \\citet in the same document.", s, s.findOriginalLineOf(m1.getPosition())));
 		}
 		return out_list;
 	}

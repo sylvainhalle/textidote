@@ -18,6 +18,7 @@
 package ca.uqac.lif.textidote.as;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,88 +26,205 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.dag.NodeConnector;
+import ca.uqac.lif.petitpoucet.ComposedPart;
+import ca.uqac.lif.petitpoucet.NodeFactory;
+import ca.uqac.lif.petitpoucet.Part;
+import ca.uqac.lif.petitpoucet.PartNode;
+import ca.uqac.lif.petitpoucet.Part.Self;
+import ca.uqac.lif.petitpoucet.function.AtomicFunction;
+import ca.uqac.lif.petitpoucet.function.Circuit;
+import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
+import ca.uqac.lif.petitpoucet.function.NthInput;
+import ca.uqac.lif.petitpoucet.function.NthOutput;
+import ca.uqac.lif.petitpoucet.function.strings.Range;
+import ca.uqac.lif.petitpoucet.function.strings.RangeMapping;
+import ca.uqac.lif.petitpoucet.function.strings.RangeMapping.RangePair;
+import ca.uqac.lif.petitpoucet.function.strings.Remove;
+import ca.uqac.lif.petitpoucet.function.strings.Replace;
+import ca.uqac.lif.petitpoucet.function.strings.StringMappingFunction;
+import ca.uqac.lif.petitpoucet.function.strings.Substring;
+
 /**
- * A multi-line character string that keeps references to portions of
- * another piece of text.
+ * A multi-line character string with facilities for provenance tracking.
+ * An annotated string is distinct from a regular character {@link String}
+ * in a number of aspects.
+ * 
+ * <h4>Lines</h4>
+ * 
+ * First, if supports operations addressing characters either in terms of a
+ * linear index (offset from the start of the string), or as a line/column
+ * pair (called a {@link Position}). It provides methods to convert to/from
+ * indices and positions (namely {@link #getIndex(Position) getIndex}
+ * and {@link #getPosition(int) getPosition}). Method {@link #getLine(int)
+ * getLine} extracts a given line, while method 
+ * {@link #getLineOf(int) getLineOf} extracts the text line containing a given
+ * index or position.
+ * 
+ * <h4>Character tracking</h4>
+ * 
+ * An annotated string supports typical methods for string manipulation
+ * (e.g. {@link #substring(int) substring},
+ * {@link #replace(String, String, int) replace}, etc.). The important
+ * distinction is that it also keeps track of characters as these
+ * operations are performed on the string. This is exemplified by the following
+ * piece of code:
+ * <pre>
+ * AnnotatedString s = new AnnotatedString("Hello worl<u>d</u> foo bar baz.");
+ * s.replaceAll("foo", "abcde").substring(9, s.lastIndexOf("d"));
+ * System.out.println(s);
+ * int x = s.findOriginalIndex(1);
+ * </pre>
+ * (Note that contrary to a classical String, where transformations return a
+ * new object, here operations mutate and return the <em>current</em> object.)
+ * The call to <tt>println</tt> produces "ld abc", as expected. The call to
+ * {@link #findOriginalIndex(int) findOriginalIndex} then asks the object to
+ * retrace the location, in the initial contents of the string, of the
+ * character that is currently at index 1. This is letter "d", and we know
+ * from the operations we applied to <tt>s</tt> that this "d" corresponds to
+ * the end of "world" in the original string (underlined in the code above).
+ * Thus, the value of <tt>x</tt> is 10, the index of that letter in the
+ * original string.
+ * <p>
+ * This mechanism can exhibit complex behavior. Consider for example the
+ * following code:
+ * <pre>
+ * AnnotatedString s = 
+ *   new AnnotatedString("Compare apples and oranges, kiwis and cherries.")
+ *       .replaceAll("(.*?) and (.*?)", "$2 or $1");
+ * </pre>
+ * The result of this code is the string <tt>"Compare oranges or apples,
+ * cherries or kiwis."</tt> The capture groups in the regex pattern are
+ * correctly tracked, so that:
+ * 
+ * <pre>Range r = s.findOriginalRange(8, 14);</pre>
+ *  
+ * results in a {@link Range} object spanning characters 19-25 (the location of
+ * "oranges" in the original string). Here we see an example where, instead of
+ * asking for the location of a single character, we rather ask for a whole
+ * range.
+ * <p>
+ * But what if this range does not correspond to a contiguous string of
+ * characters in the original string? This is handled by method
+ * {@link #trackToInput(int, int)}:
+ * 
+ * <pre>
+ * List&lt;Range&gt; ranges = s.invert(8, 24);</pre>
+ * 
+ * Method <tt>invert</tt> outputs a list of ranges. The previous call asks for
+ * the original character ranges associated to the portion "oranges and apples"
+ * of the string. It produces in return these <em>two</em> ranges: [19-25] and
+ * [8-13], correctly corresponding to the initial location of "apples" and
+ * "oranges" in the string. We also observe that the portion " and " between
+ * those two words is not there, as these characters are not present in the
+ * output string (having been replaced by another string, " or ").
+ * <p>
+ * A few corner cases must be considered:
+ * <ul>
+ * <li>For parts of the replacement string that are outside of a capture group
+ * (and hence do not come from the input string), the best <tt>invert</tt> can
+ * do is to point to the range that matches the pattern as a whole. Therefore,
+ * <tt>s.invert(16, 17)</tt> (location of the word "or") outputs the single
+ * range [8,25].</li>
+ * <li>For an input range <tt>r</tt> where <tt>invert</tt> returns multiple
+ * ranges, the call to {@link #findOriginalRange(Range)} on <tt>r</tt> returns
+ * the range that includes them all. In the previous example, this would
+ * correspond to the range [8,25].</li>
+ * <li>Methods {@link #findOriginalIndex(int)} and
+ * {@link #findOriginalPosition(Position)} always return a single character
+ * index/position. In cases where a character can only be associated to a range,
+ * the first character of that range is taken as its "location".</li>
+ * </ul>   
+ * 
  * @author Sylvain Hallé
  */
-public class AnnotatedString
+public class AnnotatedString implements ExplanationQueryable
 {
 	/**
-	 * A map storing the correspondences between ranges of characters in
-	 * the string and ranges of characters in an external text file
+	 * The OS-dependent new line sequence.
 	 */
-	/*@ non_null @*/ protected Map<Range,Range> m_map;
+	/*@ non_null @*/ public static final String CRLF = System.getProperty("line.separator");
 
 	/**
-	 * A string builder object used to append characters to the current line
+	 * The OS-dependent length of the new line sequence.
 	 */
-	/*@ non_null @*/ protected StringBuilder m_builder;
+	/*@ non_null @*/ public static final int CRLF_S = CRLF.length();
 
 	/**
-	 * The current line position in the string
+	 * The regex pattern matching a new line.
 	 */
-	protected int m_currentLine = 0;
+	/*@ non_null @*/ protected static final Pattern s_line = Pattern.compile(CRLF);
 
 	/**
-	 * The current column position in the string
+	 * The current value of the string.
 	 */
-	protected int m_currentColumn = 0;
+	/*@ non_null @*/ protected String m_string;
 
 	/**
-	 * A list of lines contained in the string
+	 * The original value of the string.
 	 */
-	/*@ non_null @*/ protected List<String> m_lines;
+	/*@ non_null @*/ protected String m_original;
 
 	/**
-	 * The name of the resource (e.g. filename) this string comes from
+	 * A linear sequence of unary functions that have been applied to the string
+	 * since its creation.
+	 */
+	/*@ non_null @*/ protected List<StringMappingFunction> m_operations;
+
+	/**
+	 * The name of the resource (e.g. filename) this string comes from.
 	 */
 	protected String m_resourceName;
 
 	/**
-	 * The OS-dependent line separator
+	 * Creates a new annotated string from a plain Java string.
+	 * @param s The string
 	 */
-	public static final transient String CRLF = System.getProperty("line.separator");
-
-	/**
-	 * The size (in bytes) of the OS-dependent line separator
-	 */
-	public static final transient int CRLF_SIZE = System.getProperty("line.separator").length();
-	
-	/**
-	 * The OS-dependent line separator, expressed as a regular expression
-	 */
-	public static final transient String CRLF_REGEX = getCrlfRegex(CRLF);
-
-	/**
-	 * Creates a new empty annotated string
-	 */
-	public AnnotatedString()
+	public AnnotatedString(/*@ non_null @*/ String s)
 	{
 		super();
-		m_map = new HashMap<Range,Range>();
-		m_builder = new StringBuilder();
-		m_lines = new ArrayList<String>();
+		m_original = s;
+		m_string = s;
+		m_operations = new ArrayList<StringMappingFunction>();
 		m_resourceName = "";
 	}
 
 	/**
-	 * Creates a new annotated string by copying the contents of
-	 * another
-	 * @param s The string to copy
+	 * Creates a new annotated string from another annotated string. This has for
+	 * effect of copying the history of operations applied on the original
+	 * string.
+	 * @param s The annotated string
 	 */
-	public AnnotatedString(AnnotatedString s)
+	public AnnotatedString(/*@ non_null @*/ AnnotatedString s)
 	{
 		super();
-		m_map = new HashMap<Range,Range>(s.m_map.size());
-		m_map.putAll(s.m_map);
-		m_builder = new StringBuilder();
-		m_builder.append(s.m_builder);
-		m_lines = new ArrayList<String>(s.m_lines.size());
-		m_lines.addAll(s.m_lines);
-		m_resourceName = s.m_resourceName;
-		m_currentLine = s.m_currentLine;
-		m_currentColumn = s.m_currentColumn;
+		m_original = s.m_original;
+		m_string = s.m_string;
+		m_operations = new ArrayList<StringMappingFunction>(s.m_operations.size());
+		m_operations.addAll(s.m_operations);
+	}
+
+	/**
+	 * Creates a new empty annotated string.
+	 */
+	public AnnotatedString()
+	{
+		this("");
+	}
+
+	public AnnotatedString(Line l)
+	{
+		this(l.toString());
+		m_operations.add(new Shift(l.getOffset()));
+	}
+
+	/**
+	 * Gets the length of the string.
+	 * @return The length of the string
+	 */
+	/*@ pure @*/ public int length()
+	{
+		return m_string.length();
 	}
 
 	/**
@@ -116,16 +234,6 @@ public class AnnotatedString
 	public String getResourceName()
 	{
 		return m_resourceName;
-	}
-
-	/**
-	 * Gets the associations between character ranges in the string and
-	 * character ranges in the source text
-	 * @return The map of associations
-	 */
-	/*@ pure non_null @*/ public Map<Range,Range> getMap()
-	{
-		return m_map;
 	}
 
 	/**
@@ -140,341 +248,572 @@ public class AnnotatedString
 	}
 
 	/**
-	 * Appends a new string to the current annotated string, at the
-	 * current position on the current line; keeps an association to
-	 * a range of characters in the external text file.
-	 * @param s The string to append
-	 * @param r The range in the external text file from which the
-	 * characters in {@code s} come
-	 * @return This annotated string
+	 * Gets the number of lines in this string.
+	 * @return The number of lines
 	 */
-	public /*@ non_null @*/ AnnotatedString append(/*@ non_null @*/ String s, /*@ non_null @*/ Range r)
+	/*@ pure @*/ public int lineCount()
 	{
-		Position start = new Position(m_currentLine, m_currentColumn);
-		// Update column position
-		m_currentColumn += s.length();
-		Position end = new Position(m_currentLine, m_currentColumn - 1);
-		Range source_r = new Range(start, end);
-		m_map.put(source_r, r);
-		m_builder.append(s);
-		return this;
-	}
-
-	/**
-	 * Appends a new string to the current annotated string, at the
-	 * current position on the current line.
-	 * @param s The string to append
-	 * @return This annotated string
-	 */
-	public /*@ non_null @*/ AnnotatedString append(/*@ non_null @*/ String s)
-	{
-		m_builder.append(s);
-		m_currentColumn += s.length();
-		return this;
-	}
-
-	/**
-	 * Appends a new line to this string
-	 * @return This annotated string
-	 */
-	public /*@ non_null @*/ AnnotatedString appendNewLine()
-	{
-		m_currentColumn = 0;
-		m_currentLine++;
-		m_lines.add(m_builder.toString());
-		m_builder = new StringBuilder();
-		return this;
-	}
-
-	/**
-	 * Appends an annotated string to the current one. If the annotated string
-	 * passed as an argument has associations, these associations will be
-	 * transferred to the current annotated string, by offsetting their
-	 * positions relative to the current position in the current string.
-	 * @param as The annotated string to append
-	 * @return This annotated string
-	 */
-	public /*@ non_null @*/ AnnotatedString append(/*@ non_null @*/ AnnotatedString as)
-	{
-		int start_line = m_currentLine;
-		int start_column = m_currentColumn;
-		// First, append all lines in as
-		List<String> lines = as.getLines();
-		for (int i = 0; i < lines.size(); i++)
+		Matcher mat = s_line.matcher(m_string);
+		int cnt = 1;
+		while (mat.find())
 		{
-			if (i > 0)
-			{
-				m_currentLine++;
-				m_currentColumn = 0;
-				m_lines.add(m_builder.toString());
-				m_builder = new StringBuilder();
-			}
-			String line = lines.get(i);
-			m_builder.append(line);
-			m_currentColumn += line.length();
+			cnt++;
 		}
-		// Second, transfer all associations from as
-		for (Map.Entry<Range,Range> entry : as.m_map.entrySet())
-		{
-			Range key_r = entry.getKey();
-			Range new_key_r = null;
-			if (key_r.getStart().getLine() == 0)
-			{
-				// On first line, we append at the current column position
-
-				if (key_r.isMultiLine())
-				{
-					// Start and end are on different lines, so we offset only start column by start_column
-					new_key_r = Range.make(key_r.getStart().getLine() + start_line, key_r.getStart().getColumn() + start_column, key_r.getEnd().getLine() + start_line, key_r.getEnd().getColumn());
-				}
-				else
-				{
-					// Start and end are on the same line, so we offset both start/end columns by start_column 
-					new_key_r = Range.make(key_r.getStart().getLine() + start_line, key_r.getStart().getColumn() + start_column, key_r.getEnd().getLine() + start_line, key_r.getEnd().getColumn() + start_column);
-				}
-			}
-			else
-			{
-				// Not on first line; only offset start/end lines by current_line
-				new_key_r = Range.make(key_r.getStart().getLine() + start_line, key_r.getStart().getColumn(), key_r.getEnd().getLine() + start_line, key_r.getEnd().getColumn());
-			}
-			assert new_key_r != null;
-			m_map.put(new_key_r, entry.getValue());
-		}
-		return this;
+		return cnt;
 	}
 
 	/**
-	 * Gets the list of text lines in the current string
+	 * Determines if the string contains a pattern.
+	 * @param pattern The pattern to look for
+	 * @return <tt>true</tt> if the pattern is found in the string,
+	 * <tt>false</tt> otherwise
+	 */
+	/*@ pure @*/ public boolean contains(String pattern)
+	{
+		return m_string.contains(pattern);
+	}
+
+	/**
+	 * Returns the index within this string of the first occurrence of the
+	 * specified substring from a given position.
+	 * @param s The substring
+	 * @param start The position where to start looking for
+	 * @return The index of the starting character of the substring, or -1 if
+	 * the substring is not found
+	 */
+	/*@ pure @*/ public int indexOf(String s, int start)
+	{
+		return m_string.indexOf(s, start);
+	}
+
+	/**
+	 * Returns the index within this string of the first occurrence of the
+	 * specified substring.
+	 * @param s The substring
+	 * @return The index of the starting character of the substring, or -1 if
+	 * the substring is not found
+	 */
+	/*@ pure @*/ public int indexOf(String s)
+	{
+		return indexOf(s, 0);
+	}
+
+	/**
+	 * Returns the line/column position within this string of the first
+	 * occurrence of the specified substring.
+	 * @param s The substring
+	 * @return The position of the starting character of the substring, or
+	 * <tt>null</tt> if the substring is not found
+	 */
+	/*@ pure null @*/ public Position positionOf(String s)
+	{
+		return getPosition(m_string.indexOf(s));
+	}
+
+	/**
+	 * Returns the index within this string of the last occurrence of the
+	 * specified substring.
+	 * @param s The substring
+	 * @return The index of the starting character of the substring, or -1 if
+	 * the substring is not found
+	 */
+	/*@ pure @*/ public int lastIndexOf(String s)
+	{
+		return m_string.lastIndexOf(s);
+	}
+
+	/**
+	 * Returns the line/column position within this string of the last
+	 * occurrence of the specified substring.
+	 * @param s The substring
+	 * @return The position of the starting character of the substring, or
+	 * <tt>null</tt> if the substring is not found
+	 */
+	/*@ pure null @*/ public Position lastPositionOf(String s)
+	{
+		return getPosition(m_string.lastIndexOf(s));
+	}
+
+	/**
+	 * Gets the n-th line of the current string.
+	 * @param line_nb The number of the line
+	 * @return The line; an exception if thrown if the argument is out
+	 * of bounds
+	 */
+	/*@ pure non_null @*/ public Line getLine(int line_nb) throws ArrayIndexOutOfBoundsException
+	{
+		return getLine(m_string, line_nb);
+	}
+
+	/**
+	 * Gets the line of the original string corresponding to the n-th line of
+	 * the current string.
+	 * @param line_nb The number of the line
+	 * @return The line; an exception if thrown if the argument is out
+	 * of bounds
+	 */
+	/*@ pure non_null @*/ public Line findOriginalLine(int line_nb) throws ArrayIndexOutOfBoundsException
+	{
+		return getLine(m_original, findOriginalPosition(new Position(line_nb, 0)).getLine());
+	}
+
+	/**
+	 * Gets the line of the original string containing the n-th character of
+	 * the current string.
+	 * @param index The character index
+	 * @return The line; an exception if thrown if the argument is out
+	 * of bounds
+	 */
+	/*@ pure non_null @*/ public Line findOriginalLineOf(int index) throws ArrayIndexOutOfBoundsException
+	{
+		return getLineOf(m_original, findOriginalIndex(index));
+	}
+
+	/**
+	 * Gets the n-th line of the original string.
+	 * @param line_nb The number of the line
+	 * @return The line; an exception if thrown if the argument is out
+	 * of bounds
+	 */
+	/*@ pure non_null @*/ public Line getOriginalLine(int line_nb) throws ArrayIndexOutOfBoundsException
+	{
+		return getLine(m_original, line_nb);
+	}
+
+	/**
+	 * Gets the n-th line of a string.
+	 * @param line_nb The number of the line
+	 * @return The line
+	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
+	 */
+	/*@ non_null @*/ protected static Line getLine(String s, int line_nb) throws ArrayIndexOutOfBoundsException
+	{
+		int pos = 0, line = 0;
+		while (pos < s.length() && line < line_nb)
+		{
+			int next_pos = s.indexOf(CRLF, pos);
+			if (next_pos < 0)
+			{
+				break;
+			}
+			if (next_pos < s.length())
+			{
+				pos = next_pos + CRLF_S;
+				line++;
+			}
+		}
+		if (line != line_nb)
+		{
+			throw new ArrayIndexOutOfBoundsException("Line " + line_nb + " does not exist");
+		}
+		int next_pos = s.indexOf(CRLF, pos);
+		if (next_pos < 0)
+		{
+			return new Line(s.substring(pos), pos);
+		}
+		return new Line(s.substring(pos, next_pos), pos);
+	}
+
+	/**
+	 * Gets the line of a string containing the n-th character.
+	 * @param index The number of the character
+	 * @return The line
+	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
+	 */
+	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException
+	{
+		if (index < 0 || index >= s.length())
+		{
+			throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist");
+		}
+		int pos = 0;
+		while (pos < s.length() && pos < index)
+		{
+			int next_pos = s.indexOf(CRLF, pos);
+			if (next_pos < 0 || next_pos > index)
+			{
+				break;
+			}
+			if (next_pos < s.length() && next_pos < index)
+			{
+				pos = next_pos + CRLF_S;
+			}
+		}
+		int next_pos = s.indexOf(CRLF, pos);
+		if (next_pos < 0)
+		{
+			return new Line(s.substring(pos), pos);
+		}
+		return new Line(s.substring(pos, next_pos), pos);
+	}
+
+	/**
+	 * Gets the list of text lines in the current string.
 	 * @return The list of lines
 	 */
-	public List<String> getLines()
+	/*@ pure non_null @*/ public List<Line> getLines()
 	{
-		List<String> lines = new ArrayList<String>(m_lines.size() + 1);
-		lines.addAll(m_lines);
-		lines.add(m_builder.toString());
+		List<Line> lines = new ArrayList<Line>();
+		int pos = 0;
+		while (pos < m_string.length())
+		{
+			int next_pos = m_string.indexOf(CRLF, pos);
+			if (next_pos < 0)
+			{
+				lines.add(new Line(m_string.substring(pos), pos));
+				break;
+			}
+			if (next_pos < m_string.length())
+			{
+				lines.add(new Line(m_string.substring(pos, next_pos), pos));
+				pos = next_pos + CRLF_S;
+			}
+		}
 		return lines;
 	}
 
-	/*@ pure @*/ public /*@ non_null @*/ Position getSourcePosition(/*@ non_null @*/ Position p)
+	/**
+	 * Trims a line of the string from a given position
+	 * @param index The position. All characters on the same line,
+	 * starting from this position on to the end of the string,
+	 * will be removed.
+	 * @return This string
+	 */
+	/*@ non_null @*/ public AnnotatedString trimFrom(int index)
 	{
-		Range r = findKeyRangeFor(p);
-		if (r == null)
+		int crlf_pos = indexOf(CRLF, index);
+		if (crlf_pos < 0)
 		{
-			return Position.NOWHERE;
+			crlf_pos = m_string.length();
 		}
-		Range r_source = m_map.get(r);
-		if (r_source.isMultiLine())
-		{
-			// Cannot guess source position in a multi-line range
-			return null;
-		}
-		int col_offset = p.getColumn() - r.getStart().getColumn();
-		Position p_source_start = r_source.getStart();
-		Position out_p = new Position(p_source_start.getLine(), p_source_start.getColumn() + col_offset);
-		return out_p;
-	}
-
-	/*@ pure @*/ public /*@ non_null @*/ Position getTargetPosition(/*@ non_null @*/ Position p)
-	{
-		Range key_r = findKeyRangeForValue(p);
-		if (key_r == null)
-		{
-			return Position.NOWHERE;
-		}
-		Range value_r = m_map.get(key_r);
-		if (key_r.isMultiLine())
-		{
-			// Cannot guess source position in a multi-line range
-			return Position.NOWHERE;
-		}
-		int col_offset = p.getColumn() - value_r.getStart().getColumn();
-		Position p_source_start = key_r.getStart();
-		Position out_p = new Position(p_source_start.getLine(), p_source_start.getColumn() + col_offset);
-		return out_p;
+		return addOperation(new Remove(index, crlf_pos));
 	}
 
 	/**
-	 * Retrieves the range in the map's keys that contains the given
-	 * position
-	 * @param p The position
-	 * @return The range, if {@code null} if no range contains this
-	 * position
+	 * Determines if the string is empty, i.e. contains no characters.
+	 * @return {@code true} if the string is empty, {@code false}
+	 * otherwise
 	 */
-	/*@ pure @*/ protected Range findKeyRangeFor(/*@ non_null @*/ Position p)
+	/*@ pure @*/ public boolean isEmpty()
 	{
-		for (Range key_r : m_map.keySet())
+		return m_string.isEmpty();
+	}
+
+	/**
+	 * Gets the linear index in the original string of a given line/column
+	 * position in the current string contents.
+	 * @param p The position
+	 * @return The index in the original string
+	 */
+	/*@ pure @*/ public int findOriginalIndex(/*@ non_null @*/ Position p)
+	{
+		return findOriginalIndex(getIndex(p));
+	}
+
+	/**
+	 * Gets the linear index in the original string of a given index
+	 * in the current string contents.
+	 * @param p The position
+	 * @return The index in the original string
+	 */
+	/*@ pure @*/ public int findOriginalIndex(int index)
+	{
+		List<Range> ranges = trackToInput(index, index);
+		int src_index = -1;
+		for (Range r : ranges)
 		{
-			if (key_r.isWithin(p))
+			int i = r.getStart();
+			if (src_index < 0 || i < src_index)
 			{
-				return key_r;
+				src_index = i;
 			}
 		}
-		return null;
+		return src_index;
 	}
 
 	/**
-	 * Retrieves the range in the map's keys, whose corresponding value
-	 * contains the given position
+	 * Gets the linear index (in number of characters) corresponding to a
+	 * position expressed as a line and a column.
 	 * @param p The position
-	 * @return The range, if {@code null} if no range contains this
-	 * position
+	 * @return The index, or a negative value if the position does not exist
+	 * in the string
 	 */
-	/*@ pure @*/ protected Range findKeyRangeForValue(/*@ non_null @*/ Position p)
+	/*@ pure @*/ public int getIndex(/*@ non_null @*/ Position p)
 	{
-		for (Map.Entry<Range,Range> entry : m_map.entrySet())
+		int pos = 0;
+		for (int i = 0; i < p.getLine(); i++)
 		{
-			if (entry.getValue().isWithin(p))
+			int index = m_string.indexOf(CRLF, pos);
+			if (index < 0) // Last line
 			{
-				return entry.getKey();
-			}
-		}
-		return null;
-	}
-
-	@Override
-	/*@ pure @*/ public String toString()
-	{
-		StringBuilder out = new StringBuilder();
-		for (String line : m_lines)
-		{
-			out.append(line).append(CRLF);
-		}
-		out.append(m_builder.toString());
-		return out.toString();
-	}
-
-	/**
-	 * Returns a substring of the current annotated string.
-	 * @param r The range representing the part of the current string to keep.
-	 * @return The substring. All references to the external text file are
-	 * preserved (and their positions shifted accordingly) in the output
-	 * string.
-	 */
-	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Range r)
-	{
-		return substring(r.getStart(), r.getEnd());
-	}
-
-	/**
-	 * Returns a substring of the current annotated string.
-	 * @param start The start position of the portion of the current
-	 * string to keep
-	 * @param end The end position of the portion of the current
-	 * string to keep
-	 * @return The substring. All references to the external text file are
-	 * preserved (and their positions shifted accordingly) in the output
-	 * string.
-	 */
-	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
-	{
-		if (start.getLine() >= lineCount())
-		{
-			throw new StringIndexOutOfBoundsException("Line " + start.getLine() + " does not exist");
-		}
-		AnnotatedString out_as = new AnnotatedString();
-		out_as.m_resourceName = m_resourceName;
-		// First, create list of lines corresponding to truncated string
-		for (int i = start.getLine(); i <= Math.min(m_currentLine, end.getLine()); i++)
-		{
-			if (i == m_currentLine)
-			{
-				String builder_string = m_builder.toString();
-				if (i == start.getLine())
-				{
-					out_as.m_builder.append(builder_string.substring(start.getColumn(), Math.min(builder_string.length(), end.getColumn() + 1)));
-				}
-				else
-				{
-					out_as.m_builder.append(builder_string.substring(0, Math.min(builder_string.length(), end.getColumn() + 1)));
-				}
+				return -1;
 			}
 			else
 			{
-				String line = m_lines.get(i);
-				if (i == start.getLine())
-				{
-					if (start.getLine() == end.getLine())
-					{
-						int end_p = end.getColumn() + 1;
-						if (end_p < 0 || start.getColumn() < 0)
-						{
-							System.out.println("HE");
-						}
-						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()), Math.min(line.length(), end_p));
-						out_as.m_builder.append(truncated_line);
-					}
-					else
-					{
-						String truncated_line = line.substring(Math.min(line.length(), start.getColumn()));
-						out_as.m_lines.add(truncated_line);
-					}
-				}
-				else
-				{
-					if (i == end.getLine())
-					{
-						if (end.getColumn() + 1 < 0)
-						{
-							System.out.println("HE");
-						}
-						String truncated_line = line.substring(0, Math.min(line.length(), end.getColumn() + 1));
-						//out_as.m_lines.add(truncated_line);
-						out_as.m_builder.append(truncated_line);
-					}
-					else
-					{
-						out_as.m_lines.add(line);
-					}
-				}
+				pos = index + CRLF_S;
 			}
 		}
-		out_as.m_currentLine = out_as.m_lines.size();
-		out_as.m_currentColumn = out_as.m_builder.toString().length();
-		// Second, remap associations
-		Range in_range = new Range(start, end);
-		for (Map.Entry<Range,Range> entry : m_map.entrySet())
+		int next_pos = m_string.indexOf(CRLF, pos);
+		int width = m_string.length() - pos;
+		if (next_pos > 0)
 		{
-			Range key_r = entry.getKey();
-			Range new_key_r = key_r.intersectWith(in_range);
-			if (new_key_r != null)
+			width = next_pos - pos;
+		}
+		if (p.getColumn() >= width)
+		{
+			return -1;
+		}
+		return pos + p.getColumn();
+	}
+
+	/**
+	 * Gets the two-dimensional position corresponding to a linear character
+	 * index in the string.
+	 * @param index The character index
+	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 */
+	/*@ pure null @*/ public Position getPosition(int index)
+	{
+		return getPosition(m_string, index);
+	}
+
+	/**
+	 * Gets the two-dimensional position of the <em>original</em> string
+	 * corresponding to a linear character index in the string.
+	 * @param index The character index
+	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 */
+	/*@ pure null @*/ public Position getOriginalPosition(int index)
+	{
+		return getPosition(m_original, index);
+	}
+
+	/**
+	 * Gets the two-dimensional position of the <em>original</em> string
+	 * corresponding to a line/column position in the current string.
+	 * @param p The position
+	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 */
+	/*@ pure null @*/ public Position findOriginalPosition(Position p)
+	{
+		return getPosition(m_original, findOriginalIndex(p));
+	}
+
+	/**
+	 * Gets the two-dimensional range in the original string corresponding to
+	 * a start and end position in the original string.
+	 * @param start The start position in the original string
+	 * @param end The end position in the original string
+	 * @return The position range
+	 */
+	/*@ pure non_null @*/ public PositionRange getOriginalPositionRange(int start, int end)
+	{
+		Position p_start = getOriginalPosition(start);
+		Position p_end = getOriginalPosition(end);
+		return new PositionRange(p_start, p_end);
+	}
+
+	/**
+	 * Gets the two-dimensional range in the current string corresponding to
+	 * a start and end position in the current string.
+	 * @param start The start position in the current string
+	 * @param end The end position in the current string
+	 * @return The position range
+	 */
+	/*@ pure non_null @*/ public PositionRange getPositionRange(int start, int end)
+	{
+		return new PositionRange(getPosition(start), getPosition(end));
+	}
+
+	/**
+	 * Gets the two-dimensional position corresponding to a linear character
+	 * index in a string.
+	 * @param s The string
+	 * @param index The character index
+	 * @return The position, or a special position called "nowhere" if the index
+	 * is out of bounds
+	 */
+	/*@ non_null @*/ protected static Position getPosition(String s, int index)
+	{
+		if (index < 0 || index >= s.length())
+		{
+			return Position.NOWHERE;
+		}
+		int pos = 0, line = 0;
+		while (pos < index)
+		{
+			int next_pos = s.indexOf(CRLF, pos);
+			if (next_pos < 0)
 			{
-				// This range overlaps with the target substring: intersect it with argument range
-				Range new_source_r = resizeSourceRange(key_r, new_key_r, entry.getValue());
-				new_key_r.setZero(start);
-				out_as.m_map.put(new_key_r, new_source_r);
+				break;
+			}
+			if (next_pos < index)
+			{
+				pos = next_pos + CRLF_S;
+				line++;
+			}
+			if (next_pos >= index)
+			{
+				break;
 			}
 		}
-		return out_as;
+		return new Position(line, index - pos);
 	}
 
 	/**
-	 * Returns a substring of the current annotated string.
-	 * @param start The start position of the portion of the current
-	 * string to keep
-	 * @return The substring, from the start position to the very end of
-	 * the string
+	 * Calculates the range of the original string corresponding to a range of
+	 * the current string. If this range corresponds to multiple original ranges,
+	 * a single range encompassing all of them is returned.
+	 * @param r The range in the current string
+	 * @return The range in the original string, or <tt>null</tt>
+	 * if no range could be found.
 	 */
-	/*@ pure non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start)
+	/*@ pure null @*/ public Range findOriginalRange(Range r)
 	{
-		return substring(start, new Position(Integer.MAX_VALUE - 10, Integer.MAX_VALUE - 10));
+		List<Range> ranges = trackToInput(r);
+		return uniteRanges(ranges);
 	}
 
 	/**
-	 * Gets the length of the string, in number of characters. If the string
-	 * contains multiple lines, this also counts the length of the new line
-	 * delimiter at the end of each line except the last.
-	 * @return The length of the string
+	 * Calculates the range of the original string corresponding to a range of
+	 * the current string. If this range corresponds to multiple original ranges,
+	 * a single range encompassing all of them is returned.
+	 * @param start The start of the range
+	 * @param end The end of the range
+	 * @return The range in the original string, or <tt>null</tt>
+	 * if no range could be found.
 	 */
-	/*@ pure @*/ public int length()
+	/*@ pure null @*/ public Range findOriginalRange(int start, int end)
 	{
-		int length = 0;
-		for (String line : m_lines)
+		return findOriginalRange(new Range(start, end));
+	}
+	
+	/**
+	 * Calculates the range of the current string corresponding to a range of
+	 * the original string. If this range corresponds to multiple current ranges,
+	 * a single range encompassing all of them is returned.
+	 * @param r The range in the original string
+	 * @return The range in the current string, or <tt>null</tt>
+	 * if no range could be found.
+	 */
+	/*@ pure null @*/ public Range findCurrentRange(Range r)
+	{
+		List<Range> ranges = trackToOutput(r);
+		return uniteRanges(ranges);
+	}
+	
+	/**
+	 * Calculates the range of the current string corresponding to a range of
+	 * the original string. If this range corresponds to multiple current ranges,
+	 * a single range encompassing all of them is returned.
+	 * @param start The start of the range
+	 * @param end The end of the range
+	 * @return The range in the current string, or <tt>null</tt>
+	 * if no range could be found.
+	 */
+	/*@ pure null @*/ public Range findCurrentRange(int start, int end)
+	{
+		return findCurrentRange(new Range(start, end));
+	}
+
+	/**
+	 * Gets the line containing the character at a given position in the
+	 * original string.
+	 * @param index The character position
+	 * @return The line
+	 */
+	public Line getOriginalLineOf(int index)
+	{
+		return getLineOf(m_original, index);
+	}
+
+	/**
+	 * Gets the line containing the character at a given position in the
+	 * current string.
+	 * @param index The character position
+	 * @return The line
+	 */
+	public Line getLineOf(int index)
+	{
+		return getLineOf(m_string, index);
+	}
+
+	@Override
+	public String toString()
+	{
+		return m_string;
+	}
+
+	/**
+	 * Gets the associations between character ranges in the string and
+	 * character ranges in the source text
+	 * @return The map of associations
+	 */
+	/*@ pure non_null @*/ public Map<Range,Range> getMap()
+	{
+		Map<Range,Range> map = new HashMap<Range,Range>();
+		if (m_operations.isEmpty())
 		{
-			length += line.length() + CRLF_SIZE;
+			map.put(new Range(0, m_string.length() - 1), new Range(0, m_string.length() - 1));
+			return map;
 		}
-		length += m_builder.toString().length();
-		return length;
+		RangeMapping rm = m_operations.get(0).getMapping();
+		for (int i = 0; i < m_operations.size() - 1; i++)
+		{
+			rm = RangeMapping.compose(rm, m_operations.get(i + 1).getMapping());
+		}
+		for (RangePair rp : rm.getPairs())
+		{
+			map.put(rp.getFrom(), rp.getTo());
+		}
+		return map;
+	}
+
+	/**
+	 * Keeps a substring of the current string contents, defined by a range of
+	 * characters.
+	 * @param start The position of the first character 
+	 * @param end
+	 * @return
+	 */
+	/*@ non_null @*/ public AnnotatedString substring(int start, int end)
+	{
+		return addOperation(new Substring(start, end));
+	}
+
+	/*@ non_null @*/ public AnnotatedString substring(int start)
+	{
+		return substring(start, m_string.length());
+	}
+
+	/*@ non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start, /*@ non_null @*/ Position end)
+	{
+		return substring(getIndex(start), getIndex(end));
+	}
+
+	/*@ non_null @*/ public AnnotatedString substring(/*@ non_null @*/ Position start)
+	{
+		return substring(getIndex(start));
+	}
+
+	/*@ non_null @*/ public AnnotatedString replace(String from, String to, int start)
+	{
+		return addOperation(new Replace(from, to, false, start));
+	}
+
+	/*@ non_null @*/ public AnnotatedString replaceAll(String from, String to)
+	{
+		return addOperation(new Replace(from, to));
+	}
+
+	/*@ non_null @*/ public AnnotatedString removeLine(int line_nb)
+	{
+		return addOperation(new RemoveLine(line_nb));
+	}
+
+	/*@ non_null @*/ public AnnotatedString insertAt(String s, int index)
+	{
+		return addOperation(new InsertAt(s, index));
 	}
 
 	/**
@@ -484,45 +823,20 @@ public class AnnotatedString
 	 * @return A match, or {@code null} if the string cannot be found or
 	 * the position is outside the boundaries of the string
 	 */
-	public Match find(/* @non_null @*/ String regex, /* @non_null @*/ Position start)
+	/*@ pure null @*/ public Match find(String regex, int start)
 	{
-		/*@ nullable @*/ String line_to_find = null;
-		int col = start.getColumn();
-		for (int start_l = start.getLine(); start_l <= m_lines.size(); start_l++)
+		Pattern pat = Pattern.compile(regex);
+		Matcher mat = pat.matcher(m_string);
+		if (!mat.find(start))
 		{
-			if (start_l < m_lines.size())
-			{
-				line_to_find = m_lines.get(start_l);
-			}
-			else if (start_l == m_lines.size())
-			{
-				line_to_find = m_builder.toString();
-			}
-			else
-			{
-				continue;
-			}
-			Pattern pat = Pattern.compile(regex);
-			Matcher mat = pat.matcher(line_to_find);
-			if (col >= line_to_find.length())
-			{
-				// Beyond end of line: move to next line
-				col = 0;
-				continue;
-			}
-			if (!mat.find(col))
-			{
-				col = 0;
-				continue;
-			}
-			Match m = new Match(mat.group(0), new Position(start_l, mat.start()));
-			for (int i = 0; i <= mat.groupCount(); i++)
-			{
-				m.addGroup(mat.group(i));
-			}
-			return m;
+			return null;
 		}
-		return null;
+		Match m = new Match(mat.group(), mat.start());
+		for (int i = 1 ; i < mat.groupCount(); i++)
+		{
+			m.addGroup(mat.group(i));
+		}
+		return m;
 	}
 
 	/**
@@ -532,403 +846,254 @@ public class AnnotatedString
 	 */
 	public Match find(/* @non_null @*/ String regex)
 	{
-		return find(regex, Position.ZERO);
+		return find(regex, 0);
 	}
 
 	/**
-	 * Replaces a pattern by another in the string.
-	 * @param regex The pattern to find. The pattern must not span multiple
-	 * lines.
-	 * @param to The string to replace it with. It must not span multiple
-	 * lines. If the replacement contains
-	 * occurrences of capture groups, and those capture groups were linked to
-	 * character ranges in the external text file, this link will be lost in
-	 * the resulting string. 
-	 * @param start The position where to start searching
-	 * @return A <em>new</em> instance of annotated string with the
-	 * replacement being made.
+	 * Applies a new operation on the string (thereby transforming its contents)
+	 * and adds this operation to its internal history.
+	 * @param r The operation to apply
+	 * @return The new contents of the string
 	 */
-	public /*@ non_null @*/ AnnotatedString replace(String regex, String to, Position start)
+	protected AnnotatedString addOperation(StringMappingFunction r)
 	{
-		Match m = find(regex, start);
-		if (m == null)
+		m_operations.add(r);
+		if (m_operations.size() > 1)
 		{
-			// No match; just return a copy of the whole string
-			return new AnnotatedString(this); 
+			NodeConnector.connect(m_operations.get(m_operations.size() - 2), 0, r, 0);
 		}
-		Position found_pos = m.getPosition();
-		AnnotatedString part_left = null;
-		if (m.getPosition().equals(Position.ZERO))
-		{
-			// Match found right at the beginning
-			part_left = new AnnotatedString();
-		}
-		else
-		{
-			if (found_pos.getColumn() == 0)
-			{
-				part_left = substring(Position.ZERO, new Position(found_pos.getLine() - 1, getLine(found_pos.getLine() - 1).length()));
-			}
-			else
-			{
-				part_left = substring(Position.ZERO, new Position(found_pos.getLine(), found_pos.getColumn() - 1));
-			}
-		}
-		for (int i = 1; i < m.groupCount(); i++)
-		{
-			if (m.group(i) != null)
-			{
-				to = to.replace("$" + i, m.group(i));
-			}
-			else
-			{
-				to = to.replace("$" + i, "");
-			}
-		}
-		Position target_p = getSourcePosition(found_pos);
-		if (!target_p.equals(Position.NOWHERE))
-		{
-			Range r = Range.make(target_p.getLine(), target_p.getColumn(), target_p.getColumn() + m.getMatch().length() - 1);
-			part_left.append(to, r);
-		}
-		else
-		{
-			// Cannot locate where this is in the original string
-			part_left.append(to);
-		}
-		AnnotatedString part_right = substring(new Position(found_pos.getLine(), found_pos.getColumn() + m.getMatch().length()));
-		part_left.append(part_right);
-		return part_left;
-	}
-
-	public /*@ non_null @*/ AnnotatedString replace(String regex, String to)
-	{
-		return replace(regex, to, Position.ZERO);
-	}
-
-	public /*@ non_null @*/ AnnotatedString replaceAll(String regex, String to)
-	{
-		int max_iterations = 10000;
-		AnnotatedString replaced = this;
-		Position last_pos = Position.ZERO;
-		int i = 0, tolen = to.length();
-		for (; i < max_iterations; i++)
-		{
-			Match m = replaced.find(regex, last_pos);
-			if (m == null)
-			{
-				// No cigarettes, no matches
-				break;
-			}
-			Position new_pos = m.getPosition();
-			AnnotatedString rep = replaced.replace(regex, to, last_pos);
-			replaced = rep;
-			last_pos = new_pos.moveBy(tolen);
-		}
-		return replaced;
-	}
-
-	/**
-	 * Gets the number of lines in this string
-	 * @return The number of lines
-	 */
-	/*@ pure @*/ public int lineCount()
-	{
-		return m_lines.size() + 1;
-	}
-
-	/**
-	 * Gets the n-th line of the string
-	 * @param line_nb The number of the line
-	 * @return The line; an exception if thrown if the argument is out
-	 * of bounds
-	 */
-	/*@ pure non_null @*/ public String getLine(int line_nb)
-	{
-		if (line_nb >= 0 && line_nb < m_lines.size())
-		{
-			return m_lines.get(line_nb);
-		}
-		if (line_nb == m_lines.size())
-		{
-			return m_builder.toString();
-		}
-		throw new ArrayIndexOutOfBoundsException("Line " + line_nb + " does not exist");
-	}
-
-	/**
-	 * Computes the position (line/column) of the n-th character in the
-	 * string. If the string contains multiple
-	 * lines, the size of each line separator is also included in the count.
-	 * @param nb_chars The number of characters from the beginning of the
-	 * string
-	 * @return The position; you get {@link Position#NOWHERE}
-	 * if {@code nb_chars} lies beyond the string boundaries
-	 * @see #getOffset(Position)
-	 */
-	/*@ pure non_null @*/ public Position getPosition(int nb_chars)
-	{
-		if (nb_chars < 0)
-		{
-			return Position.NOWHERE;
-		}
-		int char_count = 0, line_count = 0;
-		for (String line : m_lines)
-		{
-			if (nb_chars < char_count + line.length())
-			{
-				// It's on this line
-				return new Position(line_count, nb_chars - char_count);
-			}
-			char_count += line.length() + CRLF_SIZE;
-			line_count++;
-		}
-		String line = m_builder.toString();
-		if (nb_chars < char_count + line.length())
-		{
-			// It's on the last line
-			return new Position(line_count, nb_chars - char_count);
-		}
-		return Position.NOWHERE;
-	}
-
-	/**
-	 * Removes a complete line from the string.
-	 * @param line_nb The line number
-	 * @return This string
-	 */
-	public AnnotatedString removeLine(int line_nb)
-	{
-		// Step 1: remove line from list
-		if (line_nb < 0 || line_nb >= lineCount())
-		{
-			// Nothing to do
-			return this;
-		}
-		if (m_currentLine > 0)
-		{
-			m_currentLine--;
-		}
-		if (line_nb < m_lines.size())
-		{
-			m_lines.remove(line_nb);
-		}
-		else if (line_nb == m_lines.size())
-		{
-			m_builder = new StringBuilder();
-			if (line_nb > 0)
-			{
-				String l = m_lines.remove(line_nb - 1);
-				m_builder.append(l);
-				m_currentColumn = l.length();
-			}
-			else
-			{
-				// line_nb == 0
-				m_builder = new StringBuilder();
-				m_currentColumn = 0;
-			}
-		}
-		// Step 2: adjust all positions on lines below line_nb
-		Map<Range,Range> new_ranges = new HashMap<Range,Range>();
-		for (Map.Entry<Range,Range> entry : m_map.entrySet())
-		{
-			int l_pos_start, l_pos_end;
-			Range r_key = entry.getKey();
-			l_pos_start = r_key.getStart().getLine();
-			l_pos_end = r_key.getEnd().getLine();
-			if (l_pos_end < line_nb)
-			{
-				// This range is completely above the cut line: nothing to change
-				new_ranges.put(entry.getKey(), entry.getValue());
-				continue;
-			}
-			if (l_pos_start > line_nb)
-			{
-				// This range is completely below the cut line: simply offset
-				// key range by one line up
-				Range new_r_key = Range.make(l_pos_start - 1, r_key.getStart().getColumn(), l_pos_end - 1, r_key.getEnd().getColumn());
-				new_ranges.put(new_r_key, entry.getValue());
-				continue;
-			}
-			// If we get here, the key range is across the cut line
-			if (l_pos_start == line_nb)
-			{
-				// Range starts on line to be cut
-				if (l_pos_end == line_nb)
-				{
-					// Single line range: just remove it
-					continue;
-				}
-				else
-				{
-					// TODO. This is the case of a multi-line range that starts on
-					// the cut line, and ends strictly below the cut line
-					throw new UnsupportedOperationException("Method removeLine does not work on multi-line character ranges");
-				}
-			}
-			else
-			{
-				// TODO. This is the case of a multi-line range that starts strictly
-				// above the cut line, and ends on the cut line or below
-				throw new UnsupportedOperationException("Method removeLine does not work on multi-line character ranges");
-			}
-		}
-		m_map = new_ranges;
+		m_string = (String) r.evaluate(m_string)[0];
 		return this;
 	}
 
-	/**
-	 * Resizes a source range, by mirroring the resizing done to the key
-	 * range after an intersection
-	 * @param orig_key_range The original key range
-	 * @param resized_key_range The resized key range
-	 * @param orig_source_range The original source range (the one to be
-	 * resized)
-	 * @return The resized source range
-	 */
-	/*@ non_null @*/ protected static Range resizeSourceRange(/*@ non_null @*/ Range orig_key_range, /*@ non_null @*/ Range resized_key_range, /*@ non_null @*/ Range orig_source_range)
+	@Override
+	public PartNode getExplanation(Part part)
 	{
-		int okr_start_l = orig_key_range.getStart().getLine();
-		int rkr_start_l = resized_key_range.getStart().getLine();
-		Position new_start = null, new_end = null;
-		if (okr_start_l == rkr_start_l)
+		return getExplanation(part, NodeFactory.getFactory());
+	}
+
+	@Override
+	public PartNode getExplanation(Part part, NodeFactory factory)
+	{
+		Part new_p = part; //replaceSelfBy(part, NthOutput.FIRST);
+		if (m_operations.isEmpty())
 		{
-			// Range starts at the same line: only offset by columns
-			int col_offset = resized_key_range.getStart().getColumn() - orig_key_range.getStart().getColumn();
-			new_start = new Position(orig_source_range.getStart().getLine(), orig_source_range.getStart().getColumn() + col_offset);
+			return factory.getPartNode(part, this);
 		}
-		else
+		AtomicFunction first = m_operations.get(0);
+		Circuit g = new Circuit(1, 1);
+		g.addNodes(first);
+		g.associateInput(0, first.getInputPin(0));
+		AtomicFunction previous = first, current = first;
+		for (int i = 1; i < m_operations.size(); i++)
 		{
-			// Range starts at lower line
-			int line_offset = rkr_start_l - okr_start_l;
-			new_start = new Position(orig_source_range.getStart().getLine() + line_offset, resized_key_range.getStart().getColumn());
+			current = m_operations.get(i);
+			NodeConnector.connect(previous, 0, current, 0);
+			previous = current;
 		}
-		assert new_start != null;
-		int okr_end_l = orig_key_range.getEnd().getLine();
-		int rkr_end_l = resized_key_range.getEnd().getLine();
-		if (okr_end_l == rkr_end_l)
-		{
-			// Range ends at same line: only offset by columns
-			int col_offset = resized_key_range.getEnd().getColumn() - orig_key_range.getEnd().getColumn();
-			new_end = new Position(orig_source_range.getEnd().getLine(), orig_source_range.getEnd().getColumn() + col_offset);
-		}
-		else
-		{
-			// Range ends at higher line
-			int line_offset = rkr_end_l - okr_end_l;
-			new_end = new Position(orig_source_range.getEnd().getLine() + line_offset, resized_key_range.getStart().getColumn());
-		}
-		return new Range(new_start, new_end);
+		g.associateOutput(0, current.getOutputPin(0));
+		return g.getExplanation(new_p, factory);
 	}
 
 	/**
-	 * Trims a line of the string from a given position
-	 * @param pos The position. All characters on the same line,
-	 * starting from this position on to the end of the string,
-	 * will be removed.
-	 * @return A new string trimmed accordingly
+	 * Finds the ranges of the original string corresponding to a range of
+	 * characters in the current contents of the string.
+	 * @param r The range of characters in the current contents of the string
+	 * @return A list of ranges corresponding to portions of the initial string
 	 */
-	public AnnotatedString trimFrom(/*@ non_null @*/ Position pos)
+	/*@ non_null @*/ protected List<Range> trackToInput(/*@ non_null @*/ Range r)
 	{
-		int line_pos = pos.getLine();
-		int col_pos = pos.getColumn();
-		if (line_pos < m_lines.size())
-		{
-			String line = m_lines.get(line_pos);
-			line = line.substring(0, col_pos);
-			m_lines.set(line_pos, line);
-		}
-		else if (line_pos == m_lines.size())
-		{
-			String line = m_builder.toString();
-			line = line.substring(0, col_pos);
-			m_builder = new StringBuilder();
-			m_builder.append(line);
-			m_currentColumn = col_pos;
-		}
-		return this;
+		PartNode root = getExplanation(ComposedPart.compose(r, NthOutput.FIRST));
+		RangeFetcher crawler = new RangeFetcher(root);
+		crawler.crawl();
+		List<Range> ranges = crawler.getRanges();
+		sortAndMerge(ranges);
+		return ranges;
 	}
 
 	/**
-	 * Creates an annotated string from a scanner
+	 * Finds the ranges of the original string corresponding to a range of
+	 * characters in the current contents of the string.
+	 * @param start The start index of the range of characters in the current
+	 * contents of the string
+	 * @param end The end index of the range of characters in the current
+	 * contents of the string
+	 * @return A list of ranges corresponding to portions of the initial string
+	 */
+	/*@ non_null @*/ protected List<Range> trackToInput(int start, int end)
+	{
+		return trackToInput(new Range(start, end));
+	}
+	
+	/**
+	 * Finds the ranges of the current string corresponding to a range of
+	 * characters in the original contents of the string.
+	 * @param r The range of characters in the original contents of the string
+	 * @return A list of ranges corresponding to portions of the current string
+	 */
+	/*@ non_null @*/ protected List<Range> trackToOutput(/*@ non_null @*/ Range r)
+	{
+		PartNode root = getExplanation(ComposedPart.compose(r, NthInput.FIRST));
+		RangeFetcher crawler = new RangeFetcher(root);
+		crawler.crawl();
+		List<Range> ranges = crawler.getRanges();
+		sortAndMerge(ranges);
+		return ranges;
+	}
+	
+	/**
+	 * Finds the ranges of the current string corresponding to a range of
+	 * characters in the original contents of the string.
+	 * @param start The start index of the range of characters in the original
+	 * contents of the string
+	 * @param end The end index of the range of characters in the original
+	 * contents of the string
+	 * @return A list of ranges corresponding to portions of the current string
+	 */
+	/*@ non_null @*/ protected List<Range> trackToOutput(int start, int end)
+	{
+		return trackToOutput(new Range(start, end));
+	}
+
+	/**
+	 * Creates an annotated string from a scanner.
 	 * @param scanner The scanner
 	 * @return The annotated string
 	 */
-	/*@ non_null @*/ public static AnnotatedString read(/*@ non_null @*/ Scanner scanner)
+	public static AnnotatedString read(Scanner scanner)
 	{
-		AnnotatedString as = new AnnotatedString();
-		int line_pos = -1;
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
 		while (scanner.hasNextLine())
 		{
-			line_pos++;
-			if (line_pos > 0)
+			if (first)
 			{
-				as.appendNewLine();
-			}
-			String line = scanner.nextLine();
-			as.append(line, Range.make(line_pos, 0, line.length() - 1));
-		}
-		return as;
-	}
-
-	/**
-	 * Determines if the string is empty, i.e. contains no characters.
-	 * @return {@code true} if the string is empty, {@code false}
-	 * otherwise
-	 */
-	public boolean isEmpty()
-	{
-		return m_lines.isEmpty() && m_builder.toString().isEmpty();
-	}
-	
-	/**
-	 * Gets the offset (in characters from the beginning) corresponding to
-	 * a position
-	 * @param p The position
-	 * @return The offset; -1 if the position does not correspond to a valid
-	 * offset in the text
-	 * @see #getPosition(int)
-	 */
-	public int getOffset(Position p)
-	{
-		int char_count = 0, line_count = 0;
-		int p_line = p.getLine();
-		int p_col = p.getColumn();
-		for (String line : m_lines)
-		{
-			if (line_count != p_line)
-			{
-				// It's not on this line
-				char_count += line.length() + CRLF_SIZE;
-				line_count++;
-				continue;
+				first = false;
 			}
 			else
 			{
-				// It's on this line
-				char_count += p_col;
-				return char_count;
+				sb.append(CRLF);
+			}
+			sb.append(scanner.nextLine());
+		}
+		return new AnnotatedString(sb.toString());
+	}
+
+	/**
+	 * Merges all overlapping ranges in a list and sorts the result. For example,
+	 * the list [8,13] [0,3] [4,6] [10,15] would become [0,6] [8,15].
+	 * @param ranges The list to process
+	 */
+	protected static void sortAndMerge(List<Range> ranges)
+	{
+		Collections.sort(ranges);
+		int pos = 0;
+		while (pos < ranges.size() - 1)
+		{
+			Range r1 = ranges.get(pos);
+			Range r2 = ranges.get(pos + 1);
+			if (r1.overlaps(r2))
+			{
+				Range r = new Range(Math.min(r1.getStart(), r2.getStart()), Math.max(r1.getEnd(), r2.getEnd()));
+				ranges.remove(pos + 1);
+				ranges.set(pos, r);
+			}
+			else
+			{
+				pos++;
 			}
 		}
-		return -1;
+	}	
+	
+	/**
+	 * Creates a range that encompasses all the ranges in a list. 
+	 * @param ranges The list of ranges
+	 * @return The range encompassing them all
+	 */
+	/*@ null @*/ protected static Range uniteRanges(/*@ non_null @*/ List<Range> ranges)
+	{
+		int left = -1, right = -1;
+		for (Range i_r : ranges)
+		{
+			if (left < 0 || left > i_r.getStart())
+			{
+				left = i_r.getStart();
+			}
+			if (right < 0 || right < i_r.getEnd())
+			{
+				right = i_r.getEnd();
+			}
+		}
+		if (left < 0 || right < 0)
+		{
+			return null;
+		}
+		return new Range(left, right);
 	}
 	
 	/**
-	 * Turns the OS-dependent CRLF character into a regular expression. 
-	 * @param s The character
-	 * @return The regex
+	 * Given an arbitrary designator, replaces the first occurrence of
+	 * {@link NthOutput} by an instance of {@link NthInput} with given index.
+	 * @param from The original part
+	 * @param to The part to replace it with
+	 * @return The new designator. The input object is not modified if it does
+	 * not contain {@code d}
 	 */
-	protected static String getCrlfRegex(String s)
+	/*@ non_null @*/ protected static Part replaceSelfBy(/*@ non_null @*/ Part from, Part to)
 	{
-		if (s.compareTo("\\r\\n") == 0)
+		if (from instanceof Self)
 		{
-			return ("\\\\r\\\\n");
+			return to;
 		}
-		if (s.compareTo("\\r") == 0)
+		if (from instanceof ComposedPart)
 		{
-			return ("\\\\r");
+			ComposedPart cd = (ComposedPart) from;
+			List<Part> desigs = new ArrayList<Part>();
+			boolean replaced = false;
+			for (int i = 0 ; i < cd.size(); i++)
+			{
+				Part in_d = cd.get(i);
+				if (in_d instanceof Self && !replaced)
+				{
+					desigs.add(to);
+					replaced = true;
+				}
+				else
+				{
+					desigs.add(in_d);
+				}
+			}
+			if (!replaced)
+			{
+				// Return input object if no replacement was done
+				return from;
+			}
+			return ComposedPart.compose(desigs);
 		}
-		return ("\\\\n");
+		return from;
+	}
+
+	public static class Line
+	{
+		protected final int m_offset;
+
+		protected final String m_string;
+
+		public Line(String s, int offset)
+		{
+			super();
+			m_string = s;
+			m_offset = offset;
+		}
+
+		public String toString()
+		{
+			return m_string;
+		}
+
+		public int getOffset()
+		{
+			return m_offset;
+		}
 	}
 }

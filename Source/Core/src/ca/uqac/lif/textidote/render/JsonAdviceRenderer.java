@@ -20,16 +20,19 @@ package ca.uqac.lif.textidote.render;
 import java.util.List;
 import java.util.Map;
 
+
 import org.languagetool.Language;
 
 import ca.uqac.lif.json.JsonFalse;
 import ca.uqac.lif.json.JsonList;
 import ca.uqac.lif.json.JsonMap;
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.AdviceRenderer;
 import ca.uqac.lif.textidote.Main;
 import ca.uqac.lif.textidote.Rule;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.rules.LanguageFactory;
 import ca.uqac.lif.util.AnsiPrinter;
 
@@ -104,13 +107,13 @@ public class JsonAdviceRenderer extends AdviceRenderer
 				}
 				match.put("replacements", replacements);
 				match.put("offset", a.getOffset());
-				match.put("length", a.getRange().getLength());
-				String excerpt = renderExcerpt(a.getLine(), a.getRange(), 80);
+				match.put("length", a.getRange().length());
+				String excerpt = renderExcerpt(a.getReferenceString(), a.getLine(), a.getRange(), 80);
 				{
 					JsonMap context = new JsonMap();
 					context.put("text", excerpt);
 					context.put("offset", a.getOffset());
-					context.put("length", a.getRange().getLength());
+					context.put("length", a.getRange().length());
 					match.put("context", context);
 				}
 				match.put("sentence", excerpt);
@@ -147,15 +150,17 @@ public class JsonAdviceRenderer extends AdviceRenderer
 	
 	/**
 	 * Renders a partial line of text surrounding the location of the advice.
-	 * @param line The line of text
+	 * @param as The original string
+	 * @param l The line of text
 	 * @param range The range to highlight
 	 * @param line_width An approximate length for the line of text to produce
 	 * @return The excerpt
 	 */
-	protected String renderExcerpt(/*@ non_null @*/ String line, /*@ non_null @*/ Range range, int line_width)
+	protected String renderExcerpt(AnnotatedString as, /*@ non_null @*/ Line l, /*@ non_null @*/ Range range, int line_width)
 	{
-		int left = range.getStart().getColumn();
-		int right = range.getEnd().getColumn();
+		String line = l.toString();
+		int left = as.getPosition(range.getStart()).getColumn();
+		int right = as.getPosition(range.getEnd()).getColumn();
 		int range_width = right - left;
 		int mid_point = left + range_width / 2;
 		int offset = 0;

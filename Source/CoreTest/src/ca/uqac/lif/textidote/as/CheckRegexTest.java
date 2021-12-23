@@ -45,7 +45,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet"));
 		Rule r = new RegexRule("name:foo", "foo", "Message foo");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -54,7 +54,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem foo ipsum dolor foo sit amet"));
 		Rule r = new RegexRule("name:foo", "foo", "Message foo");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(2, ad_list.size());
 	}
 	
@@ -63,7 +63,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\cite{foo} Lorem ipsum \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -72,7 +72,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\citep{foo} Lorem ipsum \\citet{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -81,7 +81,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo} \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -90,7 +90,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo} \\citep{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -99,7 +99,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo}, \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 }

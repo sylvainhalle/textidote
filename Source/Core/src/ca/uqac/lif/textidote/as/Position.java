@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2021  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,35 +18,38 @@
 package ca.uqac.lif.textidote.as;
 
 /**
- * Represents a position in a text file. This position is expressed
- * in *characters*, not in *bytes*.
+ * A position in the string, expressed in terms of lines and columns.
+ * Contrary to a linear index, a Position displays lines and
+ * column indices starting at 1 instead of 0. However they are internally
+ * stored as 0-based indices, and {@link #getLine()} and
+ * {@link #getColumn()} return 0-based locations.
  */
 public class Position implements Comparable<Position>
 {
 	/**
-	 * The line number in the file
-	 */
-	private final int m_line;
-	
-	/**
-	 * The column number in the file
-	 */
-	private final int m_column;
-	
-	/**
-	 * An object representing the position (0, 0)
+	 * The position of the first character of the string.
 	 */
 	public static final Position ZERO = new Position(0, 0);
 	
 	/**
-	 * An instance of the {@link Nowhere} position
+	 * A fictive position representing no location.
 	 */
-	public static final Nowhere NOWHERE = new Nowhere();
+	public static final Position NOWHERE = new Position(-1, -1);
 	
 	/**
-	 * Creates a new position object.
-	 * @param line The line number in the file
-	 * @param column The column number in the file
+	 * The line corresponding to the position.
+	 */
+	private final int m_line;
+
+	/**
+	 * The column corresponding to the position.
+	 */
+	private final int m_column;
+
+	/**
+	 * Creates a new position.
+	 * @param line The line corresponding to the position
+	 * @param column The column corresponding to the position
 	 */
 	public Position(int line, int column)
 	{
@@ -54,17 +57,25 @@ public class Position implements Comparable<Position>
 		m_line = line;
 		m_column = column;
 	}
-	
-	public int getLine()
+
+	/**
+	 * Gets the line coordinate of the position.
+	 * @return The coordinate
+	 */
+	/*@ pure @*/ public int getLine()
 	{
 		return m_line;
 	}
-	
-	public int getColumn()
+
+	/**
+	 * Gets the column coordinate of the position.
+	 * @return The coordinate
+	 */
+	/*@ pure @*/ public int getColumn()
 	{
 		return m_column;
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -72,69 +83,40 @@ public class Position implements Comparable<Position>
 	}
 
 	@Override
-	public int compareTo(Position p) 
-	{
-		if (p == null)
-		{
-			return Integer.MIN_VALUE;
-		}
-		if (m_line < p.m_line)
-		{
-			return -1;
-		}
-		if (m_line > p.m_line)
-		{
-			return 1;
-		}
-		// m_line == p.m_line
-		return m_column - p.m_column;
-	}
-	
-	@Override
 	public int hashCode()
 	{
-		// 80 has no special meaning
-		return m_line * 80 + m_column;
+		return m_line * m_column;
 	}
-	
+
 	@Override
 	public boolean equals(Object o)
 	{
-		if (!(o instanceof Position))
+		if (o == null || !(o instanceof Position))
 		{
 			return false;
 		}
 		Position p = (Position) o;
-		return m_line == p.m_line && m_column == p.m_column;
+		return p.m_column == m_column && p.m_line == m_line;
 	}
-	
-	/**
-	 * Creates a new position object by offsetting the column number by
-	 * a specific value
-	 * @param offset The offset; this will be added to the column value
-	 * of the current position
-	 * @return The new position
-	 */
-	public Position moveBy(int offset)
+
+	@Override
+	public int compareTo(Position p)
 	{
-		return new Position(m_line, m_column + offset);
-	}
-	
-	/**
-	 * Position that refers to no specific location in a file
-	 *
-	 */
-	public static class Nowhere extends Position
-	{
-		private Nowhere()
+		if (p.m_line > m_line)
 		{
-			super(-1, -1);
+			return -1;
 		}
-		
-		@Override
-		public String toString()
+		if (p.m_line == m_line)
 		{
-			return "?";
+			if (p.m_column > m_column)
+			{
+				return -1;
+			}
+			if (p.m_column == m_column)
+			{
+				return 0;
+			}
 		}
+		return 1;
 	}
 }

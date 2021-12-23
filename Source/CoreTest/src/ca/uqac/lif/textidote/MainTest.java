@@ -178,7 +178,7 @@ public class MainTest
 		assertFalse(output.trim().isEmpty());
 	}
 	
-	@Test(timeout = 10000)
+	@Test//(timeout = 10000)
 	public void testCheck1() throws IOException
 	{
 		ByteArrayOutputStream baos_out = new ByteArrayOutputStream();

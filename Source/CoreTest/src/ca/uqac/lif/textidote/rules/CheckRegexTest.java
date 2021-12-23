@@ -51,7 +51,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum dolor sit amet"));
 		Rule r = new RegexRule("name:foo", "foo", "Message foo");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 
@@ -60,7 +60,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem foo ipsum dolor foo sit amet"));
 		Rule r = new RegexRule("name:foo", "foo", "Message foo");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(2, ad_list.size());
 	}
 
@@ -69,7 +69,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\cite{foo} Lorem ipsum \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 
@@ -78,7 +78,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("\\citep{foo} Lorem ipsum \\citet{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 
@@ -87,7 +87,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo} \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -96,7 +96,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo} \\citep{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -105,7 +105,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Lorem ipsum  \\cite{foo}, \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:mul");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 	
@@ -114,7 +114,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Antarctica mass change shows clear regional differences between \\gls{eais},\\gls{wais}, and \\gls{ap} \\citep{schroder_four_2019}"));
 		Rule r = m_rules.get("sh:c:mulp");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -123,7 +123,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al. foo"));
 		Rule r = m_rules.get("sh:010");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -132,7 +132,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al.\\ foo"));
 		Rule r = m_rules.get("sh:010");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -141,7 +141,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("et al., foo"));
 		Rule r = m_rules.get("sh:010");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -150,7 +150,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e. foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -159,7 +159,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e.\\ foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -168,7 +168,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("i.e., foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -177,7 +177,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g. foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -186,7 +186,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g.\\ foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -195,7 +195,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("e.g., foo"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 
@@ -204,7 +204,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Hello world.Bye."));
 		Rule r = m_detex_rules.get("sh:d:002");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(1, ad_list.size());
 	}
 
@@ -213,7 +213,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("Foo e.g. bar"));
 		Rule r = m_detex_rules.get("sh:d:002");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -222,7 +222,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is 0.5."));
 		Rule r = m_detex_rules.get("sh:d:003");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -231,7 +231,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is .5."));
 		Rule r = m_detex_rules.get("sh:d:003");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -240,7 +240,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("The number is 0,5."));
 		Rule r = m_detex_rules.get("sh:d:003");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
 	
@@ -249,7 +249,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\cite{foo}"));
 		Rule r = m_rules.get("sh:c:noin");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertFalse(ad_list.isEmpty());
 	}
 	
@@ -258,7 +258,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\citet{foo}"));
 		Rule r = m_rules.get("sh:c:noin");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -267,7 +267,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("from \\cite[Section 1.2]{foo}"));
 		Rule r = m_rules.get("sh:c:noin");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -276,7 +276,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e. something"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertFalse(ad_list.isEmpty());
 	}
 	
@@ -285,7 +285,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.: something"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -294,7 +294,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.; something"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 	
@@ -303,7 +303,7 @@ public class CheckRegexTest
 	{
 		AnnotatedString in_string = AnnotatedString.read(new Scanner("blabla, i.e.\\ something"));
 		Rule r = m_rules.get("sh:011");
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
 }

@@ -24,9 +24,9 @@ import java.util.Scanner;
 
 import org.junit.Test;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Range;
 import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
 public class CheckAdvice
@@ -39,7 +39,7 @@ public class CheckAdvice
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckAdvice.class.getResourceAsStream("data/test-subsec-1.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
-		List<Advice> ad_list = r.evaluate(in_string, in_string);
+		List<Advice> ad_list = r.evaluate(in_string);
 		Advice ad = ad_list.get(0);
 		String s = ad.toString();
 		assertNotNull(s);
@@ -49,9 +49,9 @@ public class CheckAdvice
 	@Test
 	public void testEquals()
 	{
-		Advice ad1 = new Advice(new CheckNoBreak(), Range.make(0, 0, 10), "message", "resource", "line", 0);
-		Advice ad2 = new Advice(new CheckNoBreak(), Range.make(1, 0, 10), "message", "resource", "line", 0);
-		Advice ad3 = new Advice(new CheckStackedHeadings(), Range.make(0, 0, 10), "message", "resource", "line", 0);
+		Advice ad1 = new Advice(new CheckNoBreak(), new Range(0, 10), "message", new AnnotatedString("resource"), new AnnotatedString("line").getLine(0));
+		Advice ad2 = new Advice(new CheckNoBreak(), new Range(1, 10), "message", new AnnotatedString("resource"), new AnnotatedString("line").getLine(0));
+		Advice ad3 = new Advice(new CheckStackedHeadings(), new Range(0, 10), "message", new AnnotatedString("resource"), new AnnotatedString("line").getLine(0));
 		assertTrue(ad1.equals(ad1));
 		assertFalse(ad1.equals(ad2));
 		assertFalse(ad1.equals(ad3));

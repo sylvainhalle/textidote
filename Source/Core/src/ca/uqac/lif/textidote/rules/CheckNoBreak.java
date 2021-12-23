@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 
 /**
  * Checks that text paragraphs do not contain forced line breaks.
@@ -47,14 +47,15 @@ public class CheckNoBreak extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original)
+	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
-		List<String> lines = s.getLines();
+		List<Line> lines = s.getLines();
 		int env_level = 0;
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
-			String line = lines.get(line_cnt);
+			Line l = lines.get(line_cnt);
+			String line = l.toString();
 			if (line.matches(".*\\\\begin\\s*\\{\\s*(equation|equation\\*|align|align\\*|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|matrix|bmatrix|Bmatrix|pmatrix|vmatrix|Vmatrix|smallmatrix).*") || line.matches(".*\\\\\\[.*"))
 			{
 				env_level++;
@@ -65,10 +66,10 @@ public class CheckNoBreak extends Rule
 				if (mat.find())
 				{
 					// Forced break
-					Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start()));
-					Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start() + mat.group(0).length()));
-					Range r = new Range(start_pos, end_pos);
-					out_list.add(new Advice(this, r, "You should not break lines manually in a paragraph. Either start a new paragraph or stay in the current one.", original.getResourceName(), original.getLine(start_pos.getLine()), original.getOffset(start_pos)));	
+					int start_pos = l.getOffset() + mat.start();
+					int end_pos = l.getOffset() + mat.start() + mat.group(0).length();
+					Range r = s.findOriginalRange(new Range(start_pos, end_pos - 1));
+					out_list.add(new Advice(this, r, "You should not break lines manually in a paragraph. Either start a new paragraph or stay in the current one.", s, l));	
 				}
 			}
 			if (line.matches(".*\\\\end\\s*\\{\\s*(equation|equation\\*|align|align\\*|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|matrix|bmatrix|Bmatrix|pmatrix|vmatrix|Vmatrix|smallmatrix).*") || line.matches(".*\\\\\\].*"))

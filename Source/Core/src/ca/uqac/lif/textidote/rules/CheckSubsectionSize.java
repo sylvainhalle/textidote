@@ -23,11 +23,11 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.as.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 
 /**
  * Checks that each sub-division in the text (section, sub-section, etc.) has
@@ -71,23 +71,24 @@ public class CheckSubsectionSize extends Rule
 	}
 
 	@Override
-	public List<Advice> evaluate(AnnotatedString s, AnnotatedString original) 
+	public List<Advice> evaluate(AnnotatedString s) 
 	{
 		Stack<SectionInfo> sections = new Stack<SectionInfo>();
-		SectionInfo doc_head = new SectionInfo("", new Range(Position.ZERO, Position.ZERO));
+		SectionInfo doc_head = new SectionInfo("", new Range(0, 0));
 		List<Advice> out_list = new ArrayList<Advice>();
-		List<String> lines = s.getLines();
+		List<Line> lines = s.getLines();
 		sections.push(doc_head);
 		for (int line_cnt = 0; line_cnt < lines.size(); line_cnt++)
 		{
-			String line = lines.get(line_cnt);
+			Line l = lines.get(line_cnt);
+			String line = l.toString();
 			Matcher mat = m_headingPattern.matcher(line);
 			if (mat.find())
 			{
-				Position start_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1)));
-				Position end_pos = s.getSourcePosition(new Position(line_cnt, mat.start(1) + mat.group(1).length()));
+				int start_pos = l.getOffset() + mat.start(1);
+				int end_pos = l.getOffset() + mat.start(1) + mat.group(1).length();
 				String heading = mat.group(1).trim();
-				SectionInfo si = new SectionInfo(heading, new Range(start_pos, end_pos));
+				SectionInfo si = new SectionInfo(heading, new Range(start_pos, end_pos - 1));
 				SectionInfo si_last = sections.peek();
 				if (SectionInfo.isMoveDown(si_last, si))
 				{
@@ -113,8 +114,8 @@ public class CheckSubsectionSize extends Rule
 							si_last = sections.pop();
 							if (si_last.m_size < m_minNumWords && !si_last.m_sectionName.isEmpty())
 							{
-								Range r2 = si_last.m_range;
-								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
+								Range r2 = s.findOriginalRange(si_last.m_range);
+								out_list.add(new Advice(this, r2, "This " + si_last.m_sectionName + " is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", s, s.findOriginalLine(s.getPosition(si_last.m_range.getStart()).getLine())));
 							}
 						}
 						if (sections.isEmpty())
@@ -145,8 +146,8 @@ public class CheckSubsectionSize extends Rule
 			SectionInfo si_last = sections.pop();
 			if (!si_last.m_sectionName.isEmpty() && si_last.m_size < m_minNumWords)
 			{
-				Range r2 = si_last.m_range;
-				out_list.add(new Advice(this, r2, "This section is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", original.getResourceName(), original.getLine(si_last.m_range.getStart().getLine()), original.getOffset(r2.getStart())));
+				Range r2 = s.findOriginalRange(si_last.m_range);
+				out_list.add(new Advice(this, r2, "This section is very short (about " + si_last.m_size + " words). You should consider merging it with another section or make it longer.", s, s.findOriginalLine(s.getPosition(si_last.m_range.getStart()).getLine())));
 			}
 		}
 		return out_list;

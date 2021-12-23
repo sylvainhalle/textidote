@@ -30,7 +30,7 @@
   <author>Sylvain Hall&#233;</author>
   
   <!-- The project's version number -->
-  <version>0.8.1</version>
+  <version>0.8.4-beta.1</version>
   
   <!-- The project's main class -->
   <mainclass>ca.uqac.lif.textidote.Main</mainclass>
@@ -86,6 +86,28 @@
       <classname>ca.uqac.lif.json.JsonElement</classname>
       <files>
         <zip>https://github.com/liflab/json-lif/releases/download/v1.6.4/json-lif-1.6.4.zip</zip>
+      </files>
+      <bundle>true</bundle>
+    </dependency>
+    <dependency>
+      <!--
+      Petit Poucet Core
+      -->
+      <name>Petit Poucet (Core)</name>
+      <classname>ca.uqac.lif.petitpoucet.Part</classname>
+      <files>
+        <jar>https://github.com/liflab/petitpoucet/releases/download/v2.1-beta/petitpoucet-core.jar</jar>
+      </files>
+      <bundle>true</bundle>
+    </dependency>
+    <dependency>
+      <!--
+      Petit Poucet Functions
+      -->
+      <name>Petit Poucet (Functions)</name>
+      <classname>ca.uqac.lif.petitpoucet.function.Function</classname>
+      <files>
+        <jar>https://github.com/liflab/petitpoucet/releases/download/v2.1-beta/petitpoucet-functions.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
