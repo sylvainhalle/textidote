@@ -21,9 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a match by a regular expression find
- * @author sylvain
- *
+ * Represents a match by a regular expression find.
+ * @author Sylvain Hallé
  */
 public class Match 
 {

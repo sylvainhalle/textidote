@@ -19,7 +19,6 @@ package ca.uqac.lif.textidote.cleaning.latex;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Match;
-import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;

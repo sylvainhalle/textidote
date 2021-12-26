@@ -37,10 +37,12 @@ import ca.uqac.lif.petitpoucet.function.Circuit;
 import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
 import ca.uqac.lif.petitpoucet.function.NthInput;
 import ca.uqac.lif.petitpoucet.function.NthOutput;
+import ca.uqac.lif.petitpoucet.function.strings.InsertAt;
 import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.petitpoucet.function.strings.RangeMapping;
 import ca.uqac.lif.petitpoucet.function.strings.RangeMapping.RangePair;
 import ca.uqac.lif.petitpoucet.function.strings.Remove;
+import ca.uqac.lif.petitpoucet.function.strings.RemoveLine;
 import ca.uqac.lif.petitpoucet.function.strings.Replace;
 import ca.uqac.lif.petitpoucet.function.strings.StringMappingFunction;
 import ca.uqac.lif.petitpoucet.function.strings.Substring;
@@ -210,12 +212,6 @@ public class AnnotatedString implements ExplanationQueryable
 	public AnnotatedString()
 	{
 		this("");
-	}
-
-	public AnnotatedString(Line l)
-	{
-		this(l.toString());
-		m_operations.add(new Shift(l.getOffset()));
 	}
 
 	/**
