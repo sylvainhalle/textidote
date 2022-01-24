@@ -530,12 +530,10 @@ A dedicated `flycheck-checker` can be defined as in the following `init.el/.emac
     :command ("java" "-jar" (eval (expand-file-name "~/PATH/TO/textidote.jar")) "--read-all"
               "--check" (eval (if ispell-current-dictionary (substring ispell-current-dictionary 0 2) "en"))
               "--no-color" source-inplace)
-    :error-patterns (
-                     (warning line-start "* L" line "C" column "-" (one-or-more alphanumeric) " "
-                              (message (one-or-more (not (any "]"))) "]")))
-							  
-(add-to-list 'flycheck-checkers   'tex-textidote)							  
+    :error-patterns ((warning line-start "* L" line "C" column "-" (one-or-more alphanumeric) " "
+                     (message (one-or-more (not (any "]"))) "]"))))
 
+(add-to-list 'flycheck-checkers   'tex-textidote)
 ```
 
 ## Rules checked by TeXtidote
