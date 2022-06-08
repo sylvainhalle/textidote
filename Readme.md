@@ -519,21 +519,31 @@ Users of Visual Studio Code can integrate TeXtidote by calling it with the `--ou
 ### Emacs integration
 
 Emacs users can benefit from TeXtidote through [flycheck](https://www.flycheck.org/en/latest/).  
-A dedicated `flycheck-checker` can be defined as in the following `init.el/.emacs` snippet (by user [soli](https://github.com/soli)).
+A dedicated `flycheck-checker` can be defined as in the following `init.el/.emacs` snippet.
+Replace `~/PATH/TO/textidote.jar` with the correct path for your system.
 
 ```emacs-lisp
 (flycheck-define-checker tex-textidote
-    "A LaTeX grammar/spelling checker using textidote.
+  "A LaTeX grammar/spelling checker using textidote.
 
-    See https://github.com/sylvainhalle/textidote"
-    :modes (latex-mode plain-tex-mode)
-    :command ("java" "-jar" (eval (expand-file-name "~/PATH/TO/textidote.jar")) "--read-all"
-              "--check" (eval (if ispell-current-dictionary (substring ispell-current-dictionary 0 2) "en"))
-              "--no-color" source-inplace)
-    :error-patterns ((warning line-start "* L" line "C" column "-" (one-or-more alphanumeric) " "
-                     (message (one-or-more (not (any "]"))) "]"))))
-
-(add-to-list 'flycheck-checkers   'tex-textidote)
+  See https://github.com/sylvainhalle/textidote"
+  :modes (latex-mode plain-tex-mode)
+  :command ("java" "-jar" (eval (expand-file-name "~/PATH/TO/textidote.jar"))
+            "--read-all"
+            "--output" "singleline"
+            "--no-color"
+            "--check"   (eval (if ispell-current-dictionary (substring ispell-current-dictionary 0 2) "en"))
+            ;; Try to honor local aspell dictionary and replacements if they exist
+            "--dict"    (eval (expand-file-name "~/.aspell.en.pws"))
+            "--replace" (eval (expand-file-name "~/.aspell.en.prepl"))
+            ;; Using source ensures that a single temporary file in a different dir is created
+            ;; such that textidote won't process other files. This serves as a hacky workaround for
+            ;; https://github.com/sylvainhalle/textidote/issues/200.
+            source)
+  :error-patterns ((warning line-start (file-name)
+                            "(L" line "C" column "-" (or (seq "L" end-line "C" end-column) "?") "): "
+                            (message (one-or-more (not "\""))) (one-or-more not-newline) line-end)))
+(add-to-list 'flycheck-checkers 'tex-textidote)
 ```
 
 ## Rules checked by TeXtidote
