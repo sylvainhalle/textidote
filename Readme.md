@@ -625,6 +625,21 @@ If the `--check` option is used, you can add the `--languagemodel xx` option to 
 - There should be at least N words between two section headings (currently
   N=100). [sh:seclen]
 
+## Hints for using CI (Continuous Integration)
+TeXtidote returns the number of warnings as exit code.
+GitHub and Gitlab exspect a default exit code auf `0` or else the pipeline will fail.
+To circumvent this you have disable this feature.
+
+### Github
+`continue-on-error: true`
+
+See more at [GitHub documentation](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepscontinue-on-error)
+
+### Gitlab
+`allow_failure: true`
+
+See more at [Gitlab documentation](https://docs.gitlab.com/ee/ci/yaml/#allow_failure)
+
 ## Building TeXtidote
 
 First make sure you have the following installed:
