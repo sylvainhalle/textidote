@@ -61,8 +61,9 @@ TeXtidote is run from the command line. The TeXtidote repository contains a
 sample LaTeX file called
 [example.tex](https://raw.githubusercontent.com/sylvainhalle/textidote/master/example.tex).
 Download this file and save it to the folder where TeXtidote resides. You then
-have the choice of producing two types of "reports" on the contents of your
-file: an "HTML" report (viewable in a web browser) and a "console" report.
+have the choice of producing three types of "reports" on the contents of your
+file: an "HTML" report (viewable in a web browser), a "console" report 
+(viewable in a terminal) and a "single-line" report (typically destined to be consumed by other scripts, see below).
 
 ### HTML report
 
@@ -214,6 +215,14 @@ the console:
 ```
 Found local Aspell dictionary
 ```
+
+### Analyzing a file from the clipboard
+
+If you omit a filename, TeXtidote analyzes the standard input. You can use this to copy a piece of code to the clipboard and analyze it without the need to save it as a file first. The procedure depends on your operating system.
+
+- In Linux, you can copy text and pipe it to TeXtidote using [xclip](https://manpages.org/xclip): `xclip -o | textidote [options...]`.
+- In Windows' PowerShell, the same can be done with [GetClipboard](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/get-clipboard): `GetClipboard | textidote [options...]`
+- In MacOS X, the same can be done with [pbpaste](https://ss64.com/osx/pbpaste.html): `pbpaste | textidote [options...]`
 
 ### Ignoring rules
 
