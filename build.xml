@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
     AntRun, a general-purpose Ant build script
-    Copyright (C) 2015-2021  Sylvain Hallé
+    Copyright (C) 2015-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,11 +22,18 @@
   basedir="."
   xmlns:jacoco="antlib:org.jacoco.ant">
   
+  <!-- The version of Ant -->
+  <antversion property="antversion.running" />
+  
   <!-- The build script's version number. Do not edit! -->
-  <property name="antrun.version" value="1.6.1"/>
+  <property name="antrun.version" value="1.10.1"/>
   
   <!-- Load project properties from XML file -->
   <xmlproperty file="config.xml"/>
+  
+  <!-- Versions of various dependencies -->
+  <property name="versions.jacoco" value="0.8.8"/>
+  <property name="versions.junit" value="1.9.2"/>
   
   <!--
     Default values. Note that Ant's properties cannot be overwritten once
@@ -41,7 +48,7 @@
   <property name="build.version" value="1.0"/>
   
   <!-- The target JDK version for the build -->
-  <property name="build.targetjdk" value="1.6"/>
+  <property name="build.targetjdk" value="11"/>
   
   <!-- The folder where libraries (ant-contrib, etc.) will be downloaded
        if necessary -->
@@ -66,10 +73,10 @@
   <property name="build.docdir" value="doc"/>
   
   <!-- The folder where the jUnit test reports should go -->
-  <property name="test.reportdir" value="tests/junit"/>
+  <property name="build.report.junitdir" value="tests/junit"/>
   
-    <!-- The folder where the coverage test reports should go -->
-  <property name="coverage.reportdir" value="tests/coverage"/>
+  <!-- The folder where the coverage test reports should go -->
+  <property name="build.report.jacocodir" value="tests/coverage"/>
   
   <!-- The project's main class. This is used for the generation of the
        runnable JAR file in the "jar" target -->
@@ -80,7 +87,7 @@
   <property name="build.debug" value="true"/>
   
   <!-- Target jar file -->
-  <property name="build.jar.filename" value="AntRun.jar"/>
+  <property name="build.jar.filename" value="antrun"/>
   
   <!-- Generate a jar with the documentation -->
   <property name="build.jar.withdoc" value="false"/>
@@ -94,16 +101,11 @@
   <!-- Base name of the jar to produce (used by the "zip" target) -->
   <basename property="build.jar.basename" file="${build.jar.filename}" suffix=".jar"/>
   
-  <!-- The filename pattern to recognize test files -->
-  <property name="build.test.filenamepattern" value="**/*.java"/>
+  <!-- The filename pattern to recognize test source files -->
+  <property name="build.test.filenamepattern.src" value="**/*Test.java"/>
   
-  <!-- Location of the Java boot classpath. If this is not set, the compiler
-       will resort to the default boot classpath. -->
-  <property environment="env"/>
-  <property name="java6.boot.classpath" value="${env.JAVA6_BOOTCLASSES}"/>
-  
-  <!-- The location of rt.jar, if it is there -->
-  <property name="build.rtlocation">rt.jar</property>
+  <!-- The filename pattern to recognize test binary files -->
+  <property name="build.test.filenamepattern.bin" value="**/*Test.class"/>
   
   <!-- Target: initialization
        All other targets should ultimately
@@ -118,12 +120,6 @@
     <!-- Load xmltask -->
     <taskdef name="xmltask" classname="com.oopsconsultancy.xmltask.ant.XmlTask"
       classpath="${build.libdir}/${xmltask.jarname}"/>
-    <!-- Set the extension dir -->
-    <propertyregex property="build.extdir" 
-               input="${java.ext.dirs}" 
-               regexp="[${path.separator}]([^${path.separator}]+)$" 
-               select="\1"/>
-    <echo level="info">Your extension folder is ${build.extdir}</echo>
     <!-- Create depdir -->
     <mkdir dir="${build.depdir}"/>
     <!-- Create a global classpath that other tasks will refer to -->
@@ -152,24 +148,6 @@
     <mkdir dir="${build.docdir}"/>
     <mkdir dir="${build.docdir}/doc-files"/>
   </target>
-
-  <!-- Check if a local rt.jar is present. If so, it will override the
-       default rt.jar present in the system. The "compile" task should
-       depend on this. -->
-  <target name="check-rt" depends="init">
-    <available file="${build.rtlocation}" property="localrt.present"/>
-    <if>
-      <available file="${build.rtlocation}"/>
-      <then>
-        <echo message="Local bootstrap JAR is present"/>
-      </then>
-      <else>
-        <echo message="Local bootstrap JAR is not present"/>
-      </else>
-    </if>
-    <var name="java6.boot.classpath" unset="true"/>
-    <property name="java6.boot.classpath" value="${build.rtlocation}"/>
-  </target>
   
   <!-- Target: zip
        Zips the jar
@@ -189,24 +167,18 @@
   <!-- Target: compile
        Compiles the main project
   -->
-  <target name="compile" depends="init,junit,check-rt,download-deps" description="Compile the sources">
+  <target name="compile" depends="init,junit,download-deps" description="Compile the sources">
     <mkdir dir="${build.bindir}"/>
     <javac
-      target="${build.targetjdk}" source="${build.targetjdk}"
-      bootclasspath="${java6.boot.classpath}"
+      release="${build.targetjdk}"
       srcdir="${build.srcdir}"
       destdir="${build.bindir}"
       debug="${build.debug}"
-      includeantruntime="false"
-      encoding="utf-8"
-    >
+      includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
     <copy todir="${build.bindir}" includeemptydirs="false">
-      <fileset dir="${build.srcdir}">
-        <exclude name="**/*.java"/>
-        <exclude name="**/doc-files/**"/>
-      </fileset>
+      <fileset dir="${build.srcdir}" excludes="**/*.java,doc-files/**/*"/>
     </copy>
   </target>
   
@@ -216,16 +188,15 @@
   <target name="compile-tests" depends="init,compile,junit" description="Compile the test sources">
     <mkdir dir="${build.test.bindir}"/>
     <javac
-      target="1.6" source="1.6"
-      bootclasspath="${java6.boot.classpath}"
+      release="${build.targetjdk}"
       srcdir="${build.test.srcdir}"
       destdir="${build.test.bindir}"
+      debug="${build.debug}"
       includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
-    <copy todir="${build.test.bindir}" includeemptydirs="false">
-      <fileset dir="${build.test.srcdir}" excludes="**/*.java"/>
-      <fileset dir="${build.test.srcdir}" excludes="**/doc-files/*.*"/>
+    <copy todir="${build.test.bindir}" includeemptydirs="false">  
+      <fileset dir="${build.test.srcdir}" excludes="**/*.java,doc-files/**/*"/>
     </copy>
   </target>
   
@@ -249,7 +220,7 @@
              windowtitle="${build.name} Documentation">
       <doctitle><![CDATA[<h1>]]>${build.name}<![CDATA[ Documentation</h1>]]></doctitle>
       <bottom><![CDATA[<i>Copyright&nbsp;&#169; ]]>${build.author}<![CDATA[. All Rights Reserved.</i>]]></bottom>
-      <link href="http://docs.oracle.com/javase/6/docs/api/"/>
+      <link href="http://docs.oracle.com/javase/8/docs/api/"/>
       <classpath refid="build.classpath"/>
     </javadoc>
     <if>
@@ -263,13 +234,14 @@
   </target>
   
   <!-- Target: jar
-       Generates a JAR file with the compiled files and javadoc
+       Generates three JAR files with with the compiled files, source files and
+       Javadoc
   -->
-  <target name="jar" depends="compile" description="Create the runnable JAR">
-      <tstamp>
-         <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-      </tstamp>
-      <jar destfile="${build.jar.filename}" filesetmanifest="skip">
+  <target name="jar" depends="compile,javadoc" description="Create the runnable JAR">
+    <tstamp>
+       <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+    </tstamp>
+    <jar destfile="${build.jar.filename}-${build.version}.jar" filesetmanifest="skip">
 	  <manifest>
 	      <attribute name="Main-Class" value="${build.mainclass}"/>
 	      <attribute name="Class-Path" value="."/>
@@ -277,53 +249,134 @@
 	      <attribute name="Built-Date" value="${TODAY}"/>
           <attribute name="Implementation-Version" value="${build.version}"/>
 	  </manifest>
-	  <fileset dir="${build.bindir}"/>
+	  <fileset dir="${build.bindir}">
+	    <filename name="**/*"/>
+        <not>
+          <filename name="${build.test.filenamepattern.bin}"/>
+        </not>
+	  </fileset>
 	  <zipgroupfileset dir="${build.depdir}">
 	    <include name="**/*.jar" if="${build.jar.withdeps}"/>
 	  </zipgroupfileset>
+	</jar>
+	<jar destfile="${build.jar.filename}-${build.version}-sources.jar" filesetmanifest="skip">
 	  <fileset dir="${build.srcdir}">
-	     <include name="**/*" if="${build.jar.withsrc}"/>
+	     <include name="**/*"/>
 	  </fileset>
+	</jar>
+	<jar destfile="${build.jar.filename}-${build.version}-javadoc.jar" filesetmanifest="skip">
 	  <fileset dir="${build.docdir}">
-	    <include name="**/*" if="${build.jar.withdoc}"/>
+	    <include name="**/*"/>
 	  </fileset>
-      </jar>
+    </jar>
   </target>
   
   <!-- Target: test
-       Performs tests with jUnit and generates code coverage report
-       with JaCoCo
+       Performs tests with jUnit
   -->
-  <target name="test" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests and generate coverage report">
-    <mkdir dir="${test.reportdir}"/>
-    <mkdir dir="${coverage.reportdir}"/>
+  <target name="test" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests">
+    <!-- JaCoCo coverage srequires Ant 1.10.6 -->
+    <fail message="Ant 1.10.6+ is required!">
+      <condition><not><antversion atleast="1.10.6"/></not></condition>
+    </fail>
+    <mkdir dir="${basedir}/${build.report.junitdir}"/>
+    <mkdir dir="${build.report.jacocodir}"/>
+    <!-- Defines junitlauncher as the task from the local JAR file. This
+         overcomes a bug in some Debian distributions that are missing this file
+         in the ant-optional package. -->
+    <taskdef name="junitlauncher" classname="org.apache.tools.ant.taskdefs.optional.junitlauncher.confined.JUnitLauncherTask"
+      classpath="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/>
+    <!-- Load JaCoCo -->
     <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
       <classpath path="${build.libdir}/jacocoant.jar"/>
     </taskdef>
-    <jacoco:coverage destfile="${test.reportdir}/jacoco.exec">
-      <junit printsummary="yes" haltonfailure="false" fork="true"
-        failureproperty="test.failed">
-        <classpath refid="build.test.classpath"/>
-        <formatter type="brief" usefile="false"/>
-        <formatter type="xml"/>
-        <batchtest fork="yes" todir="${test.reportdir}">
-          <fileset dir="${build.test.srcdir}">
-            <include name="${build.test.filenamepattern}"/>
-          </fileset>
-        </batchtest>
-      </junit>
-    </jacoco:coverage>
-    <!-- jUnit report -->
-    <junitreport todir="${test.reportdir}">
-        <fileset dir="${test.reportdir}">
+    <jacoco:agent property="jacocoagent" destfile="${build.report.jacocodir}/jacoco.exec" />
+    <junitlauncher printsummary="true" failureProperty="test.failed">
+      <classpath refid="build.test.classpath"/>
+      <testclasses outputdir="${basedir}/${build.report.junitdir}">
+        <fileset dir="${build.test.bindir}">
+          <include name="${build.test.filenamepattern.bin}"/>
+        </fileset>
+        <listener type="legacy-xml" sendSysErr="true" sendSysOut="true"/>
+        <fork>
+          <jvmarg value="${jacocoagent}"/>
+        </fork>
+      </testclasses>
+    </junitlauncher>
+    <fail if="test.failed"/>
+  </target>
+  
+  <!-- Target: test-nocov
+       Performs tests with jUnit, without coverage reports. This target is
+       identical to test, but does not invoke JaCoCo. It is recommended to
+       use only on versions of Ant prior to 1.10.6.
+  -->
+  <target name="test-nocov" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests">
+    <mkdir dir="${basedir}/${build.report.junitdir}"/>
+    <mkdir dir="${build.report.jacocodir}"/>
+    <!-- Defines junitlauncher as the task from the local JAR file. This
+         overcomes a bug in some Debian distributions that are missing this file
+         in the ant-optional package. -->
+    <taskdef name="junitlauncher" classname="org.apache.tools.ant.taskdefs.optional.junitlauncher.confined.JUnitLauncherTask"
+      classpath="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/>
+    <junitlauncher printsummary="true" failureProperty="test.failed">
+      <classpath refid="build.test.classpath"/>
+      <testclasses outputdir="${basedir}/${build.report.junitdir}">
+        <fileset dir="${build.test.bindir}">
+          <include name="${build.test.filenamepattern.bin}"/>
+        </fileset>
+        <listener type="legacy-xml" sendSysErr="true" sendSysOut="true"/>
+      </testclasses>
+    </junitlauncher>
+    <fail if="test.failed"/>
+  </target>
+  
+  <!-- Target: report
+       Generates JUnit HTML report and code coverage report with JaCoCo
+  -->
+  <target name="report" depends="junit-report,jacoco-report" description="Generate test and coverage reports">
+    <!-- Just call the dependencies -->
+  </target>
+  
+  <!-- Target: junit-report
+       Generates JUnit HTML report and code coverage report with JaCoCo
+  -->
+  <target name="junit-report" depends="init" description="Generate unit test reports">
+    <!-- Don't run if no report fiels are present -->
+    <fail message="No test report files seem to be present. Run ant test first.">
+      <condition>
+        <resourcecount count="0">
+          <filelist dir="${build.report.junitdir}" files="TEST*.xml"/>
+        </resourcecount>
+      </condition>
+    </fail>
+    <junitreport todir="${basedir}/${build.report.junitdir}">
+        <fileset dir="${basedir}/${build.report.junitdir}">
             <include name="TEST-*.xml"/>
         </fileset>
-        <report format="frames" todir="${test.reportdir}"/>
+        <report format="frames" todir="${basedir}/${build.report.junitdir}"/>
     </junitreport>
-    <!-- JaCoCo report -->
+  </target>
+  
+  <!-- Target: jacoco-report
+       Generates JUnit code coverage report with JaCoCo
+  -->
+  <target name="jacoco-report" depends="init,jacoco" description="Generate coverage reports">
+    <!-- Don't run if no report fiels are present -->
+    <fail message="No test report files seem to be present. Run ant test first.">
+      <condition>
+        <not>
+          <available file="${build.report.jacocodir}/jacoco.exec" type="file"/>
+        </not>
+      </condition>
+    </fail>
+    <!-- Load JaCoCo -->
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+      <classpath path="${build.libdir}/jacocoant.jar"/>
+    </taskdef>
     <jacoco:report>
       <executiondata>
-        <file file="${test.reportdir}/jacoco.exec"/>
+        <file file="${build.report.jacocodir}/jacoco.exec"/>
       </executiondata>
       <structure name="${build.name}">
         <classfiles>
@@ -333,11 +386,9 @@
             <fileset dir="${build.srcdir}"/>
         </sourcefiles>
       </structure>
-      <html destdir="${coverage.reportdir}"/>
-      <xml destfile="${test.reportdir}/report.xml"/>
+      <html destdir="${build.report.jacocodir}"/>
+      <xml destfile="${basedir}/${build.report.junitdir}/report.xml"/>
     </jacoco:report>
-    <!-- Fail if some test has failed -->
-    <fail if="test.failed"/>
   </target>
   
   <!-- Target: all
@@ -346,44 +397,35 @@
   <target name="all" depends="init,test,jar" description="Setup, compile, run tests, create JAR">
   </target>
   
-  <!-- Target: install-deps
-       Copies whatever was fetched by the download-deps task into the
-       system's extension folder. This task should probably be run as
-       administrator to work.
-  -->
-  <target name="install-deps" depends="init">
-    <copy todir="${build.extdir}" includeemptydirs="false">
-      <fileset dir="${build.depdir}" includes="*.jar" />
-    </copy>
-  </target>
-  
   <!-- Target: wipe
        Wipes any temporary files or directories
   -->
-  <target name="wipe" description="Wipes the project: deletes everything but sources">
+  <target name="wipe" depends="clean" description="Wipes the project: deletes everything but sources">
     <delete>
       <fileset dir="." includes="**/*~"/>
     </delete>
     <delete dir="${build.libdir}"/>
-    <delete dir="${build.bindir}"/>
     <delete dir="${build.docdir}"/>
     <delete dir="${build.depdir}"/>
-    <delete dir="${test.reportdir}"/>
-    <delete dir="${coverage.reportdir}"/>
-    <delete file="jacoco.exec"/>
   </target>
   
   <!-- Target: clean
        Deletes compiled files and test reports
   -->
-  <target name="clean" description="Cleans compiled files and test reports">
+  <target name="clean" depends="clean-reports" description="Cleans compiled files and test reports">
     <delete>
       <fileset dir="." includes="**/*~"/>
     </delete>
     <delete dir="${build.bindir}"/>
-    <delete dir="${test.reportdir}"/>
-    <delete dir="${coverage.reportdir}"/>
-    <delete file="jacoco.exec"/>
+    <delete dir="${build.test.bindir}"/>
+  </target>
+  
+  <!-- Target: clean-reports
+       Deletes test reports
+  -->
+  <target name="clean-reports" description="Cleans compiled test reports">
+    <delete dir="${basedir}/${build.report.junitdir}"/>
+    <delete dir="${build.report.jacocodir}"/>
   </target>
   
   <!-- Target: show-properties
@@ -451,28 +493,19 @@
     <get src="http://sylvainhalle.github.io/AntRun/dependencies/xmltask.jar" dest="${build.libdir}/${xmltask.jarname}"/>
   </target>
 
-  <!-- Target: download-rt6
-       Download boot classpath for Java 1.6 and put it in the root folder
-  -->
-  <target name="download-rt6">
-    <get src="http://sylvainhalle.github.io/AntRun/dependencies/1.6.0_45/rt.jar" dest="${build.rtlocation}"/>
-  </target>
-  
   <!-- Target: junit
        Download jUnit JARs if not present, and puts them in the lib folder
   -->
-  <property name="junit.jarname" value="junit-4.13.2.jar"/>
-  <property name="junit.hamcrest" value="hamcrest-core-1.3.jar"/>
   <condition property="junit.absent" value="false" else="true">
     <and>
-      <available file="${build.libdir}/${junit.jarname}"/>
-      <available file="${build.libdir}/${junit.hamcrest}"/>
+      <available file="${build.libdir}/junit-platform-console-standalone-${versions.junit}.jar"/>
+      <!-- <available file="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/> -->
     </and>
   </condition>
   <target name="junit" if="${junit.absent}" description="Install jUnit if not present">
     <mkdir dir="${build.libdir}"/>
-    <get src="https://repo1.maven.org/maven2/junit/junit/4.13.2/${junit.jarname}" dest="${build.libdir}/${junit.jarname}"/>
-    <get src="https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/${junit.hamcrest}" dest="${build.libdir}/${junit.hamcrest}"/>
+    <get src="https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/${versions.junit}/junit-platform-console-standalone-${versions.junit}.jar" dest="${build.libdir}/junit-platform-console-standalone-${versions.junit}.jar"/>
+    <get src="https://repo1.maven.org/maven2/org/apache/ant/ant-junitlauncher/${antversion.running}/ant-junitlauncher-${antversion.running}.jar" dest="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/>
   </target>
   
   <!-- Target: jacoco
@@ -484,7 +517,7 @@
   </condition>
   <target name="jacoco" if="${jacoco.absent}" description="Install JaCoCo if not present">
     <mkdir dir="${build.libdir}"/>
-    <get src="http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.8.6/jacoco-0.8.6.zip" dest="${build.libdir}/jacoco.zip"/>
+    <get src="https://github.com/jacoco/jacoco/releases/download/v${versions.jacoco}/jacoco-${versions.jacoco}.zip" dest="${build.libdir}/jacoco.zip"/>
     <unzip src="${build.libdir}/jacoco.zip" dest="${build.libdir}">
       <patternset>
         <include name="**/*.jar"/>
@@ -590,7 +623,6 @@
               </xmltask>
             </else>
           </if>
-          
         </actions>
       </call>
     </xmltask>
