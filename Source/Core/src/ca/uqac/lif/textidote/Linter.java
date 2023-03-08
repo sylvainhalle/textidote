@@ -191,7 +191,7 @@ public class Linter
 				filterAdvice(out_list, r.evaluate(s_decommented));
 			}
 			AnnotatedString s_detexed = m_cleaner.clean(s);
-			if (s_detexed.toString().isBlank())
+			if (s_detexed.toString().trim().isEmpty())
 			{
 				throw new LinterException("No text to analyze. Did you omit --read-all?");
 			}
