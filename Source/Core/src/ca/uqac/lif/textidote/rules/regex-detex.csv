@@ -6,5 +6,5 @@ sh:d:003	\s\.[^\s\d]				There should not be a space before the period at the end
 sh:d:004	\s,[^\s]				There should not be a space before a comma.
 sh:d:005	\s[;:\?!]				There should not be a space before a punctuation mark. If in your language, typographic rules require a space here, LaTeX takes care of inserting it without your intervention.
 sh:d:007	<<|>>					Use \og{} and \fg{} instead of << and >>.
-sh:d:008	"						Use `` and '' instead of "".
+sh:d:008	(?<!\\)"				Use `` and '' instead of "".
 #sh:d:009	\.\s+[a-z0-9]			A sentence should start with a capital letter.

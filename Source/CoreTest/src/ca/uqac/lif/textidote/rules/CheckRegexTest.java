@@ -305,4 +305,22 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
 	}
+	
+	@Test
+	public void testD008_1()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Hello \"World\""));
+		Rule r = m_detex_rules.get("sh:d:008");
+		List<Advice> ad_list = r.evaluate(in_string);
+		assertEquals(2, ad_list.size());
+	}
+
+	@Test
+	public void testD008_2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("na\\\"{\\i}ve"));
+		Rule r = m_detex_rules.get("sh:d:008");
+		List<Advice> ad_list = r.evaluate(in_string);
+		assertEquals(0, ad_list.size());
+	}
 }
