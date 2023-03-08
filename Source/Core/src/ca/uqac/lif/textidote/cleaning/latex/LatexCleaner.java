@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2021  Sylvain Hallé
+    Copyright (C) 2018-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -338,7 +338,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("~", " ");
 		as_out = as_out.replaceAll("\\\\,", " ");
 		// Dots
-		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "...");
+		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "\u2026");
 		// Commands we can ignore
 		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|texttt|textsc)", "");
 		as_out = as_out.replaceAll("\\\\\\w+\\*{0,1}\\{", "");
