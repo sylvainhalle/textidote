@@ -50,7 +50,7 @@
   
   <!-- Output jar -->
   <jar>
-    <filename>textidote.jar</filename>
+    <filename>textidote</filename>
     <withdoc>false</withdoc>
     <withdeps>true</withdeps>
   </jar>
