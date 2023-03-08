@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import ca.uqac.lif.textidote.Main;
 import ca.uqac.lif.util.NullPrintStream;
 
 public class MainTest

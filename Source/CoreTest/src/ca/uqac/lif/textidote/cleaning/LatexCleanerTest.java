@@ -29,9 +29,6 @@ import org.junit.Test;
 
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
-import ca.uqac.lif.textidote.cleaning.CompositeCleaner;
-import ca.uqac.lif.textidote.cleaning.ReplacementCleaner;
-import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 
 public class LatexCleanerTest

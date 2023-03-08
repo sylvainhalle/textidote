@@ -21,8 +21,6 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import ca.uqac.lif.textidote.as.Position;
-
 public class PositionTest
 {
 	@Test

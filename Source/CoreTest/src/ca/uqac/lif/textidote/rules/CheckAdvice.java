@@ -27,7 +27,6 @@ import org.junit.Test;
 import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.as.AnnotatedString;
-import ca.uqac.lif.textidote.rules.CheckSubsectionSize;
 
 public class CheckAdvice
 {

@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import ca.uqac.lif.textidote.Main;
 import ca.uqac.lif.util.NullPrintStream;
 
 /**

@@ -31,8 +31,6 @@ import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.util.AnsiPrinter;
-import ca.uqac.lif.textidote.render.SinglelineAdviceRenderer;
-
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 
 public class SinglelineAdviceRendererTest {

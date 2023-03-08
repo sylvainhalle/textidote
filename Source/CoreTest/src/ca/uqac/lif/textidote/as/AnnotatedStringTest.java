@@ -7,7 +7,6 @@ import java.util.List;
 import org.junit.Test;
 
 import ca.uqac.lif.petitpoucet.function.strings.Range;
-import ca.uqac.lif.textidote.as.Position;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_S;
 
