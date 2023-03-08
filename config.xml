@@ -30,7 +30,7 @@
   <author>Sylvain Hall&#233;</author>
   
   <!-- The project's version number -->
-  <version>0.8.3</version>
+  <version>0.8.4</version>
   
   <!-- The project's main class -->
   <mainclass>ca.uqac.lif.textidote.Main</mainclass>
