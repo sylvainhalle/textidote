@@ -1,6 +1,6 @@
-FROM openjdk:8 AS build
+FROM openjdk:17 AS build
 
-ADD https://downloads.apache.org//ant/binaries/apache-ant-1.10.11-bin.tar.gz /root/ant.tar.gz
+ADD https://downloads.apache.org//ant/binaries/apache-ant-1.10.13-bin.tar.gz /root/ant.tar.gz
 COPY . /build
 WORKDIR /build
 

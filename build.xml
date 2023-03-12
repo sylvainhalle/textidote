@@ -48,7 +48,7 @@
   <property name="build.version" value="1.0"/>
   
   <!-- The target JDK version for the build -->
-  <property name="build.targetjdk" value="11"/>
+  <property name="build.targetjdk" value="17"/>
   
   <!-- The folder where libraries (ant-contrib, etc.) will be downloaded
        if necessary -->
