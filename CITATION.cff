@@ -5,7 +5,7 @@ authors:
   - family-names: Hallé
     given-names: Sylvain
     orcid: "https://orcid.org/0000-0002-4406-6154"
-version: 0.8.3
+version: 0.9
 date-released: "2021-12-18"
 license: GPL-3.0
 repository-code: "https://github.com/sylvainhalle/textidote"
