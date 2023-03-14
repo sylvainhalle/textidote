@@ -36,7 +36,7 @@ _textidote()
     #
     #  The basic options we'll complete.
     #
-    opts="--check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --remove --replace --type --version"
+    opts="--check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --remove --replace --single-file --type --version"
     
     #
     #  Complete the arguments to some of the basic commands.
@@ -91,7 +91,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --remove --replace --type --version
+	compadd --check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --replace --single-file --type --version
 }
 
 # Register the goto completions.

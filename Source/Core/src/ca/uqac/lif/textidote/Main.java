@@ -202,6 +202,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
 		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
 		cli_parser.addArgument(new Argument().withLongName("encoding").withArgument("x").withDescription("Read files using encoding x"));
+		cli_parser.addArgument(new Argument().withLongName("single-file").withDescription("Don't read sub-files if any"));
 
 		// Check if we are using textidote in a CI tool
 		boolean usingCI = false;
@@ -249,6 +250,7 @@ public class Main
 		}
 		boolean read_all = map.hasOption("read-all");
 		boolean enable_colors = !map.hasOption("no-color");
+		boolean single_file = map.hasOption("single-file");
 		AnsiPrinter stdout = new AnsiPrinter(out);
 		AnsiPrinter stderr = null;
 		if (map.hasOption("version"))
@@ -678,7 +680,11 @@ public class Main
 				List<Advice> all_advice = linter.evaluateAll(last_string);
 				renderer.addAdvice(filename, last_string, all_advice);
 				num_advice += all_advice.size();
-				int added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename);
+				int added = 0;
+				if (!single_file)
+				{
+					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename);
+				}
 				if (added > 0 && cmd_filenames.size() > 1)
 				{
 					// Corner case where file checking does not work
