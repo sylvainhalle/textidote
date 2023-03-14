@@ -33,7 +33,7 @@
   <version>0.9</version>
 
   <!-- The JDK to compile for -->
-  <targetjdk>8</targetjdk>
+  <targetjdk>11</targetjdk>
   
   <!-- The project's main class -->
   <mainclass>ca.uqac.lif.textidote.Main</mainclass>
