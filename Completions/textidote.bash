@@ -36,19 +36,24 @@ _textidote()
     #
     #  The basic options we'll complete.
     #
-    opts="--check --clean --dict --help --ignore --languagemodel --map --no-color --no-config --output --quiet --read-all --remove --remove-macros --replace --type"
+    opts="--check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --remove --replace --type --version"
     
     #
     #  Complete the arguments to some of the basic commands.
     #
     case "${prev}" in
         --check)
-            local langs="de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt pl"
+            local langs="ar de de_AT de_CH de_DE en en_CA en_UK en_US es fr nl pt pl"
             COMPREPLY=( $(compgen -W "${langs}" -- ${cur}) )
             return 0
             ;;
         --dict)
             completeFiles
+            return 0
+            ;;
+        --encoding)
+            local encodings="ASCII cp437 cp1252 UTF8"
+            COMPREPLY=( $(compgen -W "${encodings}" -- ${cur}) )
             return 0
             ;;
         --map)
@@ -86,7 +91,7 @@ _textidote()
 
 _textidote_zsh()
 {
-	compadd --check --clean --dict --help --ignore --languagemodel --map --no-color --no-config --output --quiet --read-all --remove --remove-macros --replace --type
+	compadd --check --ci --clean --dict --encoding --firstlang --help --ignore --languagemodel --map --name --no-color --no-config --output --quiet --read-all --remove --remove --replace --type --version
 }
 
 # Register the goto completions.
