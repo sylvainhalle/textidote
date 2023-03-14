@@ -229,7 +229,12 @@ public class CheckLanguage extends Rule
 			List<String> replacements = rm.getSuggestedReplacements();
 			if (!replacements.isEmpty())
 			{
-				advice_message.append(". Suggestions: ").append(replacements.toString());
+				List<String> suggestions = replacements.stream().limit(5).collect(Collectors.toList());
+				if (replacements.size() > 5)
+				{
+					suggestions.add("...");
+				}
+				advice_message.append(" Suggestions: ").append(suggestions.toString());
 			}
 			advice_message.append(" (").append(rm.getFromPos()).append(")");
 			Advice ad = new Advice(new CheckLanguageSpecific(rm.getRule().getId(), rm.getRule().getDescription()), r, advice_message.toString(), s, line);
