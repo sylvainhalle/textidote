@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2021  Sylvain Hallé
+    Copyright (C) 2018-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -98,6 +98,36 @@ public class Main
 	 * The OS-dependent path separator
 	 */
 	protected static final transient String PATH_SEP = File.separator;
+	
+	/**
+	 * Return code for incorrect command line arguments.
+	 */
+	protected static final transient int ERR_ARGUMENTS = -1;
+	
+	/**
+	 * Return code for error when cleaning file.
+	 */
+	protected static final transient int ERR_CLEANER = -2;
+	
+	/**
+	 * Return code for unknown language code.
+	 */
+	protected static final transient int ERR_UNKNOWN_LANGUAGE = -3;
+	
+	/**
+	 * Return code for error when applying linter.
+	 */
+	protected static final transient int ERR_LINTER = -4;
+	
+	/**
+	 * Return code for multiple roots with sub-files.
+	 */
+	protected static final transient int ERR_SINGLE_ROOT = -5;
+	
+	/**
+	 * Return code when no file was analyzed.
+	 */
+	protected static final transient int ERR_NO_FILE = -6;
 
 	/**
 	 * Main method. This method simply calls the static method
@@ -211,7 +241,7 @@ public class Main
 		if (map == null)
 		{
 			cli_parser.printHelp("Usage: " + app_name + " [options] file1 [file2 ...]", err);
-			return -1;
+			return ERR_ARGUMENTS;
 		}
 		if (map.hasOption("name"))
 		{
@@ -401,7 +431,7 @@ public class Main
 				catch (TextCleanerException e)
 				{
 					stderr.print(e.getMessage());
-					return -1;
+					return ERR_CLEANER;
 				}
 				catch (FileNotFoundException e)
 				{
@@ -640,7 +670,7 @@ public class Main
 					{
 						stderr.println("Unknown language: " + map.getOptionValue("check"));
 						stdout.close();
-						return -1;
+						return ERR_UNKNOWN_LANGUAGE;
 					}
 				}
 				AnnotatedString last_string = AnnotatedString.read(scanner);
@@ -655,13 +685,13 @@ public class Main
 					stderr.println("Warning: one of the input files refers to sub-files, and");
 					stderr.println("more than one file is specified on the command line. When");
 					stderr.println("using sub-files, you should provide a single root document.");
-					return -5;
+					return ERR_SINGLE_ROOT;
 				}
 			}
 			catch (LinterException e)
 			{
 				stderr.print(e.getMessage());
-				return -1;
+				return ERR_LINTER;
 			}
 			catch (FileNotFoundException e)
 			{
@@ -679,7 +709,7 @@ public class Main
 		{
 			// No file was processed
 			stdout.close();
-			return -1;
+			return ERR_NO_FILE;
 		}
 		long end_time = System.currentTimeMillis();
 		stderr.println("Found " + num_advice + " warning(s)");
