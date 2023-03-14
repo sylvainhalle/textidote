@@ -77,7 +77,7 @@
       <name>Language Tool</name>
       <classname>org.languagetool.JLanguageTool</classname>
       <files>
-        <jar>https://github.com/sylvainhalle/languagetool-bundle/releases/download/v5.6/languagetool-bundle-5.6.jar</jar>
+        <jar>https://github.com/sylvainhalle/languagetool-bundle/releases/download/v5.6-patched/languagetool-bundle-5.6-patched.jar</jar>
       </files>
       <bundle>true</bundle>
     </dependency>
