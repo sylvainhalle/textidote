@@ -276,7 +276,7 @@
   -->
   <target name="test" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests">
     <!-- JaCoCo coverage srequires Ant 1.10.6 -->
-    <fail message="Ant 1.10.6+ is required!">
+    <fail message="Ant 1.10.6+ is required. Consider using test-legacy as a workaround.">
       <condition><not><antversion atleast="1.10.6"/></not></condition>
     </fail>
     <mkdir dir="${basedir}/${build.report.junitdir}"/>
@@ -306,28 +306,27 @@
     <fail if="test.failed"/>
   </target>
   
-  <!-- Target: test-nocov
-       Performs tests with jUnit, without coverage reports. This target is
-       identical to test, but does not invoke JaCoCo. It is recommended to
-       use only on versions of Ant prior to 1.10.6.
+  <!-- Target: test-legacy
+       Performs tests with jUnit, but without using the junitlauncher task that
+       is supported only in Ant 1.10.6 onwards. This results in less detailed
+       reports. It is recommended to use only on versions of Ant prior
+       to 1.10.6.
   -->
-  <target name="test-nocov" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests">
+  <target name="test-legacy" depends="junit,jacoco,compile,compile-tests" description="Perform unit tests (legacy)">
     <mkdir dir="${basedir}/${build.report.junitdir}"/>
     <mkdir dir="${build.report.jacocodir}"/>
-    <!-- Defines junitlauncher as the task from the local JAR file. This
-         overcomes a bug in some Debian distributions that are missing this file
-         in the ant-optional package. -->
-    <taskdef name="junitlauncher" classname="org.apache.tools.ant.taskdefs.optional.junitlauncher.confined.JUnitLauncherTask"
-      classpath="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/>
-    <junitlauncher printsummary="true" failureProperty="test.failed">
-      <classpath refid="build.test.classpath"/>
-      <testclasses outputdir="${basedir}/${build.report.junitdir}">
-        <fileset dir="${build.test.bindir}">
-          <include name="${build.test.filenamepattern.bin}"/>
-        </fileset>
-        <listener type="legacy-xml" sendSysErr="true" sendSysOut="true"/>
-      </testclasses>
-    </junitlauncher>
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+      <classpath path="${build.libdir}/jacocoant.jar"/>
+    </taskdef>
+    <!-- Run jUnit. Since the jacoco task does not support the nested
+         junitlauncher task (required by jUnit5), we run jUnit manually and
+         pass the JaCoCo agent as a parameter to the JVM. -->
+    <jacoco:agent property="agentvmparam" enabled="true" destfile="${test.report.jacocodir}/jacoco.exec" />
+    <java classpathref="build.test.classpath" classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
+      <jvmarg value="${agentvmparam}" />
+      <arg line="--scan-classpath" />
+      <arg line="--reports-dir ${test.report.junitdir}" />
+    </java>
     <fail if="test.failed"/>
   </target>
   
@@ -499,7 +498,7 @@
   <condition property="junit.absent" value="false" else="true">
     <and>
       <available file="${build.libdir}/junit-platform-console-standalone-${versions.junit}.jar"/>
-      <!-- <available file="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/> -->
+      <available file="${build.libdir}/ant-junitlauncher-${antversion.running}.jar"/>
     </and>
   </condition>
   <target name="junit" if="${junit.absent}" description="Install jUnit if not present">
