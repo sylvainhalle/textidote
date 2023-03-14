@@ -1,14 +1,14 @@
 # This workflow will build a Java project with Ant
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-ant
 
-# Compiles, tests and generates reports using SonarCloud.
-# This script is only called on push events (not pull requests).
-# There is a separate and slightly different script for pull requets.
+# Same as ant.yml, except that no SonarCloud scan is done since pull requests
+# do not have access to repository secrets (and thus generate an error when
+# attempting to use Sonar).
 
-name: Build
+name: Build (pull request)
 
 on:
-  push:
+  pull_request:
     branches: [ master ]
 
 jobs:
@@ -30,10 +30,3 @@ jobs:
       run: ant -noinput -buildfile build.xml
     - name: Test with JUnit
       run: ant -noinput -buildfile build.xml test
-    - name: Test with JUnit
-      run: ant -noinput -buildfile build.xml report
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
