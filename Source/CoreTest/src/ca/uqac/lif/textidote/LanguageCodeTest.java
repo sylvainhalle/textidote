@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018  Sylvain Hallé
+    Copyright (C) 2018-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,17 +82,18 @@ public class LanguageCodeTest
 		InputStream in = LanguageCodeTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
-		int ret_code = Main.mainLoop(new String[] {"--no-color", "--check", m_languageCode}, in, out, new NullPrintStream());
+		int ret_code = Main.mainLoop(new String[] {"--no-color", "--read-all", "--check", m_languageCode}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
 		if (m_languageCode.compareTo(FAKE_LANG) == 0)
 		{
-			// For an unsupported language, the return code is not 0
-			assertNotEquals(0, ret_code);
+			// For an unsupported language, the return code is negative
+			assertTrue(ret_code == Main.ERR_UNKNOWN_LANGUAGE);
 		}
 		else
 		{
-			assertEquals(0, ret_code);
+			// Otherwise the code is null or positive
+			assertTrue(ret_code >= 0);
 		}
 	}
 }
