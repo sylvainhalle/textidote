@@ -32,8 +32,10 @@
   <!-- The project's version number -->
   <version>0.9</version>
 
-  <!-- The JDK to compile for -->
-  <targetjdk>11</targetjdk>
+  <!-- The JDK to compile for. Note that the current Language Tool bundle
+       contains binary files that are compiled for Java 9, but it it safer
+       to keep TeXtidote's code compliant with version 8. -->
+  <targetjdk>8</targetjdk>
   
   <!-- The project's main class -->
   <mainclass>ca.uqac.lif.textidote.Main</mainclass>
