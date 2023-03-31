@@ -412,35 +412,30 @@ public class AnnotatedString implements ExplanationQueryable
 
 	/**
 	 * Gets the line of a string containing the n-th character.
+	 * @param s The string to search
 	 * @param index The number of the character
 	 * @return The line
 	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
 	 */
-	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException
-	{
+	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException {
+		int currentIndex = 0;
+
 		if (index < 0 || index >= s.length())
 		{
-			throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist");
+			throw new ArrayIndexOutOfBoundsException("Character " + index + " out of bounds");
 		}
-		int pos = 0;
-		while (pos < s.length() && pos < index)
-		{
-			int next_pos = s.indexOf(CRLF, pos);
-			if (next_pos < 0 || next_pos > index)
-			{
-				break;
+
+		for (String line : s.lines().toArray(String[]::new)) {
+			int lineLength = line.length();
+
+			if (currentIndex + lineLength > index) {
+				return new Line(line, currentIndex);
 			}
-			if (next_pos < s.length() && next_pos < index)
-			{
-				pos = next_pos + CRLF_S;
-			}
+
+			currentIndex += lineLength + 1; // add 1 for the newline character(s)
 		}
-		int next_pos = s.indexOf(CRLF, pos);
-		if (next_pos < 0)
-		{
-			return new Line(s.substring(pos), pos);
-		}
-		return new Line(s.substring(pos, next_pos), pos);
+
+		throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist in string");
 	}
 
 	/**
