@@ -418,24 +418,20 @@ public class AnnotatedString implements ExplanationQueryable
 	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
 	 */
 	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException {
-		int currentIndex = 0;
-
-		if (index < 0 || index >= s.length())
-		{
-			throw new ArrayIndexOutOfBoundsException("Character " + index + " out of bounds");
+		if (index < 0 || index >= s.length()) {
+			throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist");
 		}
 
-		for (String line : s.lines().toArray(String[]::new)) {
-			int lineLength = line.length();
-
-			if (currentIndex + lineLength > index) {
-				return new Line(line, currentIndex);
-			}
-
-			currentIndex += lineLength + 1; // add 1 for the newline character(s)
+		int startIndex = 0;
+		int endIndex = s.indexOf(CRLF, startIndex);
+		while (endIndex >= 0 && endIndex < index) {
+			startIndex = endIndex + CRLF_S;
+			endIndex = s.indexOf(CRLF, startIndex);
 		}
+		endIndex = (endIndex >= 0) ? endIndex : s.length();
 
-		throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist in string");
+		String lineText = s.substring(startIndex, endIndex);
+		return new Line(lineText, startIndex);
 	}
 
 	/**
