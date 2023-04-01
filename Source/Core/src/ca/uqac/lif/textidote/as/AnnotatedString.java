@@ -412,35 +412,26 @@ public class AnnotatedString implements ExplanationQueryable
 
 	/**
 	 * Gets the line of a string containing the n-th character.
+	 * @param s The string to search
 	 * @param index The number of the character
 	 * @return The line
 	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
 	 */
-	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException
-	{
-		if (index < 0 || index >= s.length())
-		{
+	/*@ non_null @*/ protected static Line getLineOf(String s, int index) throws ArrayIndexOutOfBoundsException {
+		if (index < 0 || index >= s.length()) {
 			throw new ArrayIndexOutOfBoundsException("Character " + index + " does not exist");
 		}
-		int pos = 0;
-		while (pos < s.length() && pos < index)
-		{
-			int next_pos = s.indexOf(CRLF, pos);
-			if (next_pos < 0 || next_pos > index)
-			{
-				break;
-			}
-			if (next_pos < s.length() && next_pos < index)
-			{
-				pos = next_pos + CRLF_S;
-			}
+
+		int startIndex = 0;
+		int endIndex = s.indexOf(CRLF, startIndex);
+		while (endIndex >= 0 && endIndex < index) {
+			startIndex = endIndex + CRLF_S;
+			endIndex = s.indexOf(CRLF, startIndex);
 		}
-		int next_pos = s.indexOf(CRLF, pos);
-		if (next_pos < 0)
-		{
-			return new Line(s.substring(pos), pos);
-		}
-		return new Line(s.substring(pos, next_pos), pos);
+		endIndex = (endIndex >= 0) ? endIndex : s.length();
+
+		String lineText = s.substring(startIndex, endIndex);
+		return new Line(lineText, startIndex);
 	}
 
 	/**
