@@ -257,6 +257,15 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveGather() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\begin{gather}x=b^2-\\sqrt(2a-b)\\end{gather}")));
+		assertEquals("", as.toString());
+	}
+	
+	@Test
 	public void testRemoveLabels1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();
