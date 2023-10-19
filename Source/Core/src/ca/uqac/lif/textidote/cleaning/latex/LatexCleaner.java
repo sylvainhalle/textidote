@@ -345,9 +345,9 @@ public class LatexCleaner extends TextCleaner
 		// Inline display math with only digits and letters
 		as_out = as_out.replaceAll("\\\\\\(([A-Za-z0-9,\\.]*?)\\\\\\)", "$1");
 		// Otherwise, replace by X
-		as_out = as_out.replaceAll("\\\\\\(.*?\\\\\\)", "X");
+		as_out = as_out.replaceAll("(?s)\\\\\\(.*?\\\\\\)", "X");
 		// Equations are removed
-		as_out = as_out.replaceAll("\\\\\\[.*?\\\\\\]", "");
+		as_out = as_out.replaceAll("(?s)\\\\\\[.*?\\\\\\]", "");
 		// Inline equations in old TeX style ("$foo$")
 		as_out = replaceInlineEquations(as_out);
 		/*as_out = as_out.replaceAll("([^\\\\])\\$.*?[^\\\\]\\$", "$1X");
