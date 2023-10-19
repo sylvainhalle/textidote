@@ -70,6 +70,21 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testIssue215() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.ignoreEnvironment("tikzpicture");
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/issue215.tex"))));
+		// Check that tikzpicture environment is removed
+		assertEquals(as.toString().indexOf("tikzpicture"), -1);
+		assertEquals(as.toString().indexOf("draw"), -1);
+		// Check that all math enviroments are removed
+		assertEquals(as.toString().indexOf("\\["), -1);
+		assertEquals(as.toString().indexOf("\\]"), -1);
+		assertEquals(as.toString().indexOf("x"), -1);
+	}
+	
+	@Test
 	public void testRemoveMarkup4() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner().setIgnoreBeforeDocument(false);
