@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2021  Sylvain Hallé
+    Copyright (C) 2018-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 
 import ca.uqac.lif.dag.NodeConnector;
 import ca.uqac.lif.petitpoucet.ComposedPart;
-import ca.uqac.lif.petitpoucet.NodeFactory;
 import ca.uqac.lif.petitpoucet.Part;
 import ca.uqac.lif.petitpoucet.PartNode;
 import ca.uqac.lif.petitpoucet.Part.Self;
@@ -37,6 +36,7 @@ import ca.uqac.lif.petitpoucet.function.Circuit;
 import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
 import ca.uqac.lif.petitpoucet.function.NthInput;
 import ca.uqac.lif.petitpoucet.function.NthOutput;
+import ca.uqac.lif.petitpoucet.function.RelationNodeFactory;
 import ca.uqac.lif.petitpoucet.function.strings.InsertAt;
 import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.petitpoucet.function.strings.RangeMapping;
@@ -856,11 +856,11 @@ public class AnnotatedString implements ExplanationQueryable
 	@Override
 	public PartNode getExplanation(Part part)
 	{
-		return getExplanation(part, NodeFactory.getFactory());
+		return getExplanation(part, RelationNodeFactory.getFactory());
 	}
 
 	@Override
-	public PartNode getExplanation(Part part, NodeFactory factory)
+	public PartNode getExplanation(Part part, RelationNodeFactory factory)
 	{
 		Part new_p = part; //replaceSelfBy(part, NthOutput.FIRST);
 		if (m_operations.isEmpty())
