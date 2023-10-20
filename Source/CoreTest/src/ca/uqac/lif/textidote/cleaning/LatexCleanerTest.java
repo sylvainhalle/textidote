@@ -82,6 +82,11 @@ public class LatexCleanerTest
 		assertEquals(as.toString().indexOf("\\["), -1);
 		assertEquals(as.toString().indexOf("\\]"), -1);
 		assertEquals(as.toString().indexOf("x"), -1);
+		// Check that normal text is still present
+		assertTrue(as.toString().indexOf("One line math:") != -1);
+		assertTrue(as.toString().indexOf("Tikzpicture:") != -1);
+		assertTrue(as.toString().indexOf("Multi line math:") != -1);
+		assertTrue(as.toString().indexOf("Second one line math:") != -1);
 	}
 	
 	@Test
