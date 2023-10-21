@@ -297,8 +297,7 @@ public class MainTest
 		int ret_code = Main.mainLoop(new String[] {"--read-all", "--replace", replace_path, "--output", "html"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
-		// TODO: Fix non zero return code and uncomment below
-		// assertEquals(0, ret_code);
+		assertEquals(1, ret_code);
 		assertFalse(output.trim().isEmpty());
 		// Check that the no break warning is present
 		assertTrue(output.indexOf("<span class=\"highlight")!=-1);
