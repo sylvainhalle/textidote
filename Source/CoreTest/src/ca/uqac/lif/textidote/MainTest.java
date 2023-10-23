@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
+import java.io.File;
 
 import static org.junit.Assert.*;
 
@@ -283,5 +284,22 @@ public class MainTest
 		assertEquals(2, args.length);
 		assertEquals("--foo", args[0]);
 		assertEquals("Some Thing", args[1]);
+	}
+
+	@Test
+	public void testNoBreakOnHTMLWithDummyReplacement() throws IOException
+	{
+		File replace_file = new File(MainTest.class.getResource("rules/data/replace.txt").getFile());
+		String replace_path = replace_file.getAbsolutePath();
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/test-nobreak.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--read-all", "--replace", replace_path, "--output", "html"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(1, ret_code);
+		assertFalse(output.trim().isEmpty());
+		// Check that the no break warning is present
+		assertTrue(output.indexOf("<span class=\"highlight")!=-1);
 	}
 }
