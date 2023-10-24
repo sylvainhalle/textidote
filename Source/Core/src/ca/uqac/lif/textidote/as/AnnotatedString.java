@@ -79,13 +79,13 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * </pre>
  * (Note that contrary to a classical String, where transformations return a
  * new object, here operations mutate and return the <em>current</em> object.)
- * The call to <tt>println</tt> produces "ld abc", as expected. The call to
+ * The call to <code>println</code> produces "ld abc", as expected. The call to
  * {@link #findOriginalIndex(int) findOriginalIndex} then asks the object to
  * retrace the location, in the initial contents of the string, of the
  * character that is currently at index 1. This is letter "d", and we know
- * from the operations we applied to <tt>s</tt> that this "d" corresponds to
+ * from the operations we applied to <code>s</code> that this "d" corresponds to
  * the end of "world" in the original string (underlined in the code above).
- * Thus, the value of <tt>x</tt> is 10, the index of that letter in the
+ * Thus, the value of <code>x</code> is 10, the index of that letter in the
  * original string.
  * <p>
  * This mechanism can exhibit complex behavior. Consider for example the
@@ -113,7 +113,7 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * <pre>
  * List&lt;Range&gt; ranges = s.invert(8, 24);</pre>
  * 
- * Method <tt>invert</tt> outputs a list of ranges. The previous call asks for
+ * Method <code>invert</code> outputs a list of ranges. The previous call asks for
  * the original character ranges associated to the portion "oranges and apples"
  * of the string. It produces in return these <em>two</em> ranges: [19-25] and
  * [8-13], correctly corresponding to the initial location of "apples" and
@@ -124,12 +124,12 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * A few corner cases must be considered:
  * <ul>
  * <li>For parts of the replacement string that are outside of a capture group
- * (and hence do not come from the input string), the best <tt>invert</tt> can
+ * (and hence do not come from the input string), the best <code>invert</code> can
  * do is to point to the range that matches the pattern as a whole. Therefore,
- * <tt>s.invert(16, 17)</tt> (location of the word "or") outputs the single
+ * <code>s.invert(16, 17)</code> (location of the word "or") outputs the single
  * range [8,25].</li>
- * <li>For an input range <tt>r</tt> where <tt>invert</tt> returns multiple
- * ranges, the call to {@link #findOriginalRange(Range)} on <tt>r</tt> returns
+ * <li>For an input range <code>r</code> where <code>invert</code> returns multiple
+ * ranges, the call to {@link #findOriginalRange(Range)} on <code>r</code> returns
  * the range that includes them all. In the previous example, this would
  * correspond to the range [8,25].</li>
  * <li>Methods {@link #findOriginalIndex(int)} and
@@ -261,8 +261,8 @@ public class AnnotatedString implements ExplanationQueryable
 	/**
 	 * Determines if the string contains a pattern.
 	 * @param pattern The pattern to look for
-	 * @return <tt>true</tt> if the pattern is found in the string,
-	 * <tt>false</tt> otherwise
+	 * @return <code>true</code> if the pattern is found in the string,
+	 * <code>false</code> otherwise
 	 */
 	/*@ pure @*/ public boolean contains(String pattern)
 	{
@@ -299,7 +299,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * occurrence of the specified substring.
 	 * @param s The substring
 	 * @return The position of the starting character of the substring, or
-	 * <tt>null</tt> if the substring is not found
+	 * <code>null</code> if the substring is not found
 	 */
 	/*@ pure null @*/ public Position positionOf(String s)
 	{
@@ -323,7 +323,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * occurrence of the specified substring.
 	 * @param s The substring
 	 * @return The position of the starting character of the substring, or
-	 * <tt>null</tt> if the substring is not found
+	 * <code>null</code> if the substring is not found
 	 */
 	/*@ pure null @*/ public Position lastPositionOf(String s)
 	{
@@ -557,7 +557,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position corresponding to a linear character
 	 * index in the string.
 	 * @param index The character index
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position getPosition(int index)
 	{
@@ -568,7 +568,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position of the <em>original</em> string
 	 * corresponding to a linear character index in the string.
 	 * @param index The character index
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position getOriginalPosition(int index)
 	{
@@ -579,7 +579,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position of the <em>original</em> string
 	 * corresponding to a line/column position in the current string.
 	 * @param p The position
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position findOriginalPosition(Position p)
 	{
@@ -652,7 +652,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * the current string. If this range corresponds to multiple original ranges,
 	 * a single range encompassing all of them is returned.
 	 * @param r The range in the current string
-	 * @return The range in the original string, or <tt>null</tt>
+	 * @return The range in the original string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findOriginalRange(Range r)
@@ -667,7 +667,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * a single range encompassing all of them is returned.
 	 * @param start The start of the range
 	 * @param end The end of the range
-	 * @return The range in the original string, or <tt>null</tt>
+	 * @return The range in the original string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findOriginalRange(int start, int end)
@@ -680,7 +680,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * the original string. If this range corresponds to multiple current ranges,
 	 * a single range encompassing all of them is returned.
 	 * @param r The range in the original string
-	 * @return The range in the current string, or <tt>null</tt>
+	 * @return The range in the current string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findCurrentRange(Range r)
@@ -695,7 +695,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * a single range encompassing all of them is returned.
 	 * @param start The start of the range
 	 * @param end The end of the range
-	 * @return The range in the current string, or <tt>null</tt>
+	 * @return The range in the current string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findCurrentRange(int start, int end)

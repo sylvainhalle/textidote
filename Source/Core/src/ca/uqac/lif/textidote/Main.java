@@ -868,7 +868,7 @@ public class Main
 	 * Reads command-line arguments from a file.
 	 * @param scanner A scanner open on the file to read from
 	 * @return An array of strings, similar to what would be in the
-	 * <tt>args</tt> input of the {@link #main(String[])} method if the
+	 * <code>args</code> input of the {@link #main(String[])} method if the
 	 * arguments were received from the command line.
 	 */
 	/* This method has protected visibility in order to
@@ -922,7 +922,7 @@ public class Main
 	}
 
 	/**
-	 * Adds filenames found in the <tt>input</tt> statements of the current
+	 * Adds filenames found in the <code>input</code> statements of the current
 	 * file to the queue of files to process. A filename is added to the
 	 * queue only if it has not already been processed earlier in the current
 	 * run of the program.

@@ -34,13 +34,13 @@ import ca.uqac.lif.textidote.as.AnnotatedString.Line;
  * <p>
  * For the means of this rule, an absolute path is anything of the form
  * <ul>
- * <li><tt>X:...</tt> (Windows drive letter)</li>
- * <li><tt>/...</tt> (Unix absolute path)</li>
- * <li>anything that contains <tt>..</tt> (moving up in the folder
+ * <li><code>X:...</code> (Windows drive letter)</li>
+ * <li><code>/...</code> (Unix absolute path)</li>
+ * <li>anything that contains <code>..</code> (moving up in the folder
  * structure is not recommended)</li>
  * </ul>
  * Formally, this rule checks that no such path appears in an
- * <tt>\includegraphics</tt> command.
+ * <code>\includegraphics</code> command.
  * 
  * @author Sylvain Hallé
  *

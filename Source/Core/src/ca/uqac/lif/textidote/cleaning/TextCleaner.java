@@ -70,7 +70,7 @@ public abstract class TextCleaner
 	/**
 	 * Returns the list of inner files included in the file to be cleaned.
 	 * Currently, this only has a meaning for cleaners based on LaTeX,
-	 * which has <tt>include</tt> and <tt>input</tt> instructions.
+	 * which has <code>include</code> and <code>input</code> instructions.
 	 * This result will be non-empty only after
 	 * {@link #clean(AnnotatedString) clean()} has been called.
 	 * @return The list of filenames
