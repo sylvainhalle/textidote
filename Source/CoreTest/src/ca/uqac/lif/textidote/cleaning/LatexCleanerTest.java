@@ -389,6 +389,14 @@ public class LatexCleanerTest
 		AnnotatedString as = cleaner.clean(AnnotatedString.read(new Scanner("foo")));
 		assertEquals("bar", as.toString());
 	}
+
+	@Test
+	public void testReplaceWithNothing() throws TextCleanerException
+	{
+		ReplacementCleaner cleaner = ReplacementCleaner.create(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/replace-with-nothing.txt")));
+		AnnotatedString as = cleaner.clean(AnnotatedString.read(new Scanner("this is a text to be replaced")));
+		assertEquals("this is a  to be replaced", as.toString());
+	}
 	
 	@Test
 	public void testReplacementCleaner2() throws TextCleanerException
