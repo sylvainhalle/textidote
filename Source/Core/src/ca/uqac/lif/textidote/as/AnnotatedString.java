@@ -95,8 +95,8 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  *   new AnnotatedString("Compare apples and oranges, kiwis and cherries.")
  *       .replaceAll("(.*?) and (.*?)", "$2 or $1");
  * </pre>
- * The result of this code is the string <tt>"Compare oranges or apples,
- * cherries or kiwis."</tt> The capture groups in the regex pattern are
+ * The result of this code is the string <code>"Compare oranges or apples,
+ * cherries or kiwis."</code> The capture groups in the regex pattern are
  * correctly tracked, so that:
  * 
  * <pre>Range r = s.findOriginalRange(8, 14);</pre>
