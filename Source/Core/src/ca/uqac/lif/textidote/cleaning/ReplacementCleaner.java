@@ -105,7 +105,7 @@ public class ReplacementCleaner extends TextCleaner
 				// Ignore
 				continue;
 			}
-			String[] parts = line.split("\\t", 2);
+			String[] parts = line.split("\\t+", 2);
 			if (parts.length != 2)
 			{
 				// Malformed line: ignore
