@@ -203,6 +203,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
 		cli_parser.addArgument(new Argument().withLongName("encoding").withArgument("x").withDescription("Read files using encoding x"));
 		cli_parser.addArgument(new Argument().withLongName("single-file").withDescription("Don't read sub-files if any"));
+		cli_parser.addArgument(new Argument().withLongName("root").withArgument("file").withDescription("Manually set the root of the LaTeX document"));
 
 		// Check if we are using textidote in a CI tool
 		boolean usingCI = false;
@@ -683,7 +684,7 @@ public class Main
 				int added = 0;
 				if (!single_file)
 				{
-					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename);
+					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename, map.getOptionValue("root"));
 				}
 				if (added > 0 && cmd_filenames.size() > 1)
 				{
@@ -932,13 +933,18 @@ public class Main
 	 * This object is modified by the current method (new filenames can be
 	 * added to it).
 	 * @param current_filename The name of the file currently being processed
+	 * @param root The file of the root document
 	 * @return The number of new files added to the queue
 	 */
 	protected static int addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames,
-			Queue<String> file_queue, String current_filename)
+			Queue<String> file_queue, String current_filename, /*@ nullable @*/ String root)
 	{
 		int added = 0;
-		File f = new File(current_filename);
+		String parent = root;
+		if (root == null){
+			parent = current_filename;
+		}
+		File f = new File(parent);
 		String parent_path = f.getParent();
 		if (parent_path == null)
 		{

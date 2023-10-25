@@ -22,6 +22,8 @@ import ca.uqac.lif.textidote.as.Match;
 import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -63,6 +65,11 @@ public class LatexCleaner extends TextCleaner
 	 * declarations in a line of markup.
 	 */
 	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
+
+	/**
+	 * A regex pattern matching the root directive.
+	 */
+	protected static final transient Pattern m_rootPattern = Pattern.compile("^%!TEX\\s+root\\s*=\\s*(.*)$");
 
 	/**
 	 * Adds a new environment name to remove when cleaning up
@@ -114,10 +121,11 @@ public class LatexCleaner extends TextCleaner
 		// Reset list of inner files every time we clean
 		m_innerFiles.clear();
 		AnnotatedString new_as = new AnnotatedString(as);
+		String root = parseRoot(new_as);
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
 		new_as = removeMacros(new_as);
-		fetchIncludes(new_as);
+		fetchIncludes(new_as, root);
 		//new_as = removeAllMarkup(new_as);
 		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
@@ -518,12 +526,31 @@ public class LatexCleaner extends TextCleaner
 	}
 
 	/**
+	 * Extracts the location of the root specified by the
+	 * <code>!TEX root</code> directive, if present.
+	 * @param as The contents of the tex file.
+	 * @return The root path.
+	 */
+	/*@ nullable @*/ protected String parseRoot(/*@ non_null @*/ AnnotatedString as)
+	{
+		if(as.lineCount()>0){
+			// !TEX root directive needs to be in the first line
+			Matcher mat = m_rootPattern.matcher(as.getLine(0).toString());
+			if(mat.find()){
+				return mat.group(1).trim();
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Populates a list of <em>non-commented</em> <tt>input</tt> and
 	 * <tt>include</tt> declarations found in the file to be cleaned.
 	 * @param as The contents of the file (where environments and
 	 * comments have already been removed).
+	 * @param root Root location
 	 */
-	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
+	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as, /*@ nullable @*/ String root)
 	{
 		for (Line l : as.getLines())
 		{
@@ -536,7 +563,11 @@ public class LatexCleaner extends TextCleaner
 				{
 					filename += ".tex";
 				}
-				m_innerFiles.add(filename);
+				Path filepath = Paths.get(filename);
+				if(root != null){
+					filepath = Paths.get(root).getParent().resolve(filepath);
+				}
+				m_innerFiles.add(filepath.toString());
 			}
 		}
 	}
