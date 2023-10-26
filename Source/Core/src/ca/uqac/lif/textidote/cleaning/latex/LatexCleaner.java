@@ -155,7 +155,7 @@ public class LatexCleaner extends TextCleaner
 		new_as = removeEnvironments(new_as);
 		new_as = removeMacros(new_as);
 		fetchIncludes(new_as, root);
-		//new_as = removeAllMarkup(new_as);	
+		//new_as = removeAllMarkup(new_as);
 		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
 		return new_as;

@@ -925,7 +925,7 @@ public class Main
 	}
 	
 	/**
-	 * ACalculate the location of the root dir, using the root if is provided.
+	 * Calculate the location of the root dir, using the root if is provided.
 	 * Otherwise just use the current file location.
 	 * @param current_filename The name of the file currently being processed
 	 * @param root The file of the root document
