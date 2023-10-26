@@ -407,7 +407,8 @@ public class Main
 					if (input_type == Linter.Language.LATEX || (filename.compareTo("--") == 0 && input_type == Linter.Language.UNSPECIFIED) || filename.endsWith(".tex"))
 					{
 						// LaTeX file
-						LatexCleaner latex_cleaner = new LatexCleaner();
+						String root_dir = calculateRootDir(filename, map.getOptionValue("root"));
+						LatexCleaner latex_cleaner = new LatexCleaner(root_dir);
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
 						latex_cleaner.ignoreEnvironments(env_blacklist);
 						latex_cleaner.ignoreMacros(mac_blacklist);
@@ -634,7 +635,8 @@ public class Main
 				}
 				else
 				{
-					LatexCleaner latex_cleaner = new LatexCleaner();
+					String root_dir = calculateRootDir(top_level_filename, map.getOptionValue("root"));
+					LatexCleaner latex_cleaner = new LatexCleaner(root_dir);
 					if (cmd_filenames.contains(filename))
 					{
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
@@ -684,7 +686,7 @@ public class Main
 				int added = 0;
 				if (!single_file)
 				{
-					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename, map.getOptionValue("root"));
+					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue);
 				}
 				if (added > 0 && cmd_filenames.size() > 1)
 				{
@@ -921,6 +923,29 @@ public class Main
 		}
 		return out;
 	}
+	
+	/**
+	 * ACalculate the location of the root dir, using the root if is provided.
+	 * Otherwise just use the current file location.
+	 * @param current_filename The name of the file currently being processed
+	 * @param root The file of the root document
+	 * @return The location of the root dir
+	 */
+	protected static String calculateRootDir(String current_filename, /*@ nullable @*/ String root)
+	{
+		if (root == null){
+			root = current_filename;
+		}
+		File f = new File(root);
+		String root_dir = f.getParent();
+		if (root_dir == null)
+		{
+			// This happens if the filename is "--" or the file is in
+			// the current folder
+			root_dir = "";
+		}
+		return root_dir;
+	}
 
 	/**
 	 * Adds filenames found in the <tt>input</tt> statements of the current
@@ -932,38 +957,17 @@ public class Main
 	 * @param file_queue The queue of filenames waiting to be processed.
 	 * This object is modified by the current method (new filenames can be
 	 * added to it).
-	 * @param current_filename The name of the file currently being processed
-	 * @param root The file of the root document
 	 * @return The number of new files added to the queue
 	 */
 	protected static int addInnerFilesToQueue(List<String> inner_files, Set<String> processed_filenames,
-			Queue<String> file_queue, String current_filename, /*@ nullable @*/ String root)
+			Queue<String> file_queue)
 	{
 		int added = 0;
-		String parent = root;
-		if (root == null){
-			parent = current_filename;
-		}
-		File f = new File(parent);
-		String parent_path = f.getParent();
-		if (parent_path == null)
-		{
-			// This happens if the filename is "--" or the file is in
-			// the current folder
-			parent_path = "";
-		}
-		else
-		{
-			if (!parent_path.endsWith(PATH_SEP))
-			{
-				parent_path += PATH_SEP;
-			}
-		}
 		for (String filename : inner_files)
 		{
 			if (!processed_filenames.contains(filename))
 			{
-				file_queue.add(parent_path + filename);
+				file_queue.add(filename);
 				added++;
 			}
 		}
