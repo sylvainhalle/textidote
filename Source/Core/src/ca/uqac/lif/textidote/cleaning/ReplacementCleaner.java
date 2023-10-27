@@ -100,12 +100,12 @@ public class ReplacementCleaner extends TextCleaner
 		while (scanner.hasNextLine())
 		{
 			String line = scanner.nextLine();
-			if (line.startsWith("#") || line.trim().isEmpty())
+			if (line.trim().startsWith("#") || line.trim().isEmpty())
 			{
 				// Ignore
 				continue;
 			}
-			String[] parts = line.split("\\t+");
+			String[] parts = line.split("\\t+", 2);
 			if (parts.length != 2)
 			{
 				// Malformed line: ignore
