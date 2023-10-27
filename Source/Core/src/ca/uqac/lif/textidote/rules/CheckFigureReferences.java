@@ -80,7 +80,7 @@ public class CheckFigureReferences extends Rule
 				{
 					// This figure is missing a label
 					int start_pos = l.getOffset();
-					int end_pos = start_pos + 1;
+					int end_pos = start_pos + line.length();
 					Range r = new Range(start_pos, end_pos);
 					out_list.add(new Advice(this, r, "This figure is missing a label", s, l));	
 				}

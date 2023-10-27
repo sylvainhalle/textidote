@@ -27,6 +27,8 @@ import org.junit.Test;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
+import ca.uqac.lif.textidote.as.Position;
+import ca.uqac.lif.textidote.as.PositionRange;
 
 public class CheckFigureReferencesTest 
 {
@@ -37,6 +39,18 @@ public class CheckFigureReferencesTest
 		Rule r = new CheckFigureReferences();
 		List<Advice> ad_list = r.evaluate(in_string);
 		assertTrue(ad_list.isEmpty());
+	}
+	
+	@Test
+	public void test1Location()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckFigureReferencesTest.class.getResourceAsStream("data/test6.tex")));
+		Rule r = new CheckFigureReferences();
+		List<Advice> ad_list = r.evaluate(in_string);
+		Advice ad = ad_list.get(0);
+		PositionRange range = ad.getPositionRange();
+		assertEquals(new Position(6, 0), range.getStart());
+		assertEquals(new Position(6, 12), range.getEnd());
 	}
 	
 	@Test
