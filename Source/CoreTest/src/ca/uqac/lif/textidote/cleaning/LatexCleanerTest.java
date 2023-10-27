@@ -286,6 +286,24 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveFlalign() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\begin{flalign}x=b^2-\\sqrt(2a-b)\\end{flalign}")));
+		assertEquals("", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMultline() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("test:\n\\begin{multline}x=b^2-\\sqrt(2a-b)\\end{multline}")));
+		assertEquals("test:\n", as.toString());
+	}
+	
+	@Test
 	public void testRemoveLabels1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();
