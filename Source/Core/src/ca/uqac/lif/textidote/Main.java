@@ -736,7 +736,7 @@ public class Main
 	protected static void printGreeting(AnsiPrinter out)
 	{
 		out.println("TeXtidote v" + VERSION_STRING + " - A linter for LaTeX documents and others");
-		out.println("(C) 2018-2021 Sylvain Hallé - All rights reserved");
+		out.println("(C) 2018-2023 Sylvain Hallé - All rights reserved");
 		out.println();
 	}
 
