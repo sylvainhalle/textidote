@@ -122,7 +122,7 @@ public class Linter
 	/**
 	 * Adds a list of rule IDs to ignore
 	 * @param list The list of rule IDs to ignore. IDs can also contain the
-	 * wildcard character <tt>*</tt>; this can be used to ignore multiple
+	 * wildcard character <code>*</code>; this can be used to ignore multiple
 	 * rules at once.
 	 * @return This linter
 	 */
@@ -145,7 +145,7 @@ public class Linter
 	/**
 	 * Gets all the rules whose name matches a pattern.
 	 * @param rule_pattern The pattern. The only special character allowed is
-	 * the wildcard (<tt>*</tt>), which can match zero or more arbitrary
+	 * the wildcard (<code>*</code>), which can match zero or more arbitrary
 	 * characters in the rule's name.
 	 * @return The list of rules matching the pattern
 	 */

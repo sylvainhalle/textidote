@@ -31,7 +31,7 @@ import ca.uqac.lif.textidote.as.Position;
  * Checks that captions end with a period. This rule does not evaluate a
  * regular expression, as the nesting of commands within the caption creates
  * lots of false positives. Rather, it finds an occurrence of
- * <tt>\caption</tt>, and then keeps track of the nesting level of opening
+ * <code>\caption</code>, and then keeps track of the nesting level of opening
  * and closing braces.
  * 
  * @author Sylvain Hallé

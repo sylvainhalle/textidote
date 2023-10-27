@@ -27,8 +27,8 @@ import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Match;
 
 /**
- * Checks that a document does not mix occurrences of <tt>\cite</tt>
- * and <tt>\citep</tt>/<tt>\citet</tt>. * 
+ * Checks that a document does not mix occurrences of <code>\cite</code>
+ * and <code>\citep</code>/<code>\citet</code>. * 
  * @author Sylvain Hallé
  *
  */
