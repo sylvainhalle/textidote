@@ -504,6 +504,27 @@ on, you can drag LaTeX files from your file manager with your mouse and drop
 them on the TeXtidote icon. After the analysis, the report will automatically
 pop up in your web browser. Voilà!
 
+## MacOS Shortcut
+
+On MacOS, first open Automator, select Application, double-click on the 
+`Run Shell Script` item in the library, select to receive input as arguments
+and enter the following:
+```bash
+[ $# -lt 1 ] && echo "At least one file should be provided as input" 1>&2 && exit 1
+dir=$(dirname "$1")
+
+cd "$dir" || (echo "$dir does not exist" 1>&2 && exit 1)
+java -jar /path/to/textidote.jar --check en --output html "$@" > /tmp/textidote.html || true
+
+open /tmp/textidote.html
+```
+
+Remember to modify `/path/to/textidote.jar` to the correct location.
+Finally, go to File->Save to create the shortcut. You can add this application
+to the Dock or the location you prefer. From then on, you can drag LaTeX files
+with your mouse and drop them on the created app. After the analysis, the
+report will automatically pop up in your web browser. Voilà!
+
 ### Tab completions
 
 You can auto-complete the commands you type at the command-line using the TAB
