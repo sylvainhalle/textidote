@@ -26,16 +26,14 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.uqac.lif.dag.NodeConnector;
 import ca.uqac.lif.petitpoucet.ComposedPart;
 import ca.uqac.lif.petitpoucet.Part;
 import ca.uqac.lif.petitpoucet.PartNode;
 import ca.uqac.lif.petitpoucet.Part.Self;
-import ca.uqac.lif.petitpoucet.function.AtomicFunction;
-import ca.uqac.lif.petitpoucet.function.Circuit;
 import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
 import ca.uqac.lif.petitpoucet.function.NthInput;
 import ca.uqac.lif.petitpoucet.function.NthOutput;
+import ca.uqac.lif.petitpoucet.function.RelationNode;
 import ca.uqac.lif.petitpoucet.function.RelationNodeFactory;
 import ca.uqac.lif.petitpoucet.function.strings.InsertAt;
 import ca.uqac.lif.petitpoucet.function.strings.Range;
@@ -171,7 +169,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * A linear sequence of unary functions that have been applied to the string
 	 * since its creation.
 	 */
-	/*@ non_null @*/ protected List<StringMappingFunction> m_operations;
+	/*@ non_null @*/ protected RangeMapping m_mapping;
 
 	/**
 	 * The name of the resource (e.g. filename) this string comes from.
@@ -187,14 +185,14 @@ public class AnnotatedString implements ExplanationQueryable
 		super();
 		m_original = s;
 		m_string = s;
-		m_operations = new ArrayList<StringMappingFunction>();
+		m_mapping = new RangeMapping();
+		m_mapping.add(new Range(0, s.length() - 1), new Range(0, s.length() - 1));
 		m_resourceName = "";
 	}
 
 	/**
-	 * Creates a new annotated string from another annotated string. This has for
-	 * effect of copying the history of operations applied on the original
-	 * string.
+	 * Creates a new annotated string from another annotated string. This has
+	 * for effect of copying the range mapping from the original string.
 	 * @param s The annotated string
 	 */
 	public AnnotatedString(/*@ non_null @*/ AnnotatedString s)
@@ -202,8 +200,7 @@ public class AnnotatedString implements ExplanationQueryable
 		super();
 		m_original = s.m_original;
 		m_string = s.m_string;
-		m_operations = new ArrayList<StringMappingFunction>(s.m_operations.size());
-		m_operations.addAll(s.m_operations);
+		m_mapping = s.m_mapping;
 	}
 
 	/**
@@ -739,17 +736,7 @@ public class AnnotatedString implements ExplanationQueryable
 	/*@ pure non_null @*/ public Map<Range,Range> getMap()
 	{
 		Map<Range,Range> map = new HashMap<Range,Range>();
-		if (m_operations.isEmpty())
-		{
-			map.put(new Range(0, m_string.length() - 1), new Range(0, m_string.length() - 1));
-			return map;
-		}
-		RangeMapping rm = m_operations.get(0).getMapping();
-		for (int i = 0; i < m_operations.size() - 1; i++)
-		{
-			rm = RangeMapping.compose(rm, m_operations.get(i + 1).getMapping());
-		}
-		for (RangePair rp : rm.getPairs())
+		for (RangePair rp : m_mapping.getPairs())
 		{
 			map.put(rp.getFrom(), rp.getTo());
 		}
@@ -844,12 +831,9 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	protected AnnotatedString addOperation(StringMappingFunction r)
 	{
-		m_operations.add(r);
-		if (m_operations.size() > 1)
-		{
-			NodeConnector.connect(m_operations.get(m_operations.size() - 2), 0, r, 0);
-		}
 		m_string = (String) r.evaluate(m_string)[0];
+		RangeMapping map = r.getMapping();
+		m_mapping = RangeMapping.compose(m_mapping, map);
 		return this;
 	}
 
@@ -862,24 +846,30 @@ public class AnnotatedString implements ExplanationQueryable
 	@Override
 	public PartNode getExplanation(Part part, RelationNodeFactory factory)
 	{
-		Part new_p = part; //replaceSelfBy(part, NthOutput.FIRST);
-		if (m_operations.isEmpty())
+		PartNode root = factory.getPartNode(part, this);
+		if (!(part instanceof Range))
 		{
-			return factory.getPartNode(part, this);
+			return root;
 		}
-		AtomicFunction first = m_operations.get(0);
-		Circuit g = new Circuit(1, 1);
-		g.addNodes(first);
-		g.associateInput(0, first.getInputPin(0));
-		AtomicFunction previous = first, current = first;
-		for (int i = 1; i < m_operations.size(); i++)
+		Range r = (Range) part;
+		List<Range> ranges = m_mapping.trackToInput(r);
+		if (ranges.isEmpty())
 		{
-			current = m_operations.get(i);
-			NodeConnector.connect(previous, 0, current, 0);
-			previous = current;
+			root.addChild(factory.getPartNode(Part.nothing, this));
+			return root;
 		}
-		g.associateOutput(0, current.getOutputPin(0));
-		return g.getExplanation(new_p, factory);
+		if (ranges.size() == 1)
+		{
+			root.addChild(factory.getPartNode(ranges.get(0), this));
+			return root;
+		}
+		RelationNode and = factory.getAndNode();
+		for (Range in_r : ranges)
+		{
+			and.addChild(factory.getPartNode(in_r, this));
+		}
+		root.addChild(and);
+		return root;
 	}
 
 	/**
@@ -890,10 +880,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	/*@ non_null @*/ protected List<Range> trackToInput(/*@ non_null @*/ Range r)
 	{
-		PartNode root = getExplanation(ComposedPart.compose(r, NthOutput.FIRST));
-		RangeFetcher crawler = new RangeFetcher(root);
-		crawler.crawl();
-		List<Range> ranges = crawler.getRanges();
+		List<Range> ranges = m_mapping.trackToInput(r);
 		sortAndMerge(ranges);
 		return ranges;
 	}
@@ -920,10 +907,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	/*@ non_null @*/ protected List<Range> trackToOutput(/*@ non_null @*/ Range r)
 	{
-		PartNode root = getExplanation(ComposedPart.compose(r, NthInput.FIRST));
-		RangeFetcher crawler = new RangeFetcher(root);
-		crawler.crawl();
-		List<Range> ranges = crawler.getRanges();
+		List<Range> ranges = m_mapping.trackToOutput(r);
 		sortAndMerge(ranges);
 		return ranges;
 	}
