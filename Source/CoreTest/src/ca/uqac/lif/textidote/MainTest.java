@@ -302,4 +302,23 @@ public class MainTest
 		// Check that the no break warning is present
 		assertTrue(output.indexOf("<span class=\"highlight")!=-1);
 	}
+
+	@Test
+	public void testBeamerFile() throws IOException
+	{
+		InputStream in = MainTest.class.getResourceAsStream("rules/data/beamer.tex");
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--check", "en", "--no-color", "--output", "singleline"}, in, out, new NullPrintStream());
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		// Check that the correct number of warnings are generated
+		assertEquals(2, ret_code);
+		// Check that the warnings suggest the correct words
+		assertFalse(output.trim().isEmpty());
+		String[] lines = output.split("\n");
+		assertEquals(2, lines.length);
+		assertTrue(lines[0].indexOf("Beneficial")!=-1);
+		assertTrue(lines[1].indexOf("travelling")!=-1);
+	}
 }
