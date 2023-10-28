@@ -290,7 +290,7 @@ public class LatexCleaner extends TextCleaner
 
 	/**
 	 * Removes LaTeX commands from a string
-	 * @param as The string to clean
+	 * @param as_out The string to clean
 	 * @return A string with the environments removed
 	 */
 	protected AnnotatedString removeMarkup(AnnotatedString as_out)

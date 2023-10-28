@@ -82,8 +82,6 @@ public class Advice implements Comparable<Advice>
 	 * @param resource The resource (e.g. filename) this
 	 * advice refers to
 	 * @param line The line of text on which the advice applies
-	 * @param offset The position (in characters from the beginning of the
-	 * text) where this advice starts
 	 */
 	public Advice(/*@ non_null @*/ Rule rule, /*@ non_null @*/ Range range, 
 			/*@ non_null @*/ String message, /*@ non_null @*/ AnnotatedString resource,

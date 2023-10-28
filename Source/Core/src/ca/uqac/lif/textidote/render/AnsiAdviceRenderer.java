@@ -101,7 +101,8 @@ public class AnsiAdviceRenderer extends AdviceRenderer
 	 * the quick brown fox jumps over the lazy dog
 	 *     ^^^^^^^^^^^^^^^
 	 * </pre>
-	 * @param line The line of text
+	 * @param ad Advice to render
+	 * @param l The line of text
 	 * @param range The range to highlight
 	 */
 	protected void renderExcerpt(/*@ non_null @*/ Advice ad, /*@ non_null @*/ Line l, /*@ non_null @*/ Range range)

@@ -76,7 +76,9 @@ public class SinglelineAdviceRenderer extends AdviceRenderer
 	 * Renders a line of text and "highlights" a portion of it. The highlight here
 	 * is represented by printing the text red:
 	 * 
-	 * @param line
+	 * @param as
+	 *          The string that should get highlighted
+	 * @param l
 	 *          The line of text
 	 * @param range
 	 *          The range to highlight
