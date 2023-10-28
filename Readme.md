@@ -289,6 +289,10 @@ file and give you no advice.
 
 TeXtidote also automatically follows sub-files that are embedded from a main document using `\input{filename}` and `\include{filename}` (braces are mandatory). Any such *non-commented* instruction will add the corresponding filename to the running queue. If you want to *exclude* an `\input` from being processed, you must surround the line with `ignore begin`/`end` comments (see below, *Helping TeXtidote*).
 
+TeXtidote takes into account the `%!TEX root = ...` directive for following sub-files. You can also use `--root` argument to specify it separatedly.
+However, if your usecase requires a more complex handling of sub-files you can use many of the available tools to pre-process your project. Some
+suggestions are listed [here](https://tex.stackexchange.com/questions/21838/replace-inputfilex-by-the-content-of-filex-automatically/377404).
+
 ### Removing markup
 
 You can also use TeXtidote just to remove the markup from your original LaTeX

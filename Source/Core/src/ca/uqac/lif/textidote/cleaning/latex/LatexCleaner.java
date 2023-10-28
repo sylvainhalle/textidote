@@ -22,6 +22,8 @@ import ca.uqac.lif.textidote.as.Match;
 import ca.uqac.lif.textidote.as.AnnotatedString.Line;
 import ca.uqac.lif.textidote.cleaning.TextCleaner;
 import ca.uqac.lif.textidote.cleaning.TextCleanerException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -53,6 +55,11 @@ public class LatexCleaner extends TextCleaner
 	/*@ non_null @*/ protected final Set<String> m_macrosToIgnore = new HashSet<String>();
 
 	/**
+	 * The path of the root dir
+	 */
+	protected final Path m_rootDir;
+
+	/**
 	 * A list of <em>non-commented</em> <code>input</code> and <code>include</code>
 	 * declarations found in the file to be cleaned.
 	 */
@@ -63,6 +70,31 @@ public class LatexCleaner extends TextCleaner
 	 * declarations in a line of markup.
 	 */
 	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
+
+	/**
+	 * A regex pattern matching the root directive.
+	 */
+	protected static final transient Pattern m_rootPattern = Pattern.compile("^%!TEX\\s+root\\s*=\\s*(.*)$");
+
+	/**
+	 * Creates a new instance of the cleaner
+	 * @param root_dir Path to the root location
+	 */
+	public LatexCleaner(/*@ non_null @*/ String root_dir)
+	{
+		super();
+		m_rootDir = Paths.get(root_dir);
+	}
+
+	/**
+	 * Creates a new instance of the cleaner
+	 */
+	public LatexCleaner()
+	{
+		super();
+		// Assume root dir is the working directory
+		m_rootDir = Paths.get("");
+	}
 
 	/**
 	 * Adds a new environment name to remove when cleaning up
@@ -114,10 +146,15 @@ public class LatexCleaner extends TextCleaner
 		// Reset list of inner files every time we clean
 		m_innerFiles.clear();
 		AnnotatedString new_as = new AnnotatedString(as);
+		Path root = m_rootDir;
+		String root_directive = parseRoot(new_as);
+		if(root_directive != null){
+			root = root.resolve(Paths.get(root_directive)).getParent();
+		}
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
 		new_as = removeMacros(new_as);
-		fetchIncludes(new_as);
+		fetchIncludes(new_as, root);
 		//new_as = removeAllMarkup(new_as);
 		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
@@ -518,12 +555,31 @@ public class LatexCleaner extends TextCleaner
 	}
 
 	/**
+	 * Extracts the location of the root specified by the
+	 * <code>!TEX root</code> directive, if present.
+	 * @param as The contents of the tex file.
+	 * @return The root path.
+	 */
+	/*@ nullable @*/ protected String parseRoot(/*@ non_null @*/ AnnotatedString as)
+	{
+		if(as.lineCount()>0){
+			// !TEX root directive needs to be in the first line
+			Matcher mat = m_rootPattern.matcher(as.getLine(0).toString());
+			if(mat.find()){
+				return mat.group(1).trim();
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Populates a list of <em>non-commented</em> <code>input</code> and
 	 * <code>include</code> declarations found in the file to be cleaned.
 	 * @param as The contents of the file (where environments and
 	 * comments have already been removed).
+	 * @param root Root location
 	 */
-	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
+	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as, /*@ non_null @*/ Path root)
 	{
 		for (Line l : as.getLines())
 		{
@@ -536,7 +592,8 @@ public class LatexCleaner extends TextCleaner
 				{
 					filename += ".tex";
 				}
-				m_innerFiles.add(filename);
+				Path filepath = root.resolve(Paths.get(filename));
+				m_innerFiles.add(filepath.toString());
 			}
 		}
 	}
