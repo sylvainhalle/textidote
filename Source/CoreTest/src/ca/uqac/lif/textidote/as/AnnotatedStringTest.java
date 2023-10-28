@@ -3,6 +3,8 @@ package ca.uqac.lif.textidote.as;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -213,6 +215,29 @@ public class AnnotatedStringTest
 		List<Range> ranges = as.trackToInput(0, 0);
 		assertEquals(1, ranges.size());
 		assertEquals(new Range(2, 2), ranges.get(0));
+	}
+	
+	@Test
+	public void testRegex1()
+	{
+		AnnotatedString original = AnnotatedString.read(new Scanner("$\\frac{x}{y}$ $x*$"));
+		AnnotatedString replaced = original.replaceAll("\\$.*?\\$", "X");
+		assertEquals("X X", replaced.toString());
+		Range r = replaced.findOriginalRange(new Range(0, original.length() - 1));
+		assertEquals(0, r.getStart());
+		assertEquals(17, r.getEnd());
+	}
+	
+	@Test
+	public void testReplace1()
+	{
+		AnnotatedString original = AnnotatedString.read(new Scanner("$\\frac{x}{y}$ $x*$"));
+		original = original.replaceAll("\\\\frac\\{", "");
+		original = original.replaceAll(Pattern.quote("$x}{y}$"), "X");
+		original = original.replaceAll(Pattern.quote("$x*$"), "X");
+		Range r = original.findOriginalRange(new Range(0, original.length() - 1));
+		assertEquals(0, r.getStart());
+		assertEquals(17, r.getEnd());
 	}
 	
 	/*@Test
