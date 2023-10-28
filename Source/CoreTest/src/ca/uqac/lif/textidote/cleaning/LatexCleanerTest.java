@@ -27,6 +27,7 @@ import java.util.Scanner;
 
 import org.junit.Test;
 
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 import ca.uqac.lif.textidote.as.Position;
 import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
@@ -463,5 +464,17 @@ public class LatexCleanerTest
 		assertEquals(1, inner_files.size());
 		String s_file = inner_files.get(0);
 		assertEquals("foo.tex", s_file);
+	}
+	
+	@Test
+	public void testInlineEquations() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString original = AnnotatedString.read(new Scanner("$\\frac{x}{y}$ $x*$"));
+		AnnotatedString as = detexer.clean(new AnnotatedString(original));
+		assertEquals("X X", as.toString());	
+		Range orig_range = as.findOriginalRange(new Range(0, as.length()-1));
+		assertEquals(new Range(0, original.length()-1), orig_range);
 	}
 }
