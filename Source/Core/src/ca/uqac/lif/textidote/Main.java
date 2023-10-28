@@ -128,6 +128,11 @@ public class Main
 	 * Return code when no file was analyzed.
 	 */
 	protected static final transient int ERR_NO_FILE = -6;
+	
+	/**
+	 * Return code when all analyzed files were empty.
+	 */
+	protected static final transient int ERR_EMPTY_INPUT = -7;
 
 	/**
 	 * Main method. This method simply calls the static method
@@ -576,6 +581,7 @@ public class Main
 		Set<String> processed_filenames = new HashSet<String>();
 		Queue<String> filename_queue = new ArrayDeque<String>(filenames);
 		String top_level_filename = null;
+		boolean empty_input = true;
 		while (!filename_queue.isEmpty())
 		{
 			String filename = filename_queue.remove();
@@ -681,6 +687,7 @@ public class Main
 				renderer.addAdvice(filename, last_string, all_advice);
 				num_advice += all_advice.size();
 				int added = 0;
+				empty_input = false;
 				if (!single_file)
 				{
 					added = addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue, top_level_filename);
@@ -693,6 +700,10 @@ public class Main
 					stderr.println("using sub-files, you should provide a single root document.");
 					return ERR_SINGLE_ROOT;
 				}
+			}
+			catch (EmptyInputException e)
+			{
+				// Do nothing
 			}
 			catch (LinterException e)
 			{
@@ -716,6 +727,11 @@ public class Main
 			// No file was processed
 			stdout.close();
 			return ERR_NO_FILE;
+		}
+		if (empty_input)
+		{
+			stderr.println("No input processed. Did you omit --read-all?");
+			return ERR_EMPTY_INPUT;
 		}
 		long end_time = System.currentTimeMillis();
 		stderr.println("Found " + num_advice + " warning(s)");

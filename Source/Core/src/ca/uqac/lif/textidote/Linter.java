@@ -193,7 +193,7 @@ public class Linter
 			AnnotatedString s_detexed = m_cleaner.clean(new AnnotatedString(s));
 			if (s_detexed.toString().trim().isEmpty())
 			{
-				throw new LinterException("No text to analyze. Did you omit --read-all?");
+				throw new EmptyInputException("No text to analyze. Did you omit --read-all?");
 			}
 			for (Rule r : m_rulesDetexed)
 			{
