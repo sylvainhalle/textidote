@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import ca.uqac.lif.petitpoucet.function.strings.Range;
+import ca.uqac.lif.textidote.as.AnnotatedString.Line;
+
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF;
 import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_S;
 
@@ -204,6 +206,25 @@ public class AnnotatedStringTest
 	{
 		AnnotatedString as = new AnnotatedString("abc" + CRLF + "defghijklmno" + CRLF + "pqrstuvw");
 		assertEquals(3, as.lineCount());
+	}
+	
+	@Test
+	public void testGetLines1()
+	{
+		AnnotatedString as = new AnnotatedString("abc" + CRLF + "defghijklmno" + CRLF + "pqrstuvw");
+		List<Line> lines = as.getLines();
+		{
+			Line l = lines.get(0);
+			assertEquals(0, l.getOffset());
+		}
+		{
+			Line l = lines.get(1);
+			assertEquals(3 + CRLF_S + 1, l.getOffset());
+		}
+		{
+			Line l = lines.get(2);
+			assertEquals(15 + 2 * CRLF_S + 1, l.getOffset());
+		}
 	}
 	
 	@Test

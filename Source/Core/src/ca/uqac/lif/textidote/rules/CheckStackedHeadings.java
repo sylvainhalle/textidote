@@ -64,7 +64,7 @@ public class CheckStackedHeadings extends Rule
 				{
 					int start_pos = l.getOffset() + mat.start(1);
 					int end_pos = l.getOffset() + mat.start(1) + mat.group(1).length();
-					Range r = new Range(start_pos, end_pos);
+					Range r = s.findOriginalRange(start_pos, end_pos);
 					out_list.add(new Advice(CheckStackedHeadingsAdvice.instance, r, "Avoid stacked headings, i.e. consecutive headings without text in between.", s, l));
 				}
 				found_text = false;

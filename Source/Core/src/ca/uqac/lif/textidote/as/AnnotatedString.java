@@ -175,6 +175,13 @@ public class AnnotatedString implements ExplanationQueryable
 	 * The name of the resource (e.g. filename) this string comes from.
 	 */
 	protected String m_resourceName;
+	
+	/**
+	 * The contents of the string broken down into lines. When multiple calls to
+	 * {@link #getLines()} are made without modification to the string, the list of
+	 * pre-computed lines is returned instead of being re-calculated.
+	 */
+	/*@ null @*/ protected List<Line> m_lines;
 
 	/**
 	 * Creates a new annotated string from a plain Java string.
@@ -188,6 +195,7 @@ public class AnnotatedString implements ExplanationQueryable
 		m_mapping = new RangeMapping();
 		m_mapping.add(new Range(0, s.length() - 1), new Range(0, s.length() - 1));
 		m_resourceName = "";
+		m_lines = null;
 	}
 
 	/**
@@ -201,6 +209,7 @@ public class AnnotatedString implements ExplanationQueryable
 		m_original = s.m_original;
 		m_string = s.m_string;
 		m_mapping = s.m_mapping;
+		m_lines = s.m_lines;
 	}
 
 	/**
@@ -437,23 +446,27 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	/*@ pure non_null @*/ public List<Line> getLines()
 	{
-		List<Line> lines = new ArrayList<Line>();
+		if (m_lines != null)
+		{
+			return m_lines;
+		}
+		m_lines = new ArrayList<Line>();
 		int pos = 0;
 		while (pos < m_string.length())
 		{
 			int next_pos = m_string.indexOf(CRLF, pos);
 			if (next_pos < 0)
 			{
-				lines.add(new Line(m_string.substring(pos), pos));
+				m_lines.add(new Line(m_string.substring(pos), pos));
 				break;
 			}
 			if (next_pos < m_string.length())
 			{
-				lines.add(new Line(m_string.substring(pos, next_pos), pos));
-				pos = next_pos + CRLF_S;
+				m_lines.add(new Line(m_string.substring(pos, next_pos), pos));
+				pos = next_pos + CRLF_S + 1;
 			}
 		}
-		return lines;
+		return m_lines;
 	}
 
 	/**
@@ -831,6 +844,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	protected AnnotatedString addOperation(StringMappingFunction r)
 	{
+		m_lines = null;
 		m_string = (String) r.evaluate(m_string)[0];
 		RangeMapping map = r.getMapping();
 		m_mapping = RangeMapping.compose(m_mapping, map);
