@@ -1,6 +1,6 @@
 /*
     TeXtidote, a linter for LaTeX documents
-    Copyright (C) 2018-2021  Sylvain Hallé
+    Copyright (C) 2018-2023  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,17 +26,15 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.uqac.lif.dag.NodeConnector;
 import ca.uqac.lif.petitpoucet.ComposedPart;
-import ca.uqac.lif.petitpoucet.NodeFactory;
 import ca.uqac.lif.petitpoucet.Part;
 import ca.uqac.lif.petitpoucet.PartNode;
 import ca.uqac.lif.petitpoucet.Part.Self;
-import ca.uqac.lif.petitpoucet.function.AtomicFunction;
-import ca.uqac.lif.petitpoucet.function.Circuit;
 import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
 import ca.uqac.lif.petitpoucet.function.NthInput;
 import ca.uqac.lif.petitpoucet.function.NthOutput;
+import ca.uqac.lif.petitpoucet.function.RelationNode;
+import ca.uqac.lif.petitpoucet.function.RelationNodeFactory;
 import ca.uqac.lif.petitpoucet.function.strings.InsertAt;
 import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.petitpoucet.function.strings.RangeMapping;
@@ -79,13 +77,13 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * </pre>
  * (Note that contrary to a classical String, where transformations return a
  * new object, here operations mutate and return the <em>current</em> object.)
- * The call to <tt>println</tt> produces "ld abc", as expected. The call to
+ * The call to <code>println</code> produces "ld abc", as expected. The call to
  * {@link #findOriginalIndex(int) findOriginalIndex} then asks the object to
  * retrace the location, in the initial contents of the string, of the
  * character that is currently at index 1. This is letter "d", and we know
- * from the operations we applied to <tt>s</tt> that this "d" corresponds to
+ * from the operations we applied to <code>s</code> that this "d" corresponds to
  * the end of "world" in the original string (underlined in the code above).
- * Thus, the value of <tt>x</tt> is 10, the index of that letter in the
+ * Thus, the value of <code>x</code> is 10, the index of that letter in the
  * original string.
  * <p>
  * This mechanism can exhibit complex behavior. Consider for example the
@@ -95,8 +93,8 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  *   new AnnotatedString("Compare apples and oranges, kiwis and cherries.")
  *       .replaceAll("(.*?) and (.*?)", "$2 or $1");
  * </pre>
- * The result of this code is the string <tt>"Compare oranges or apples,
- * cherries or kiwis."</tt> The capture groups in the regex pattern are
+ * The result of this code is the string <code>"Compare oranges or apples,
+ * cherries or kiwis."</code> The capture groups in the regex pattern are
  * correctly tracked, so that:
  * 
  * <pre>Range r = s.findOriginalRange(8, 14);</pre>
@@ -113,7 +111,7 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * <pre>
  * List&lt;Range&gt; ranges = s.invert(8, 24);</pre>
  * 
- * Method <tt>invert</tt> outputs a list of ranges. The previous call asks for
+ * Method <code>invert</code> outputs a list of ranges. The previous call asks for
  * the original character ranges associated to the portion "oranges and apples"
  * of the string. It produces in return these <em>two</em> ranges: [19-25] and
  * [8-13], correctly corresponding to the initial location of "apples" and
@@ -124,12 +122,12 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * A few corner cases must be considered:
  * <ul>
  * <li>For parts of the replacement string that are outside of a capture group
- * (and hence do not come from the input string), the best <tt>invert</tt> can
+ * (and hence do not come from the input string), the best <code>invert</code> can
  * do is to point to the range that matches the pattern as a whole. Therefore,
- * <tt>s.invert(16, 17)</tt> (location of the word "or") outputs the single
+ * <code>s.invert(16, 17)</code> (location of the word "or") outputs the single
  * range [8,25].</li>
- * <li>For an input range <tt>r</tt> where <tt>invert</tt> returns multiple
- * ranges, the call to {@link #findOriginalRange(Range)} on <tt>r</tt> returns
+ * <li>For an input range <code>r</code> where <code>invert</code> returns multiple
+ * ranges, the call to {@link #findOriginalRange(Range)} on <code>r</code> returns
  * the range that includes them all. In the previous example, this would
  * correspond to the range [8,25].</li>
  * <li>Methods {@link #findOriginalIndex(int)} and
@@ -171,7 +169,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * A linear sequence of unary functions that have been applied to the string
 	 * since its creation.
 	 */
-	/*@ non_null @*/ protected List<StringMappingFunction> m_operations;
+	/*@ non_null @*/ protected RangeMapping m_mapping;
 
 	/**
 	 * The name of the resource (e.g. filename) this string comes from.
@@ -187,14 +185,14 @@ public class AnnotatedString implements ExplanationQueryable
 		super();
 		m_original = s;
 		m_string = s;
-		m_operations = new ArrayList<StringMappingFunction>();
+		m_mapping = new RangeMapping();
+		m_mapping.add(new Range(0, s.length() - 1), new Range(0, s.length() - 1));
 		m_resourceName = "";
 	}
 
 	/**
-	 * Creates a new annotated string from another annotated string. This has for
-	 * effect of copying the history of operations applied on the original
-	 * string.
+	 * Creates a new annotated string from another annotated string. This has
+	 * for effect of copying the range mapping from the original string.
 	 * @param s The annotated string
 	 */
 	public AnnotatedString(/*@ non_null @*/ AnnotatedString s)
@@ -202,8 +200,7 @@ public class AnnotatedString implements ExplanationQueryable
 		super();
 		m_original = s.m_original;
 		m_string = s.m_string;
-		m_operations = new ArrayList<StringMappingFunction>(s.m_operations.size());
-		m_operations.addAll(s.m_operations);
+		m_mapping = s.m_mapping;
 	}
 
 	/**
@@ -261,8 +258,8 @@ public class AnnotatedString implements ExplanationQueryable
 	/**
 	 * Determines if the string contains a pattern.
 	 * @param pattern The pattern to look for
-	 * @return <tt>true</tt> if the pattern is found in the string,
-	 * <tt>false</tt> otherwise
+	 * @return <code>true</code> if the pattern is found in the string,
+	 * <code>false</code> otherwise
 	 */
 	/*@ pure @*/ public boolean contains(String pattern)
 	{
@@ -299,7 +296,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * occurrence of the specified substring.
 	 * @param s The substring
 	 * @return The position of the starting character of the substring, or
-	 * <tt>null</tt> if the substring is not found
+	 * <code>null</code> if the substring is not found
 	 */
 	/*@ pure null @*/ public Position positionOf(String s)
 	{
@@ -323,7 +320,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * occurrence of the specified substring.
 	 * @param s The substring
 	 * @return The position of the starting character of the substring, or
-	 * <tt>null</tt> if the substring is not found
+	 * <code>null</code> if the substring is not found
 	 */
 	/*@ pure null @*/ public Position lastPositionOf(String s)
 	{
@@ -557,7 +554,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position corresponding to a linear character
 	 * index in the string.
 	 * @param index The character index
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position getPosition(int index)
 	{
@@ -568,7 +565,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position of the <em>original</em> string
 	 * corresponding to a linear character index in the string.
 	 * @param index The character index
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position getOriginalPosition(int index)
 	{
@@ -579,7 +576,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Gets the two-dimensional position of the <em>original</em> string
 	 * corresponding to a line/column position in the current string.
 	 * @param p The position
-	 * @return The position, or <tt>null</tt> if the index is out of bounds
+	 * @return The position, or <code>null</code> if the index is out of bounds
 	 */
 	/*@ pure null @*/ public Position findOriginalPosition(Position p)
 	{
@@ -652,7 +649,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * the current string. If this range corresponds to multiple original ranges,
 	 * a single range encompassing all of them is returned.
 	 * @param r The range in the current string
-	 * @return The range in the original string, or <tt>null</tt>
+	 * @return The range in the original string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findOriginalRange(Range r)
@@ -667,7 +664,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * a single range encompassing all of them is returned.
 	 * @param start The start of the range
 	 * @param end The end of the range
-	 * @return The range in the original string, or <tt>null</tt>
+	 * @return The range in the original string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findOriginalRange(int start, int end)
@@ -680,7 +677,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * the original string. If this range corresponds to multiple current ranges,
 	 * a single range encompassing all of them is returned.
 	 * @param r The range in the original string
-	 * @return The range in the current string, or <tt>null</tt>
+	 * @return The range in the current string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findCurrentRange(Range r)
@@ -695,7 +692,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 * a single range encompassing all of them is returned.
 	 * @param start The start of the range
 	 * @param end The end of the range
-	 * @return The range in the current string, or <tt>null</tt>
+	 * @return The range in the current string, or <code>null</code>
 	 * if no range could be found.
 	 */
 	/*@ pure null @*/ public Range findCurrentRange(int start, int end)
@@ -739,17 +736,7 @@ public class AnnotatedString implements ExplanationQueryable
 	/*@ pure non_null @*/ public Map<Range,Range> getMap()
 	{
 		Map<Range,Range> map = new HashMap<Range,Range>();
-		if (m_operations.isEmpty())
-		{
-			map.put(new Range(0, m_string.length() - 1), new Range(0, m_string.length() - 1));
-			return map;
-		}
-		RangeMapping rm = m_operations.get(0).getMapping();
-		for (int i = 0; i < m_operations.size() - 1; i++)
-		{
-			rm = RangeMapping.compose(rm, m_operations.get(i + 1).getMapping());
-		}
-		for (RangePair rp : rm.getPairs())
+		for (RangePair rp : m_mapping.getPairs())
 		{
 			map.put(rp.getFrom(), rp.getTo());
 		}
@@ -844,42 +831,45 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	protected AnnotatedString addOperation(StringMappingFunction r)
 	{
-		m_operations.add(r);
-		if (m_operations.size() > 1)
-		{
-			NodeConnector.connect(m_operations.get(m_operations.size() - 2), 0, r, 0);
-		}
 		m_string = (String) r.evaluate(m_string)[0];
+		RangeMapping map = r.getMapping();
+		m_mapping = RangeMapping.compose(m_mapping, map);
 		return this;
 	}
 
 	@Override
 	public PartNode getExplanation(Part part)
 	{
-		return getExplanation(part, NodeFactory.getFactory());
+		return getExplanation(part, RelationNodeFactory.getFactory());
 	}
 
 	@Override
-	public PartNode getExplanation(Part part, NodeFactory factory)
+	public PartNode getExplanation(Part part, RelationNodeFactory factory)
 	{
-		Part new_p = part; //replaceSelfBy(part, NthOutput.FIRST);
-		if (m_operations.isEmpty())
+		PartNode root = factory.getPartNode(part, this);
+		if (!(part instanceof Range))
 		{
-			return factory.getPartNode(part, this);
+			return root;
 		}
-		AtomicFunction first = m_operations.get(0);
-		Circuit g = new Circuit(1, 1);
-		g.addNodes(first);
-		g.associateInput(0, first.getInputPin(0));
-		AtomicFunction previous = first, current = first;
-		for (int i = 1; i < m_operations.size(); i++)
+		Range r = (Range) part;
+		List<Range> ranges = m_mapping.trackToInput(r);
+		if (ranges.isEmpty())
 		{
-			current = m_operations.get(i);
-			NodeConnector.connect(previous, 0, current, 0);
-			previous = current;
+			root.addChild(factory.getPartNode(Part.nothing, this));
+			return root;
 		}
-		g.associateOutput(0, current.getOutputPin(0));
-		return g.getExplanation(new_p, factory);
+		if (ranges.size() == 1)
+		{
+			root.addChild(factory.getPartNode(ranges.get(0), this));
+			return root;
+		}
+		RelationNode and = factory.getAndNode();
+		for (Range in_r : ranges)
+		{
+			and.addChild(factory.getPartNode(in_r, this));
+		}
+		root.addChild(and);
+		return root;
 	}
 
 	/**
@@ -890,10 +880,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	/*@ non_null @*/ protected List<Range> trackToInput(/*@ non_null @*/ Range r)
 	{
-		PartNode root = getExplanation(ComposedPart.compose(r, NthOutput.FIRST));
-		RangeFetcher crawler = new RangeFetcher(root);
-		crawler.crawl();
-		List<Range> ranges = crawler.getRanges();
+		List<Range> ranges = m_mapping.trackToInput(r);
 		sortAndMerge(ranges);
 		return ranges;
 	}
@@ -920,10 +907,7 @@ public class AnnotatedString implements ExplanationQueryable
 	 */
 	/*@ non_null @*/ protected List<Range> trackToOutput(/*@ non_null @*/ Range r)
 	{
-		PartNode root = getExplanation(ComposedPart.compose(r, NthInput.FIRST));
-		RangeFetcher crawler = new RangeFetcher(root);
-		crawler.crawl();
-		List<Range> ranges = crawler.getRanges();
+		List<Range> ranges = m_mapping.trackToOutput(r);
 		sortAndMerge(ranges);
 		return ranges;
 	}

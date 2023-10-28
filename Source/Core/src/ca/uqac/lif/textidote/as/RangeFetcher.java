@@ -73,7 +73,7 @@ class RangeFetcher extends Crawler
 	/**
 	 * Determines if a node is a leaf PartNode.
 	 * @param n The node
-	 * @return <tt>true</tt> if n is a part node and a leaf, <tt>false</tt>
+	 * @return <code>true</code> if n is a part node and a leaf, <code>false</code>
 	 * otherwise
 	 */
 	protected static boolean isLeaf(/*@ non_null @*/ Node n)

@@ -34,9 +34,9 @@ import ca.uqac.lif.textidote.as.AnnotatedString.Line;
  * Checks that every figure with a label is mentioned in the text
  * at least once.
  * <p>
- * Formally, this rule checks that for every occurrence of <tt>\label{X}</tt>
- * within a <tt>figure</tt> environment (that is not commented out), there
- * exists a <tt>\ref{X}</tt> somewhere in the text (that is not commented
+ * Formally, this rule checks that for every occurrence of <code>\label{X}</code>
+ * within a <code>figure</code> environment (that is not commented out), there
+ * exists a <code>\ref{X}</code> somewhere in the text (that is not commented
  * out).
  * 
  * @author Sylvain Hallé
@@ -80,7 +80,7 @@ public class CheckFigureReferences extends Rule
 				{
 					// This figure is missing a label
 					int start_pos = l.getOffset();
-					int end_pos = start_pos + 1;
+					int end_pos = start_pos + line.length();
 					Range r = new Range(start_pos, end_pos);
 					out_list.add(new Advice(this, r, "This figure is missing a label", s, l));	
 				}

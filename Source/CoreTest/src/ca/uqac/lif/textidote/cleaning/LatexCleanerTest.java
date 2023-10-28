@@ -286,6 +286,24 @@ public class LatexCleanerTest
 	}
 	
 	@Test
+	public void testRemoveFlalign() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("\\begin{flalign}x=b^2-\\sqrt(2a-b)\\end{flalign}")));
+		assertEquals("", as.toString());
+	}
+	
+	@Test
+	public void testRemoveMultline() throws TextCleanerException
+	{
+		LatexCleaner detexer = new LatexCleaner();
+		detexer.setIgnoreBeforeDocument(false);
+		AnnotatedString as = detexer.clean(AnnotatedString.read(new Scanner("test:\n\\begin{multline}x=b^2-\\sqrt(2a-b)\\end{multline}")));
+		assertEquals("test:\n", as.toString());
+	}
+	
+	@Test
 	public void testRemoveLabels1() throws TextCleanerException
 	{
 		LatexCleaner detexer = new LatexCleaner();
@@ -388,6 +406,14 @@ public class LatexCleanerTest
 		ReplacementCleaner cleaner = ReplacementCleaner.create(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/replacements-1.txt")));
 		AnnotatedString as = cleaner.clean(AnnotatedString.read(new Scanner("foo")));
 		assertEquals("bar", as.toString());
+	}
+
+	@Test
+	public void testReplaceWithNothing() throws TextCleanerException
+	{
+		ReplacementCleaner cleaner = ReplacementCleaner.create(new Scanner(LatexCleanerTest.class.getResourceAsStream("data/replace-with-nothing.txt")));
+		AnnotatedString as = cleaner.clean(AnnotatedString.read(new Scanner("this is a text to be replaced")));
+		assertEquals("this is a  to be replaced", as.toString());
 	}
 	
 	@Test

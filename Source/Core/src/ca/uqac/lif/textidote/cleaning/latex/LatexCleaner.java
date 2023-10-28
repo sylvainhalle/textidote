@@ -40,7 +40,7 @@ public class LatexCleaner extends TextCleaner
 
 	/**
 	 * Whether the detexer will remove all lines before seeing
-	 * <tt>\begin{document}</tt>
+	 * <code>\begin{document}</code>
 	 */
 	protected boolean m_ignoreBeforeDocument = true;
 
@@ -60,13 +60,13 @@ public class LatexCleaner extends TextCleaner
 	protected final Path m_rootDir;
 
 	/**
-	 * A list of <em>non-commented</em> <tt>input</tt> and <tt>include</tt>
+	 * A list of <em>non-commented</em> <code>input</code> and <code>include</code>
 	 * declarations found in the file to be cleaned.
 	 */
 	protected final List<String> m_innerFiles = new ArrayList<String>();
 
 	/**
-	 * A regex pattern matching the <tt>input</tt> and <tt>include</tt>
+	 * A regex pattern matching the <code>input</code> and <code>include</code>
 	 * declarations in a line of markup.
 	 */
 	protected static final transient Pattern m_includePattern = Pattern.compile("^.*\\\\(input|include)\\s*\\{(.*?)\\}.*$");
@@ -244,7 +244,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|displaymath|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather).*"))
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|displaymath|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline).*"))
 		{
 			return true;
 		}
@@ -268,7 +268,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentEnd(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather).*"))
+		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline).*"))
 		{
 			return true;
 		}
@@ -542,7 +542,7 @@ public class LatexCleaner extends TextCleaner
 
 	/**
 	 * Sets whether the detexer will remove all lines before seeing
-	 * <tt>\begin{document}</tt>, without even attempting to interpret
+	 * <code>\begin{document}</code>, without even attempting to interpret
 	 * them
 	 * @param b Set to {@code true} to remove the lines (the default),
 	 * {@code false} otherwise
@@ -573,8 +573,8 @@ public class LatexCleaner extends TextCleaner
 	}
 
 	/**
-	 * Populates a list of <em>non-commented</em> <tt>input</tt> and
-	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * Populates a list of <em>non-commented</em> <code>input</code> and
+	 * <code>include</code> declarations found in the file to be cleaned.
 	 * @param as The contents of the file (where environments and
 	 * comments have already been removed).
 	 * @param root Root location
@@ -599,8 +599,8 @@ public class LatexCleaner extends TextCleaner
 	}
 
 	/**
-	 * Returns the list of <em>non-commented</em> <tt>input</tt> and
-	 * <tt>include</tt> declarations found in the file to be cleaned.
+	 * Returns the list of <em>non-commented</em> <code>input</code> and
+	 * <code>include</code> declarations found in the file to be cleaned.
 	 * This result will be non-empty only after
 	 * {@link #clean(AnnotatedString) clean()} has been called.
 	 * @return The list of filenames
