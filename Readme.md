@@ -740,6 +740,16 @@ If you like TeXtidote, you might also want to look at
 [PaperShell](https://github.com/sylvainhalle/PaperShell), a template
 environment for writing scientific papers in LaTeX.
 
+References to TeXtidote
+-----------------------
+
+Some evidence that TeXtidote is used by actual humans:
+
+- Someone developed an [extension for Vim](https://github.com/PatrBal/vim-textidote)
+- A [demo video](https://www.youtube.com/watch?v=T1lmwYQNnsc) shows how to use it (and I was not involved in this)
+- TeXtidote is part of the formulas in [Homebrew](https://github.com/Homebrew/homebrew-core/blob/aa980d5b5ec08b3c2de62af5962693bfa625e2f4/Formula/textidote.rb)
+- Number of downloads and GitHub stars ;-)
+
 Why is it called TeXtidote?
 ---------------------------
 
