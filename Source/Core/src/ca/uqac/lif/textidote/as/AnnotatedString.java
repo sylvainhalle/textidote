@@ -50,7 +50,7 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * An annotated string is distinct from a regular character {@link String}
  * in a number of aspects.
  * 
- * <h4>Lines</h4>
+ * <h2>Lines</h2>
  * 
  * First, if supports operations addressing characters either in terms of a
  * linear index (offset from the start of the string), or as a line/column
@@ -61,7 +61,7 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * {@link #getLineOf(int) getLineOf} extracts the text line containing a given
  * index or position.
  * 
- * <h4>Character tracking</h4>
+ * <h2>Character tracking</h2>
  * 
  * An annotated string supports typical methods for string manipulation
  * (e.g. {@link #substring(int) substring},
@@ -375,6 +375,7 @@ public class AnnotatedString implements ExplanationQueryable
 
 	/**
 	 * Gets the n-th line of a string.
+	 * @param s The string to get the line from
 	 * @param line_nb The number of the line
 	 * @return The line
 	 * @throws ArrayIndexOutOfBoundsException If the argument is out of bounds
@@ -497,7 +498,7 @@ public class AnnotatedString implements ExplanationQueryable
 	/**
 	 * Gets the linear index in the original string of a given index
 	 * in the current string contents.
-	 * @param p The position
+	 * @param index The position
 	 * @return The index in the original string
 	 */
 	/*@ pure @*/ public int findOriginalIndex(int index)
@@ -747,8 +748,8 @@ public class AnnotatedString implements ExplanationQueryable
 	 * Keeps a substring of the current string contents, defined by a range of
 	 * characters.
 	 * @param start The position of the first character 
-	 * @param end
-	 * @return
+	 * @param end The position of the last character + 1
+	 * @return the substring within this range
 	 */
 	/*@ non_null @*/ public AnnotatedString substring(int start, int end)
 	{
