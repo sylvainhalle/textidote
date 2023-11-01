@@ -412,8 +412,8 @@ public class Main
 					if (input_type == Linter.Language.LATEX || (filename.compareTo("--") == 0 && input_type == Linter.Language.UNSPECIFIED) || filename.endsWith(".tex"))
 					{
 						// LaTeX file
-						String root_dir = calculateRootDir(filename, map.getOptionValue("root"));
-						LatexCleaner latex_cleaner = new LatexCleaner(root_dir);
+						String cur_dir = calculateCurrentDir(filename);
+						LatexCleaner latex_cleaner = new LatexCleaner(cur_dir, map.getOptionValue("root"));
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
 						latex_cleaner.ignoreEnvironments(env_blacklist);
 						latex_cleaner.ignoreMacros(mac_blacklist);
@@ -641,8 +641,8 @@ public class Main
 				}
 				else
 				{
-					String root_dir = calculateRootDir(top_level_filename, map.getOptionValue("root"));
-					LatexCleaner latex_cleaner = new LatexCleaner(root_dir);
+					String cur_dir = calculateCurrentDir(top_level_filename);
+					LatexCleaner latex_cleaner = new LatexCleaner(cur_dir, map.getOptionValue("root"));
 					if (cmd_filenames.contains(filename))
 					{
 						latex_cleaner.setIgnoreBeforeDocument(!read_all);
@@ -941,26 +941,21 @@ public class Main
 	}
 	
 	/**
-	 * Calculate the location of the root dir, using the root if is provided.
-	 * Otherwise just use the current file location.
+	 * Calculate the location of the current directory for a given file.
 	 * @param current_filename The name of the file currently being processed
-	 * @param root The file of the root document
-	 * @return The location of the root dir
+	 * @return The location of the current active directory for this file
 	 */
-	protected static String calculateRootDir(String current_filename, /*@ nullable @*/ String root)
+	protected static String calculateCurrentDir(String current_filename)
 	{
-		if (root == null){
-			root = current_filename;
-		}
-		File f = new File(root);
-		String root_dir = f.getParent();
-		if (root_dir == null)
+		File f = new File(current_filename);
+		String cur_dir = f.getParent();
+		if (cur_dir == null)
 		{
 			// This happens if the filename is "--" or the file is in
 			// the current folder
-			root_dir = "";
+			cur_dir = "";
 		}
-		return root_dir;
+		return cur_dir;
 	}
 
 	/**

@@ -332,7 +332,22 @@ public class MainTest
 		assertTrue(output.indexOf("child section")!=-1);
 		assertTrue(output.indexOf("child sibling section")!=-1);
 	}
-  
+
+	@Test
+	public void testIncludeWithRootBothWays() throws IOException
+	{
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--read-all", "--root", "rules/data/root.tex", "--output", "html", "rules/data/childs/child-section.tex"}, null, out, new NullPrintStream(), MainTest.class);
+		String output = new String(baos.toByteArray());
+		assertNotNull(output);
+		assertEquals(0, ret_code);
+		assertFalse(output.trim().isEmpty());
+		// Check that the desired sections are present
+		assertTrue(output.indexOf("child section")!=-1);
+		assertTrue(output.indexOf("child sibling section")!=-1);
+	}
+
 	@Test
 	public void testBeamerFile() throws IOException
 	{
