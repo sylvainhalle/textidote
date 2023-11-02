@@ -69,7 +69,7 @@ public class MainTest
 	}
 	
 	@Test//(timeout = 2000)
-	public void test10() throws IOException
+	public void testMissingBeginDocumentWithoutReadAll() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/test1.tex");
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -77,7 +77,7 @@ public class MainTest
 		int ret_code = Main.mainLoop(new String[] {"--no-color"}, in, out, new NullPrintStream());
 		String output = new String(baos.toByteArray());
 		assertNotNull(output);
-		assertEquals(-4, ret_code);
+		assertEquals(-7, ret_code);
 	}
 
 	@Test//(timeout = 2000)
@@ -331,8 +331,9 @@ public class MainTest
 		// Check that the desired sections are present
 		assertTrue(output.indexOf("child section")!=-1);
 		assertTrue(output.indexOf("child sibling section")!=-1);
-  }
+	}
   
+	@Test
 	public void testBeamerFile() throws IOException
 	{
 		InputStream in = MainTest.class.getResourceAsStream("rules/data/beamer.tex");
