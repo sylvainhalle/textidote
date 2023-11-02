@@ -464,7 +464,7 @@ public class AnnotatedString implements ExplanationQueryable
 			if (next_pos < m_string.length())
 			{
 				m_lines.add(new Line(m_string.substring(pos, next_pos), pos));
-				pos = next_pos + CRLF_S + 1;
+				pos = next_pos + CRLF_S;
 			}
 		}
 		return m_lines;

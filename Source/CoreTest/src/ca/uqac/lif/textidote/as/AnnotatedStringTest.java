@@ -219,11 +219,11 @@ public class AnnotatedStringTest
 		}
 		{
 			Line l = lines.get(1);
-			assertEquals(3 + CRLF_S + 1, l.getOffset());
+			assertEquals(3 + CRLF_S, l.getOffset());
 		}
 		{
 			Line l = lines.get(2);
-			assertEquals(15 + 2 * CRLF_S + 1, l.getOffset());
+			assertEquals(15 + 2 * CRLF_S, l.getOffset());
 		}
 	}
 	
