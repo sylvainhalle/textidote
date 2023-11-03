@@ -193,7 +193,10 @@ public class AnnotatedString implements ExplanationQueryable
 		m_original = s;
 		m_string = s;
 		m_mapping = new RangeMapping();
-		m_mapping.add(new Range(0, s.length() - 1), new Range(0, s.length() - 1));
+		if(!s.isEmpty())
+		{
+			m_mapping.add(new Range(0, s.length() - 1), new Range(0, s.length() - 1));
+		}
 		m_resourceName = "";
 		m_lines = null;
 	}
@@ -967,7 +970,7 @@ public class AnnotatedString implements ExplanationQueryable
 
 	/**
 	 * Merges all overlapping ranges in a list and sorts the result. For example,
-	 * the list [8,13] [0,3] [4,6] [10,15] would become [0,6] [8,15].
+	 * the list [8,13) [0,3) [4,6) [10,15) would become [0,4) [4,6) [8,15).
 	 * @param ranges The list to process
 	 */
 	protected static void sortAndMerge(List<Range> ranges)

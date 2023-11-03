@@ -28,14 +28,14 @@ import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 
-public class CheckAdvice
+public class CheckAdviceTest
 {
 	@Test
 	public void testToString()
 	{
 		// Simple test to check that the toString method of Advice
 		// produces a non-empty string
-		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckAdvice.class.getResourceAsStream("data/test-subsec-1.tex")));
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckAdviceTest.class.getResourceAsStream("data/test-subsec-1.tex")));
 		CheckSubsectionSize r = new CheckSubsectionSize();
 		r.setMinNumWords(40);
 		List<Advice> ad_list = r.evaluate(in_string);
