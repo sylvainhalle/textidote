@@ -26,11 +26,6 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ca.uqac.lif.petitpoucet.ComposedPart;
-import ca.uqac.lif.petitpoucet.Part;
-import ca.uqac.lif.petitpoucet.PartNode;
-import ca.uqac.lif.petitpoucet.Part.Self;
-import ca.uqac.lif.petitpoucet.function.ExplanationQueryable;
 import ca.uqac.lif.petitpoucet.function.NthInput;
 import ca.uqac.lif.petitpoucet.function.NthOutput;
 import ca.uqac.lif.petitpoucet.function.RelationNode;
@@ -138,7 +133,7 @@ import ca.uqac.lif.petitpoucet.function.strings.Substring;
  * 
  * @author Sylvain Hallé
  */
-public class AnnotatedString implements ExplanationQueryable
+public class AnnotatedString
 {
 	/**
 	 * The OS-dependent new line sequence.
@@ -852,41 +847,6 @@ public class AnnotatedString implements ExplanationQueryable
 		return this;
 	}
 
-	@Override
-	public PartNode getExplanation(Part part)
-	{
-		return getExplanation(part, RelationNodeFactory.getFactory());
-	}
-
-	@Override
-	public PartNode getExplanation(Part part, RelationNodeFactory factory)
-	{
-		PartNode root = factory.getPartNode(part, this);
-		if (!(part instanceof Range))
-		{
-			return root;
-		}
-		Range r = (Range) part;
-		List<Range> ranges = m_mapping.trackToInput(r);
-		if (ranges.isEmpty())
-		{
-			root.addChild(factory.getPartNode(Part.nothing, this));
-			return root;
-		}
-		if (ranges.size() == 1)
-		{
-			root.addChild(factory.getPartNode(ranges.get(0), this));
-			return root;
-		}
-		RelationNode and = factory.getAndNode();
-		for (Range in_r : ranges)
-		{
-			and.addChild(factory.getPartNode(in_r, this));
-		}
-		root.addChild(and);
-		return root;
-	}
-
 	/**
 	 * Finds the ranges of the original string corresponding to a range of
 	 * characters in the current contents of the string.
@@ -967,7 +927,7 @@ public class AnnotatedString implements ExplanationQueryable
 
 	/**
 	 * Merges all overlapping ranges in a list and sorts the result. For example,
-	 * the list [8,13] [0,3] [4,6] [10,15] would become [0,6] [8,15].
+	 * the list [8,13) [0,3) [4,6) [10,15) would become [0,4) [4,6) [8,15).
 	 * @param ranges The list to process
 	 */
 	protected static void sortAndMerge(List<Range> ranges)
@@ -1015,48 +975,6 @@ public class AnnotatedString implements ExplanationQueryable
 			return null;
 		}
 		return new Range(left, right);
-	}
-	
-	/**
-	 * Given an arbitrary designator, replaces the first occurrence of
-	 * {@link NthOutput} by an instance of {@link NthInput} with given index.
-	 * @param from The original part
-	 * @param to The part to replace it with
-	 * @return The new designator. The input object is not modified if it does
-	 * not contain {@code d}
-	 */
-	/*@ non_null @*/ protected static Part replaceSelfBy(/*@ non_null @*/ Part from, Part to)
-	{
-		if (from instanceof Self)
-		{
-			return to;
-		}
-		if (from instanceof ComposedPart)
-		{
-			ComposedPart cd = (ComposedPart) from;
-			List<Part> desigs = new ArrayList<Part>();
-			boolean replaced = false;
-			for (int i = 0 ; i < cd.size(); i++)
-			{
-				Part in_d = cd.get(i);
-				if (in_d instanceof Self && !replaced)
-				{
-					desigs.add(to);
-					replaced = true;
-				}
-				else
-				{
-					desigs.add(in_d);
-				}
-			}
-			if (!replaced)
-			{
-				// Return input object if no replacement was done
-				return from;
-			}
-			return ComposedPart.compose(desigs);
-		}
-		return from;
 	}
 
 	public static class Line
