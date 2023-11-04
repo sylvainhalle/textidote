@@ -84,6 +84,8 @@ public class Match
 	
 	/**
 	 * Gets the capture group with given index 
+	 * group(0) always gives the string matching the whole pattern
+	 * group(1) is the first capture group
 	 * @param index The index of the capture group
 	 * @return The string corresponding to the capture group
 	 */
@@ -98,7 +100,7 @@ public class Match
 	 */
 	public int groupCount()
 	{
-		return m_groups.size();
+		return m_groups.size()-1;
 	}
 	
 	@Override

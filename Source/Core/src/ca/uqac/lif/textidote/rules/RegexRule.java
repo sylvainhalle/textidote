@@ -141,7 +141,7 @@ public class RegexRule extends Rule
 	protected String createMessage(Match match)
 	{
 		String out = m_message;
-		for (int i = 1; i < match.groupCount(); i++)
+		for (int i = 0; i <= match.groupCount(); i++)
 		{
 			String s = match.group(i);
 			if (s != null)
