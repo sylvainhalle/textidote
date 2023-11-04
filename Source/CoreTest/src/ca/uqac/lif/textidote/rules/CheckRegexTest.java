@@ -116,6 +116,16 @@ public class CheckRegexTest
 		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
 	}
+	
+	@Test
+	public void testCmulP2()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner("Antarctica mass change shows clear regional differences between \\gls{eais},\\gls{wais}, and \\gls{ap} \\citep{schroder_four_2019}\\citep{schroder_two_2020}"));
+		Rule r = m_rules.get("sh:c:mulp");
+		List<Advice> ad_list = r.evaluate(in_string);
+		assertEquals("Put all references in a single \\citep command", ad_list.get(0).getMessage());
+		assertEquals(1, ad_list.size());
+	}
 
 	@Test
 	public void test010_1()

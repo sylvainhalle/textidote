@@ -820,7 +820,7 @@ public class AnnotatedString implements ExplanationQueryable
 			return null;
 		}
 		Match m = new Match(mat.group(), mat.start());
-		for (int i = 1 ; i < mat.groupCount(); i++)
+		for (int i = 0 ; i <= mat.groupCount(); i++)
 		{
 			m.addGroup(mat.group(i));
 		}
