@@ -25,6 +25,7 @@ import java.util.Scanner;
 import org.junit.Test;
 
 import ca.uqac.lif.textidote.Advice;
+import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Rule;
 import ca.uqac.lif.textidote.as.AnnotatedString;
 
@@ -56,25 +57,53 @@ public class CheckSubsectionsTest
 		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-3.tex")));
 		Rule r = new CheckSubsections();
 		List<Advice> ad_list = r.evaluate(in_string);
-		assertTrue(containsAdviceWithLabel(ad_list, "sh:secorder"));
+		assertEquals(1, countAdviceWithLabel(ad_list, "sh:secorder"));
 	}
 	
+	@Test
+	public void testSingleSectionUsages()
+	{
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\chapter{Foo}")).isEmpty());
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\section{Foo}")).isEmpty());
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\subsection{Foo}")).isEmpty());
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\subsubsection{Foo}")).isEmpty());
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\paragraph{Foo}")).isEmpty());
+		assertTrue(new CheckSubsections().evaluate(new AnnotatedString("\\part{Foo}")).isEmpty());
+	}
+	
+	@Test
+	public void testExtensiveStressTest()
+	{
+		AnnotatedString in_string = AnnotatedString.read(new Scanner(CheckSubsectionsTest.class.getResourceAsStream("data/test-subsec-stress.tex")));
+		Rule r = new CheckSubsections();
+		List<Advice> ad_list = r.evaluate(in_string);
+		assertEquals(10, countAdviceWithLabel(ad_list, "sh:secskip"));
+		assertEquals(0, countAdviceWithLabel(ad_list, "sh:nsubdiv"));
+		assertEquals(0, countAdviceWithLabel(ad_list, "sh:secorder"));
+	}
+	
+	@Test
+	public void testSectionInfoToString()
+	{
+		assertEquals("\\chapter{} I1-8 (0)", new SectionInfo("chapter", new Range(1, 8)).toString());
+	}
+
 	/**
 	 * Checks if the list of advice contains one with a given label
 	 * @param list The list of advice
 	 * @param The label to look for
-	 * @return {@code true} if the list contains an advice with given label,
-	 * {@code false} otherwise
+	 * @return the number of occurences of the label in the list
 	 */
-	protected static boolean containsAdviceWithLabel(List<Advice> list, String label)
+	protected static int countAdviceWithLabel(List<Advice> list, String label)
 	{
+		int count = 0;
 		for (Advice a : list)
 		{
 			if (a.getRule().getName().compareToIgnoreCase(label) == 0)
 			{
-				return true;
+				count++;
 			}
 		}
-		return false;
+		return count;
 	}
 }

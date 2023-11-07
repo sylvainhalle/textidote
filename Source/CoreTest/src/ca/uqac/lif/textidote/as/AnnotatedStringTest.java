@@ -2,6 +2,8 @@ package ca.uqac.lif.textidote.as;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -16,6 +18,14 @@ import static ca.uqac.lif.textidote.as.AnnotatedString.CRLF_S;
 
 public class AnnotatedStringTest
 {
+	@Test
+	public void testEmpty()
+	{
+		String s = "";
+		AnnotatedString as = new AnnotatedString(s);
+		assertEquals("", as.toString());
+	}
+
 	@Test
 	public void testLinear1()
 	{
@@ -259,6 +269,46 @@ public class AnnotatedStringTest
 		Range r = original.findOriginalRange(new Range(0, original.length() - 1));
 		assertEquals(0, r.getStart());
 		assertEquals(17, r.getEnd());
+	}
+	
+	@Test
+	public void testReplaceSelfBy()
+	{
+		AnnotatedString original = AnnotatedString.read(new Scanner("$\\frac{x}{y}$ $x*$"));
+		original = original.replaceAll("\\\\frac\\{", "");
+		original = original.replaceAll(Pattern.quote("$x}{y}$"), "X");
+		original = original.replaceAll(Pattern.quote("$x*$"), "X");
+		Range r = original.findOriginalRange(new Range(0, original.length() - 1));
+		assertEquals(0, r.getStart());
+		assertEquals(17, r.getEnd());
+	}
+	
+	@Test
+	public void testOverlappingSortAndMerge()
+	{
+		List<Range> ranges = new ArrayList<>(Arrays.asList(new Range(8, 13), new Range(0, 3), new Range(4, 6), new Range(10, 15)));
+		AnnotatedString.sortAndMerge(ranges);
+		System.err.println(ranges);
+		assertEquals(3, ranges.size());
+		assertEquals(new Range(0, 3), ranges.get(0));
+		assertEquals(new Range(4, 6), ranges.get(1));
+		assertEquals(new Range(8, 15), ranges.get(2));
+	}
+	
+	@Test
+	public void testUniteRangesEmpty()
+	{
+		List<Range> ranges = new ArrayList<>();
+		Range result = AnnotatedString.uniteRanges(ranges);
+		assertEquals(null, result);
+	}
+	
+	@Test
+	public void testUniteRangesExample()
+	{
+		List<Range> ranges = new ArrayList<>(Arrays.asList(new Range(8, 13), new Range(0, 3), new Range(4, 6), new Range(10, 15)));
+		Range result = AnnotatedString.uniteRanges(ranges);
+		assertEquals(new Range(0, 15), result);
 	}
 	
 	/*@Test

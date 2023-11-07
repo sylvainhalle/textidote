@@ -59,5 +59,5 @@ public class CheckLanguageTest
 		Rule r = new CheckLanguage(LanguageFactory.getLanguageFromString("en"), dict);
 		List<Advice> ad_list = r.evaluate(in_string);
 		assertEquals(0, ad_list.size());
-	}	
+	}
 }

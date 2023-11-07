@@ -229,7 +229,7 @@ public class Main
 			// the actual command line
 			map = map_cline;
 		}
-		else
+		else if(map_cline != null)
 		{
 			if (map_cline.hasOption("no-config"))
 			{
@@ -338,6 +338,11 @@ public class Main
 			{
 				input_type = Linter.Language.TEXT;
 			}
+			else
+			{
+				stderr.println("Unknown --type \'"+type+"\'.");
+				return ERR_UNKNOWN_LANGUAGE;
+			}
 		}
 		String encoding = "utf-8";
 		if (map.hasOption("encoding"))
@@ -354,10 +359,7 @@ public class Main
 				stderr.println("Invalid encoding: " + encoding);
 				return 9;
 			}
-			if (temp_scanner != null)
-			{
-				temp_scanner.close();
-			}
+			temp_scanner.close();
 		}
 
 		// Only detex input
@@ -371,6 +373,7 @@ public class Main
 				if (!f.exists())
 				{
 					stderr.println("Replacement file " + replacement_filename + " not found");
+					return ERR_ARGUMENTS;
 				}
 				else
 				{
@@ -468,6 +471,7 @@ public class Main
 			if (!f.exists())
 			{
 				stderr.println("Replacement file " + replacement_filename + " not found");
+				return ERR_ARGUMENTS;
 			}
 			else
 			{
@@ -481,12 +485,9 @@ public class Main
 		List<String> dictionary = new ArrayList<String>();
 		String lang_s = "";
 		String firstlang_s = "";
-		if (map.hasOption("check") || map.hasOption("autocheck"))
+		if (map.hasOption("check"))
 		{
-			if (map.hasOption("check"))
-			{
-				lang_s = map.getOptionValue("check");
-			}
+			lang_s = map.getOptionValue("check");
 			// Try to read dictionary from an Aspell file
 			try
 			{
@@ -523,6 +524,7 @@ public class Main
 				catch (FileNotFoundException e)
 				{
 					stderr.println("Dictionary not found: " + map.getOptionValue("dict"));
+					return ERR_ARGUMENTS;
 				}
 			}
 		}
@@ -557,6 +559,11 @@ public class Main
 			{
 				stdout.disableColors();
 				renderer = new JsonAdviceRenderer(stdout, lang_s);
+			}
+			else
+			{
+				stderr.println("Warning: Unknown output method \'"+output_method+"\'");
+				return ERR_ARGUMENTS;
 			}
 		}
 		else
@@ -639,7 +646,7 @@ public class Main
 					populateMarkdownRules(linter);
 					linter.addToBlacklist(rule_blacklist);
 				}
-				else
+				else if(input_type != Linter.Language.TEXT)
 				{
 					String root_dir = calculateRootDir(top_level_filename, map.getOptionValue("root"));
 					LatexCleaner latex_cleaner = new LatexCleaner(root_dir);
@@ -656,6 +663,10 @@ public class Main
 					c_cleaner.add(latex_cleaner);
 					linter = new Linter(c_cleaner);
 					populateLatexRules(linter);
+					linter.addToBlacklist(rule_blacklist);
+				}
+				else{
+					linter = new Linter(c_cleaner);
 					linter.addToBlacklist(rule_blacklist);
 				}
 				if (!lang_s.isEmpty())
@@ -784,23 +795,6 @@ public class Main
 	protected static void populateMarkdownRules(Linter linter)
 	{
 		// Do nothing
-	}
-
-	/**
-	 * Applies the linter on a document.
-	 * @param scanner A scanner open on the document to read
-	 * @param filename The name of the file for this document
-	 * @param linter The linter to apply on the document
-	 * @return A list of advice. Any new advice produced by the
-	 * execution of the linter on the document will be added to this list.
-	 * @throws LinterException Thrown if reading the file produces
-	 * an exception
-	 */
-	protected static List<Advice> processDocument(Scanner scanner, String filename, Linter linter) throws LinterException
-	{
-		AnnotatedString last_string = AnnotatedString.read(scanner);
-		last_string.setResourceName(filename);
-		return linter.evaluateAll(last_string);
 	}
 
 	/**
