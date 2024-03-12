@@ -101,7 +101,7 @@ public class CheckFigureReferences extends Rule
 		// Step 2: find references to these figures
 		for (String fig_name : figure_defs.keySet())
 		{
-			if (s.find("\\\\(C|c){0,1}ref\\s*\\{.*" + fig_name + ".*?\\}") == null)
+			if (s.find("\\\\(C|c|auto){0,1}ref\\s*\\{.*" + fig_name + ".*?\\}") == null)
 			{
 				// This figure is not referenced
 				int start_pos = figure_defs.get(fig_name);
