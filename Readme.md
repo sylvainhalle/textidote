@@ -272,7 +272,11 @@ fomatted as follows:
 find	replace
 foo		bar
 # Patterns can also be regular expressions
-abc\d+[^x]	123
+abc\d+[^x]		123
+"---			---
+"s				ß
+\\myellipsis	\\ldots
+\\[Bb]igm		\|
 ```
 
 Replacement rules are applied line-wise, so multiline replacements are not
