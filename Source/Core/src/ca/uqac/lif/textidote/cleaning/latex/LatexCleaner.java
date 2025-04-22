@@ -244,7 +244,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentStart(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|displaymath|displayquote|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline).*"))
+		if (line.matches(".*\\\\begin\\s*\\{\\s*(align|displaymath|displayquote|equation|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline|algorithm).*"))
 		{
 			return true;
 		}
@@ -268,7 +268,7 @@ public class LatexCleaner extends TextCleaner
 	 */
 	protected boolean isEnvironmentEnd(/*@ non_null @*/ String line)
 	{
-		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|displaymath|displayquote|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline).*"))
+		if (line.matches(".*\\\\end\\s*\\{\\s*(align|equation|displaymath|displayquote|table|tabular|verbatim|lstlisting|IEEEkeywords|figure|wrapfigure|eqnarray|gather|flalign|multline|algorithm).*"))
 		{
 			return true;
 		}
