@@ -174,6 +174,7 @@
       srcdir="${build.srcdir}"
       destdir="${build.bindir}"
       debug="${build.debug}"
+      encoding="UTF-8"
       includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
@@ -192,6 +193,7 @@
       srcdir="${build.test.srcdir}"
       destdir="${build.test.bindir}"
       debug="${build.debug}"
+      encoding="UTF-8"
       includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
