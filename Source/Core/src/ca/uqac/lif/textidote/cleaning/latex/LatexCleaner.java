@@ -55,9 +55,14 @@ public class LatexCleaner extends TextCleaner
 	/*@ non_null @*/ protected final Set<String> m_macrosToIgnore = new HashSet<String>();
 
 	/**
+	 * The path of the current directory (location of the file to clean)
+	 */
+	protected final Path m_curDir;
+
+	/**
 	 * The path of the root dir
 	 */
-	protected final Path m_rootDir;
+	protected Path m_rootDir;
 
 	/**
 	 * A list of <em>non-commented</em> <code>input</code> and <code>include</code>
@@ -78,12 +83,14 @@ public class LatexCleaner extends TextCleaner
 
 	/**
 	 * Creates a new instance of the cleaner
-	 * @param root_dir Path to the root location
+	 * @param cur_dir Path to the location of the file to clean
+	 * @param root_dir Path to the root tex file if known
 	 */
-	public LatexCleaner(/*@ non_null @*/ String root_dir)
+	public LatexCleaner(/*@ non_null @*/ String cur_dir, /*@ nullable @*/ String root_dir)
 	{
 		super();
-		m_rootDir = Paths.get(root_dir);
+		m_curDir = Paths.get(cur_dir);
+		m_rootDir = root_dir == null ? null : Paths.get(root_dir).getParent();
 	}
 
 	/**
@@ -91,9 +98,8 @@ public class LatexCleaner extends TextCleaner
 	 */
 	public LatexCleaner()
 	{
-		super();
-		// Assume root dir is the working directory
-		m_rootDir = Paths.get("");
+		// Assume current dir is the working directory
+		this("", null);
 	}
 
 	/**
@@ -146,15 +152,19 @@ public class LatexCleaner extends TextCleaner
 		// Reset list of inner files every time we clean
 		m_innerFiles.clear();
 		AnnotatedString new_as = new AnnotatedString(as);
-		Path root = m_rootDir;
-		String root_directive = parseRoot(new_as);
-		if(root_directive != null){
-			root = root.resolve(Paths.get(root_directive)).getParent();
+		if(m_rootDir == null){
+			String root_directive = parseRoot(new_as);
+			if(root_directive != null){
+				m_rootDir = m_curDir.resolve(Paths.get(root_directive)).getParent();
+			}
+			else{
+				m_rootDir = m_curDir;
+			}
 		}
 		new_as = cleanComments(new_as);
 		new_as = removeEnvironments(new_as);
 		new_as = removeMacros(new_as);
-		fetchIncludes(new_as, root);
+		fetchIncludes(new_as);
 		//new_as = removeAllMarkup(new_as);
 		new_as = removeMarkup(new_as);
 		//new_as = simplifySpaces(new_as);
@@ -582,9 +592,8 @@ public class LatexCleaner extends TextCleaner
 	 * <code>include</code> declarations found in the file to be cleaned.
 	 * @param as The contents of the file (where environments and
 	 * comments have already been removed).
-	 * @param root Root location
 	 */
-	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as, /*@ non_null @*/ Path root)
+	protected void fetchIncludes(/*@ non_null @*/ AnnotatedString as)
 	{
 		for (Line l : as.getLines())
 		{
@@ -597,7 +606,7 @@ public class LatexCleaner extends TextCleaner
 				{
 					filename += ".tex";
 				}
-				Path filepath = root.resolve(Paths.get(filename));
+				Path filepath = m_rootDir.resolve(Paths.get(filename));
 				m_innerFiles.add(filepath.toString());
 			}
 		}
