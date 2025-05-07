@@ -744,6 +744,11 @@ at the following address:
     Chicoutimi, QC
     G7H 2B1 Canada
 
+Your postcard will be shown in this page. Here is the latest postcard received:
+
+![Front](https://sylvainhalle.github.io/assets/images/card_front.jpg)&nbsp;
+![Back](https://sylvainhalle.github.io/assets/images/card_back.jpg)
+
 If you like TeXtidote, you might also want to look at
 [PaperShell](https://github.com/sylvainhalle/PaperShell), a template
 environment for writing scientific papers in LaTeX.
