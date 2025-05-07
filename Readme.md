@@ -746,8 +746,8 @@ at the following address:
 
 Your postcard will be shown in this page. Here is the latest postcard received:
 
-![Front](https://sylvainhalle.github.io/assets/images/card_front.jpg)&nbsp;
-![Back](https://sylvainhalle.github.io/assets/images/card_back.jpg)
+![Front](https://sylvainhalle.github.io/textidote/assets/images/card_front.jpg)&nbsp;
+![Back](https://sylvainhalle.github.io/textidote/assets/images/card_back.jpg)
 
 If you like TeXtidote, you might also want to look at
 [PaperShell](https://github.com/sylvainhalle/PaperShell), a template
