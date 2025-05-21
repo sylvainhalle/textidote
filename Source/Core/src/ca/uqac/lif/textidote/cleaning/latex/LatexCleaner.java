@@ -347,7 +347,7 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\par(\\b)", "$1");
 		as_out = as_out.replaceAll("\\\\clearpage","");
 		// Common environments
-		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|inparaenum|document|thm|abstract|compactitem|query|center|minipage|quote|frame)\\}", "");
+		as_out = as_out.replaceAll("\\\\(begin|end)\\{(itemize|enumerate|description|inparaenum|document|thm|abstract|compactitem|query|center|minipage|quote|frame)\\}", "");
 		// Theorem environments
 		as_out = as_out.replaceAll("\\\\(begin|end)\\{(definition|lemma|proof|remark|assumption|conclusion)\\}", "");
 		// Figure environments
