@@ -665,6 +665,19 @@ public class MainTest
 	}
 
 	@Test
+	public void testClickableOutput() throws IOException
+	{
+		String in_path = new File(MainTest.class.getResource("rules/data/test-nobreak.tex").getFile()).getAbsolutePath();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		PrintStream out = new PrintStream(baos);
+		int ret_code = Main.mainLoop(new String[] {"--read-all", "--output", "clickable", "--no-color", in_path}, null, out, new NullPrintStream(), null);
+		String output = new String(baos.toByteArray());
+		assertTrue(ret_code > 0);
+		assertContains(in_path + ":", output);
+		assertContains("You should not break lines manually", output);
+	}
+
+	@Test
 	public void testNoBreakOnHTMLWithDummyReplacement() throws IOException
 	{
 		File replace_file = new File(MainTest.class.getResource("rules/data/replace.txt").getFile());

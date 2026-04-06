@@ -552,7 +552,7 @@ for the changes to take effect.
 
 ### Visual Studio Code integration
 
-Users of Visual Studio Code can integrate TeXtidote by calling it with the `--output singleline` and `--no-color` options and parse its results. Moreover, user [cphyc](https://github.com/cphyc) also wrote a nice [build task](https://github.com/sylvainhalle/textidote/issues/125#issue-603278987).
+Users of Visual Studio Code can integrate TeXtidote by calling it with the `--output singleline` and `--no-color` options and parse its results. You can also use `--output clickable` to get `file:line:column:` diagnostics that many editors can parse directly. Moreover, user [cphyc](https://github.com/cphyc) also wrote a nice [build task](https://github.com/sylvainhalle/textidote/issues/125#issue-603278987).
 
 ### Emacs integration
 
