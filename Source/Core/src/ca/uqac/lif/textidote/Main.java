@@ -43,6 +43,7 @@ import ca.uqac.lif.textidote.cleaning.TextCleanerException;
 import ca.uqac.lif.textidote.cleaning.latex.LatexCleaner;
 import ca.uqac.lif.textidote.cleaning.markdown.MarkdownCleaner;
 import ca.uqac.lif.textidote.render.AnsiAdviceRenderer;
+import ca.uqac.lif.textidote.render.ClickableAdviceRenderer;
 import ca.uqac.lif.textidote.render.HtmlAdviceRenderer;
 import ca.uqac.lif.textidote.render.JsonAdviceRenderer;
 import ca.uqac.lif.textidote.render.SinglelineAdviceRenderer;
@@ -204,7 +205,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
-		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, or singleline"));
+		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, singleline, or clickable"));
 		cli_parser.addArgument(new Argument().withLongName("ci").withDescription("Ignores the return code for CI usage"));
 		cli_parser.addArgument(new Argument().withLongName("encoding").withArgument("x").withDescription("Read files using encoding x"));
 		cli_parser.addArgument(new Argument().withLongName("single-file").withDescription("Don't read sub-files if any"));
@@ -554,6 +555,10 @@ public class Main
 			else if (output_method.compareToIgnoreCase("singleline") == 0)
 			{
 				renderer = new SinglelineAdviceRenderer(stdout);
+			}
+			else if (output_method.compareToIgnoreCase("clickable") == 0)
+			{
+				renderer = new ClickableAdviceRenderer(stdout);
 			}
 			else if (output_method.compareToIgnoreCase("json") == 0)
 			{
