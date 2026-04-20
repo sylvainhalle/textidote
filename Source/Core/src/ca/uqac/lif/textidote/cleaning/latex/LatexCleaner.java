@@ -365,7 +365,7 @@ public class LatexCleaner extends TextCleaner
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\*?(\\S).*?\\1", "[0]");
 		// Replace references and URLs by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref|vref|Vref|nameref|vpageref|pageref|autoref)\\{.*?\\}", "X");
+		as_out = as_out.replaceAll("\\\\(ref|url|eqref|cref|Cref|vref|Vref|nameref|vpageref|pageref|autoref|gls)\\{.*?\\}", "X");
 		// Delete \href command and its url part
 		as_out = as_out.replaceAll("\\\\href\\{.*?\\}", "");
 		// Titles
