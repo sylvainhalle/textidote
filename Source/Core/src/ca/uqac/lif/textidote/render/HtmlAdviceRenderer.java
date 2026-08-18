@@ -14,14 +14,23 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    ---
+    PATCH (non officiel) : la boucle de numérotation de lignes dans render()
+    a été réécrite pour éviter un comportement en O(n*m) (n = nombre de lignes,
+    m = taille du document), qui rendait la génération du rapport HTML très
+    lente sur les documents volumineux (plusieurs milliers de lignes).
+    L'ancienne version appelait String.replaceFirst() une fois par ligne, ce
+    qui force Java à rescanner et recopier l'intégralité du texte à chaque
+    itération. La nouvelle version découpe le texte une seule fois et le
+    reconstruit en une seule passe avec un StringBuilder.
  */
 package ca.uqac.lif.textidote.render;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import ca.uqac.lif.petitpoucet.function.strings.Range;
 import ca.uqac.lif.textidote.Advice;
@@ -59,6 +68,19 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 			}
 			m_printer.println("<p>Found " + list.size() + " warning(s)</p>");
 			m_printer.println("<div class=\"original-file\">");
+
+			// --- PATCH : on ne modifie plus original_string un avertissement
+			// à la fois via insertAt() (qui recopie toute la chaîne ET
+			// recompose toute la table de correspondance de positions à
+			// CHAQUE appel - un comportement qui s'aggrave au fil des
+			// avertissements). findCurrentRange() ne modifie rien, donc on
+			// peut appeler cette méthode pour tous les avertissements sans
+			// jamais muter la chaîne, puis insérer toutes les balises <span>
+			// en une seule passe à la fin. Le code original indiquait
+			// lui-même juste après cette boucle que le suivi de provenance
+			// (le mécanisme derrière insertAt) n'était de toute façon plus
+			// utile une fois cette étape terminée.
+			List<SpanMarker> markers = new ArrayList<SpanMarker>(list.size() * 2);
 			for (Advice ad : list)
 			{
 				Range r = original_string.findCurrentRange(ad.getRange());
@@ -67,31 +89,120 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 					// For some reason, this advice has no range; nothing to do
 					continue;
 				}
-				original_string.insertAt("</span>", r.getEnd() + 1);
-				original_string.insertAt(getOpeningSpan(ad), r.getStart());
+				markers.add(new SpanMarker(r.getStart(), getOpeningSpan(ad)));
+				markers.add(new SpanMarker(r.getEnd() + 1, "</span>"));
 			}
-			// At this point we no longer need provenance marking; 
-			// flatten to a plain string to speed things up
-			String markup = original_string.toString();
+			String markup = insertSpansInOnePass(original_string.toString(), markers);
+			// --- FIN PATCH ---
+
 			markup = highlightLatex(markup);
 			markup = indent(markup);
-			markup = markup.replaceAll("(?m)^", "<div class=\"linenb\">#NB</div><div class=\"codeline\">");
-			markup = markup.replaceAll("(?m)$", "</div><div class=\"clear\"></div>");
-			int num_digits = (int) Math.ceil((Math.log10(original_string.lineCount())));
-			if (num_digits == 0)
-			{
-				num_digits = 1;
-			}
 
-			int line_cnt = original_string.lineCount();
-			for (int i = 0; i < line_cnt; i++)
-			{
-				markup = markup.replaceFirst("#NB", printLineNumber(i + 1, num_digits));
-			}
+			// --- PATCH : numérotation des lignes en une seule passe ---
+			// (remplace l'ancien bloc replaceAll("(?m)^", ...) + replaceAll("(?m)$", ...)
+			//  + boucle de replaceFirst("#NB", ...) appelée une fois par ligne)
+			markup = numberLines(markup, original_string.lineCount());
+			// --- FIN PATCH ---
+
 			m_printer.println(markup);
 			m_printer.println("</div>");
 		}
 		printFromInternalFile("postamble.html");
+	}
+
+	/**
+	 * Wraps every line of the given markup in the "linenb"/"codeline"/"clear"
+	 * div structure expected by the report's CSS, and prefixes it with its
+	 * line number. This is done in a single pass over the text (using
+	 * String.split + StringBuilder) instead of repeatedly scanning and
+	 * rebuilding the whole string once per line, which does not scale to
+	 * large documents.
+	 * @param markup The (already escaped/highlighted/indented) HTML markup
+	 * @param line_count The expected number of lines (used only to compute
+	 * the width used to pad line numbers; the actual splitting is done on
+	 * the markup itself so the two stay consistent even if they differ)
+	 * @return The final markup, with line numbering applied
+	 */
+	protected static String numberLines(/*@ non_null @*/ String markup, int line_count)
+	{
+		// -1 keeps trailing empty lines (important if the file ends with
+		// a blank line, otherwise split() silently drops it)
+		String[] lines = markup.split("\n", -1);
+		int effective_count = Math.max(lines.length, Math.max(line_count, 1));
+		int num_digits = (int) Math.ceil(Math.log10(effective_count));
+		if (num_digits == 0)
+		{
+			num_digits = 1;
+		}
+		// Pre-size the buffer to roughly the final size to avoid internal
+		// re-allocations of the StringBuilder as it grows
+		StringBuilder sb = new StringBuilder(markup.length() + lines.length * 96);
+		for (int i = 0; i < lines.length; i++)
+		{
+			sb.append("<div class=\"linenb\">")
+			  .append(printLineNumber(i + 1, num_digits))
+			  .append("</div><div class=\"codeline\">")
+			  .append(lines[i])
+			  .append("</div><div class=\"clear\"></div>");
+			if (i < lines.length - 1)
+			{
+				sb.append('\n');
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * A small helper class representing a piece of text (e.g. an opening or
+	 * closing {@code <span>} tag) to be inserted at a given position of a
+	 * base string.
+	 */
+	protected static class SpanMarker
+	{
+		final int position;
+		final String text;
+
+		SpanMarker(int position, String text)
+		{
+			this.position = position;
+			this.text = text;
+		}
+	}
+
+	/**
+	 * Inserts a set of markers (e.g. opening/closing {@code <span>} tags) into
+	 * a base string, in a single left-to-right pass, instead of mutating the
+	 * string once per marker (which is what the previous implementation did
+	 * via repeated calls to {@code AnnotatedString.insertAt}).
+	 * @param content The base string, without any of the markers inserted
+	 * @param markers The list of markers to insert; order in the list does
+	 * not matter, they are sorted internally by position. Markers with equal
+	 * positions keep their relative order from the input list (stable sort).
+	 * @return The resulting string, with all markers inserted at their
+	 * respective positions
+	 */
+	protected static String insertSpansInOnePass(/*@ non_null @*/ String content, /*@ non_null @*/ List<SpanMarker> markers)
+	{
+		List<SpanMarker> sorted = new ArrayList<SpanMarker>(markers);
+		sorted.sort((a, b) -> Integer.compare(a.position, b.position));
+		int len = content.length();
+		StringBuilder sb = new StringBuilder(len + sorted.size() * 40);
+		int cursor = 0;
+		for (SpanMarker m : sorted)
+		{
+			int pos = Math.max(0, Math.min(m.position, len));
+			if (pos > cursor)
+			{
+				sb.append(content, cursor, pos);
+				cursor = pos;
+			}
+			sb.append(m.text);
+		}
+		if (cursor < len)
+		{
+			sb.append(content, cursor, len);
+		}
+		return sb.toString();
 	}
 
 	/**
@@ -180,27 +291,43 @@ public class HtmlAdviceRenderer extends AdviceRenderer
 		return s;
 	}
 
+	/**
+	 * PATCH : réécriture en une seule passe. L'ancienne version relançait une
+	 * recherche sur l'intégralité du texte pour chaque ligne indentée trouvée
+	 * (une ligne traitée par itération), ce qui est en O(nombre de lignes
+	 * indentées x taille du document). Ici, on ne parcourt le texte qu'une
+	 * seule fois, ligne par ligne.
+	 */
 	protected static String indent(String s)
 	{
-		Pattern pat = Pattern.compile("(?m)^([ ]+?)([^ ])");
-		boolean matched = true;
-		while (matched)
+		String[] lines = s.split("\n", -1);
+		StringBuilder sb = new StringBuilder(s.length() + lines.length * 8);
+		for (int li = 0; li < lines.length; li++)
 		{
-			Matcher mat = pat.matcher(s);
-			matched = mat.find();
-			if (matched)
+			String line = lines[li];
+			int leading = 0;
+			while (leading < line.length() && line.charAt(leading) == ' ')
 			{
-				String pad = "";
-				for (int i = 0; i < mat.group(1).length(); i++)
+				leading++;
+			}
+			if (leading > 0)
+			{
+				for (int j = 0; j < leading; j++)
 				{
-					pad += "&nbsp;";
+					sb.append("&nbsp;");
 				}
-				pad += mat.group(2);
-				String new_s = s.substring(0, mat.start()) + pad + s.substring(mat.end());
-				s = new_s;
+				sb.append(line, leading, line.length());
+			}
+			else
+			{
+				sb.append(line);
+			}
+			if (li < lines.length - 1)
+			{
+				sb.append('\n');
 			}
 		}
-		return s;
+		return sb.toString();
 	}
 
 	protected static String printLineNumber(int n, int width)
