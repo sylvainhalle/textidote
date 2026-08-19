@@ -179,8 +179,51 @@ public class Main
 	 * @return An exit code
 	 * @throws IOException Thrown if some file cannot be found or open
 	 */
+	/**
+	 * Raises the JAXP system properties controlling the maximum cumulative
+	 * size of XML entities, if they have not already been explicitly set
+	 * (e.g. by the user through a {@code -D} JVM flag, or by the environment).
+	 * <p>
+	 * Starting with JDK 24, the default values for
+	 * {@code jdk.xml.totalEntitySizeLimit} and
+	 * {@code jdk.xml.maxGeneralEntitySizeLimit} were lowered considerably
+	 * (see <a href="https://bugs.openjdk.org/browse/JDK-8343006">JDK-8343006</a>).
+	 * Some of the grammar rule files bundled with LanguageTool (notably the
+	 * French {@code grammar.xml}) exceed the new default cap, which causes
+	 * {@code CheckLanguage} to fail during initialization with a
+	 * {@code SAXParseException} ("JAXP00010004") before any linting can
+	 * happen at all. Since textidote always needs to fully parse these
+	 * trusted, bundled rule files (not arbitrary external XML), disabling
+	 * this particular limit is safe in this context.
+	 */
+	protected static void raiseJaxpEntityLimitsIfUnset()
+	{
+		String[] properties = {
+				"jdk.xml.totalEntitySizeLimit",
+				"jdk.xml.maxGeneralEntitySizeLimit"
+		};
+		for (String property : properties)
+		{
+			if (System.getProperty(property) == null)
+			{
+				System.setProperty(property, "0"); // 0 = no limit
+			}
+		}
+	}
+
 	public static int mainLoop(String[] args, InputStream in, PrintStream out, PrintStream err, Class<?> base_class) throws IOException
 	{
+		// Recent JDKs (24+) tightened default JAXP limits on cumulative XML
+		// entity size (see JDK-8343006). Some of LanguageTool's bundled
+		// grammar rule files (e.g. the French grammar.xml) exceed the new
+		// default cap, which makes CheckLanguage fail to initialize with a
+		// SAXParseException before textidote even gets a chance to run. We
+		// raise these limits here, at startup, so users don't have to pass
+		// JVM flags manually. This only sets a property if the user (or the
+		// environment) hasn't already specified a value, so an explicit
+		// -D flag on the command line still takes precedence.
+		raiseJaxpEntityLimitsIfUnset();
+
 		// Store input type
 		Linter.Language input_type = Linter.Language.UNSPECIFIED;
 
