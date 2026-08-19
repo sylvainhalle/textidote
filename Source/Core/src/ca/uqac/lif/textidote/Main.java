@@ -610,6 +610,7 @@ public class Main
 				top_level_filename = filename;
 			}
 			Scanner scanner = null;
+			CompositeCleaner c_cleaner = null;
 			try
 			{
 				if (filename.compareTo("--") == 0)
@@ -641,7 +642,7 @@ public class Main
 					}
 				}
 				num_files++;
-				CompositeCleaner c_cleaner = new CompositeCleaner(cleaner);
+				c_cleaner = new CompositeCleaner(cleaner);
 				Linter linter = null;
 				if (input_type == Linter.Language.MARKDOWN || filename.endsWith(".md"))
 				{
@@ -722,7 +723,10 @@ public class Main
 			}
 			catch (EmptyInputException e)
 			{
-				// Do nothing
+				if (!single_file)
+				{
+					addInnerFilesToQueue(c_cleaner.getInnerFiles(), processed_filenames, filename_queue);
+				}
 			}
 			catch (LinterException e)
 			{
