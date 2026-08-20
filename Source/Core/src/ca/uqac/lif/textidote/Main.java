@@ -529,9 +529,23 @@ public class Main
 		List<String> dictionary = new ArrayList<String>();
 		String lang_s = "";
 		String firstlang_s = "";
+		List<String> additional_langs = new ArrayList<String>();
 		if (map.hasOption("check"))
 		{
 			lang_s = map.getOptionValue("check");
+			if (lang_s.contains(","))
+			{
+				String[] lang_parts = lang_s.split(",");
+				lang_s = lang_parts[0].trim();
+				for (int i = 0; i < lang_parts.length; i++)
+				{
+					String code = LanguageFactory.getLanguageToolCode(lang_parts[i].trim());
+					if (code != null)
+					{
+						additional_langs.add(code);
+					}
+				}
+			}
 			// Try to read dictionary from an Aspell file
 			try
 			{
@@ -722,7 +736,15 @@ public class Main
 				{
 					try
 					{
-						CheckLanguage cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), LanguageFactory.getLanguageFromString(firstlang_s), dictionary);
+						CheckLanguage cl;
+						if (!additional_langs.isEmpty())
+						{
+							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary, additional_langs);
+						}
+						else
+						{
+							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), LanguageFactory.getLanguageFromString(firstlang_s), dictionary);
+						}
 						if (f_ngram_dir != null)
 						{
 							cl.activateLanguageModelRules(f_ngram_dir);

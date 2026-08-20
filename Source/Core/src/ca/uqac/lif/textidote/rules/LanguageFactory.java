@@ -17,6 +17,9 @@
  */
 package ca.uqac.lif.textidote.rules;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.languagetool.Language;
 import org.languagetool.Languages;
 
@@ -35,7 +38,7 @@ public class LanguageFactory
 	 */
 	/*@ nullable @*/ public static Language getLanguageFromString(String s)
 	{
-		String code = toLanguageToolCode(s);
+		String code = getLanguageToolCode(s);
 		if (code == null)
 		{
 			return null;
@@ -56,6 +59,28 @@ public class LanguageFactory
 	}
 
 	/**
+	 * Converts a comma-separated list of TeXtidote-style language codes
+	 * (e.g. as passed to --check) into their LanguageTool short-code
+	 * equivalents, skipping any that are unrecognized.
+	 * @param s The comma-separated list of TeXtidote-style codes
+	 * @return The list of corresponding LanguageTool short codes (possibly
+	 * shorter than the input if some codes were unrecognized)
+	 */
+	/*@ non_null @*/ public static List<String> getLanguageToolCodes(/*@ non_null @*/ String s)
+	{
+		List<String> out = new ArrayList<String>();
+		for (String part : s.split(","))
+		{
+			String code = getLanguageToolCode(part.trim());
+			if (code != null)
+			{
+				out.add(code);
+			}
+		}
+		return out;
+	}
+
+	/**
 	 * Converts TeXtidote's historical underscore-separated language argument
 	 * (e.g. "en_US", as typed after --check) into the hyphen-separated short
 	 * code expected by LanguageTool's {@code Languages.getLanguageForShortCode}.
@@ -63,7 +88,7 @@ public class LanguageFactory
 	 * @return The corresponding LanguageTool short code, or {@code null} if
 	 * unrecognized
 	 */
-	private static String toLanguageToolCode(String s)
+	public static String getLanguageToolCode(String s)
 	{
 		if (s.compareToIgnoreCase("en") == 0 || s.compareToIgnoreCase("en_US") == 0)
 		{

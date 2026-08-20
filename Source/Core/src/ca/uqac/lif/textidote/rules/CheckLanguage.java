@@ -20,12 +20,19 @@ package ca.uqac.lif.textidote.rules;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
+import org.languagetool.UserConfig;
+import org.languagetool.CheckResults;
+import org.languagetool.ExtendedSentenceRange;
+import org.languagetool.language.identifier.LanguageIdentifierService;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 
@@ -70,6 +77,15 @@ public class CheckLanguage extends Rule
 	protected boolean m_disableUnpaired = true;
 
 	/**
+	 * Whether this instance was set up with more than one candidate
+	 * language (i.e. multilingual detection is active). When true,
+	 * {@link #evaluate(AnnotatedString)} uses LanguageTool's
+	 * {@code check2} method to get per-sentence language info instead of
+	 * the plain {@code check} method.
+	 */
+	protected boolean m_multilingual = false;
+
+	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check. If {@code null}, the
 	 * constructor will throw an exception
@@ -103,6 +119,121 @@ public class CheckLanguage extends Rule
 		handleUserDictionary();
 	}
 
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling per-sentence multilingual detection among a list of
+	 * candidate languages. If {@code additionalLanguages} contains fewer
+	 * than two LanguageTool short codes in total (main language plus
+	 * additional ones), this behaves exactly like the two-argument
+	 * constructor: multilingual detection requires at least two candidate
+	 * languages, per LanguageTool's own {@code ForeignLanguageChecker}.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking
+	 * @param additionalLanguages LanguageTool short codes (e.g. "en-US",
+	 * "de-DE") of additional candidate languages to detect within the
+	 * document, on top of {@code lang}. Can be {@code null} or empty.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages) throws UnsupportedLanguageException
+	{
+		super("lt:");
+		if (lang == null)
+		{
+			throw new UnsupportedLanguageException();
+		}
+		setName("lt:" + lang.getShortCode());
+		List<String> preferredLanguages = new ArrayList<String>();
+		preferredLanguages.add(stripVariant(lang.getShortCode()));
+		if (additionalLanguages != null)
+		{
+			for (String code : additionalLanguages)
+			{
+				String base_code = stripVariant(code);
+				if (!preferredLanguages.contains(base_code))
+				{
+					preferredLanguages.add(base_code);
+				}
+			}
+		}
+		if (preferredLanguages.size() >= 2)
+		{
+			// Multilingual mode: LanguageIdentifierService needs to be
+			// initialized with the candidate languages before any
+			// JLanguageTool instance is created, since it is looked up
+			// internally as a singleton (LanguageIdentifierService.INSTANCE)
+			// by the spelling rules that trigger foreign-language detection.
+			LanguageIdentifierService.INSTANCE.getSimpleLanguageIdentifier(preferredLanguages);
+			UserConfig userConfig = buildMultilingualUserConfig(preferredLanguages);
+			m_languageTool = new MultiThreadedJLanguageTool(lang, null, userConfig);
+			m_multilingual = true;
+		}
+		else
+		{
+			m_languageTool = new MultiThreadedJLanguageTool(lang);
+		}
+		if (m_disableWhitespace)
+		{
+			m_languageTool.disableRule("WHITESPACE_RULE");
+		}
+		m_dictionary = dictionary;
+		handleUserDictionary();
+	}
+
+	/**
+	 * Builds a {@code UserConfig} with {@code preferredLanguages} set, using
+	 * default/neutral values for every other field. This mirrors the
+	 * 18-argument constructor of {@code org.languagetool.UserConfig} as of
+	 * LanguageTool 6.9; if that constructor's signature changes in a future
+	 * LanguageTool version, this is the one place that needs updating.
+	 * @param preferredLanguages The candidate language short codes
+	 * @return A UserConfig usable to activate multilingual detection
+	 */
+	/**
+	 * Strips any country-variant suffix (e.g. "-DE", "-US") from a
+	 * LanguageTool short code, keeping only the base macro-language code.
+	 * Needed because {@code SimpleLanguageIdentifier} indexes its internal
+	 * data by base short code, while {@code LanguageFactory} resolves
+	 * codes like "de" to a specific variant like "de-DE" for grammar
+	 * checking purposes.
+	 * @param code A LanguageTool short code, possibly with a variant suffix
+	 * @return The base code, without any variant suffix
+	 */
+	private static String stripVariant(String code)
+	{
+		int dash_pos = code.indexOf('-');
+		if (dash_pos < 0)
+		{
+			return code;
+		}
+		return code.substring(0, dash_pos);
+	}
+
+	private static UserConfig buildMultilingualUserConfig(List<String> preferredLanguages)
+	{
+		return new UserConfig(
+			Collections.emptyList(),   // userSpecificSpellerWords
+			Collections.emptyList(),   // userSpecificRules
+			Collections.emptyMap(),    // ruleValues
+			0,                          // maxSpellingSuggestions
+			0L,                          // premiumUid
+			null,                         // userDictName
+			0L,                            // userDictCacheSize
+			null,                           // linguServices
+			false,                          // filterDictionaryMatches
+			null,                           // abTest
+			null,                           // textSessionId
+			false,                          // hidePremiumMatches
+			preferredLanguages,             // preferredLanguages
+			true,                           // trustedSource
+			false,                          // optInThirdPartyAI
+			false,                          // isPremium
+			null,                           // tokenType
+			true                            // suggestionsEnabled
+		);
+	}
+
 	public void handleUserDictionary()
 	{
 		for (org.languagetool.rules.Rule rule : m_languageTool.getAllActiveRules())
@@ -124,7 +255,7 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary) throws UnsupportedLanguageException
 	{
-		this(lang, null, dictionary);
+		this(lang, (Language) null, dictionary);
 	}
 
 	/**
@@ -145,7 +276,35 @@ public class CheckLanguage extends Rule
 		List<RuleMatch> matches = null;
 		try
 		{
-			matches = m_languageTool.check(s_to_check);
+			if (m_multilingual)
+			{
+				org.languagetool.markup.AnnotatedText a_text = new org.languagetool.markup.AnnotatedTextBuilder().addText(s_to_check).build();
+				CheckResults results = m_languageTool.check2(a_text, true, JLanguageTool.ParagraphHandling.NORMAL,
+						null, JLanguageTool.Mode.ALL, JLanguageTool.Level.DEFAULT,
+						Collections.emptySet(), null);
+				matches = new ArrayList<RuleMatch>();
+				List<org.languagetool.Range> ignored_ranges = results.getIgnoredRanges();
+				for (RuleMatch rm : results.getRuleMatches())
+				{
+					boolean is_ignored = false;
+					for (org.languagetool.Range ir : ignored_ranges)
+					{
+						if (rm.getFromPos() >= ir.getFromPos() && rm.getToPos() <= ir.getToPos())
+						{
+							is_ignored = true;
+							break;
+						}
+					}
+					if (!is_ignored)
+					{
+						matches.add(rm);
+					}
+				}
+			}
+			else
+			{
+				matches = m_languageTool.check(s_to_check);
+			}
 		}
 		catch (IOException e)
 		{
