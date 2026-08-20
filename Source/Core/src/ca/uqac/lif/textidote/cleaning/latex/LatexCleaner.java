@@ -355,13 +355,24 @@ public class LatexCleaner extends TextCleaner
 		// List items
 		as_out = as_out.replaceAll("\\\\item\\s*", "");
 		// Images
-		as_out = as_out.replaceAll("\\\\includegraphics.*$", "");
+		as_out = as_out.replaceAll("\\\\includegraphics(\\[.*?\\])?\\{.*?\\}", "");
 		// Commands that don't produce text
 		as_out = as_out.replaceAll("\\\\(label)\\{[^\\}]*?\\}", "");
-		// Footnotes (ignore)
-		as_out = as_out.replaceAll("\\\\footnote\\{.*?\\}", "");
+		// Footnotes (ignore); footnotetext behaves the same way as footnote
+		as_out = as_out.replaceAll("\\\\(footnote|footnotetext)(\\[.*?\\])?\\{.*?\\}", "");
+		// footnotemark takes no mandatory argument, only an optional one
+		as_out = as_out.replaceAll("\\\\footnotemark(\\[.*?\\])?", "");
+		// makebox: keep the mandatory text argument, drop the command and its
+		// optional arguments (both the [width][pos] and (x,y)[pos] forms)
+		as_out = as_out.replaceAll("\\\\makebox((\\(.*?\\))|(\\[.*?\\]))*", "");
+		// linewidth is a length, not a command producing text
+		as_out = as_out.replaceAll("\\\\linewidth", "");
 		// Replace citations by dummy placeholder
-		as_out = as_out.replaceAll("\\\\(cite|citep|citel|citet|citealp|parencite|textcite|cref)(\\[.*?\\])*\\{.*?\\}", "[0]");
+		// List extended from the biblatex cheatsheet:
+		// https://mirrors.ircam.fr/pub/CTAN/info/biblatex-cheatsheet/biblatex-cheatsheet.pdf
+		// The trailing \*? handles all starred variants (\cite*, \parencite*,
+		// \autocite*, \citeauthor*, \citetitle*, \nocite*...) in one go.
+		as_out = as_out.replaceAll("\\\\(cite|citep|citel|citet|citealp|citeauthor|citetitle|citeyear|citedate|citeurl|parencite|textcite|smartcite|supercite|autocite|footcite|footcitetext|fullcite|footfullcite|volcite|pvolcite|fvolcite|ftvolcite|svolcite|tvolcite|avolcite|notecite|pnotecite|fnotecite|nocite|cref)\\*?(\\[.*?\\])*\\{.*?\\}", "[0]");
 		// Replace verbatim by dummy placeholder
 		as_out = as_out.replaceAll("\\\\verb\\*?(\\S).*?\\1", "[0]");
 		// Replace references and URLs by dummy placeholder
@@ -373,7 +384,20 @@ public class LatexCleaner extends TextCleaner
 		// Font commands
 		as_out = as_out.replaceAll("\\\\(tiny|scriptsize|footnotesize|small|normalsize|large|Large|LARGE|huge|Huge)", "");
 		// Inputs and includes
-		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|vskip|hspace|rule|urlstyle|fancyfoot|fancyhead|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox|printbibliography|addbibresource).*$", "");
+		// Bounded on contiguous [..]/{..} argument groups instead of .*$:
+		// with the default (non-MULTILINE, non-DOTALL) flags used by the
+		// underlying regex engine, .*$ anchors to the end of the *entire*
+		// string, not the end of the current line. On any multi-line document,
+		// this meant the command itself was almost never actually removed
+		// (it would silently fall through to the generic \command{ stripping
+		// further down, leaking its raw argument as plain prose), while on the
+		// rare occasion a matching command *was* on the last line, everything
+		// after it on that line was wrongly deleted too.
+		// fancyhead/fancyfoot are intentionally NOT in this list: unlike the
+		// other commands here, their mandatory argument is real prose (a
+		// header/footer title) that should be kept and checked, so they are
+		// handled below alongside \title, \textbf, etc.
+		as_out = as_out.replaceAll("\\\\(input|include|documentclass|usepackage|noindent|vskip|vspace|hspace|rule|urlstyle|pagestyle|thispagestyle|newcommand|renewcommand|bibliographystyle|bibliography|scalebox|printbibliography|addbibresource)\\*?((\\[.*?\\])|(\\{.*?\\}))*", "");
 		// Conditional hyphens
 		as_out = as_out.replaceAll("\\\\\\-", "");
 		// Non-breaking spaces
@@ -381,8 +405,8 @@ public class LatexCleaner extends TextCleaner
 		as_out = as_out.replaceAll("\\\\,", " ");
 		// Dots
 		as_out = as_out.replaceAll("\\\\(dots|cdots|ldots)", "\u2026");
-		// Commands we can ignore
-		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|texttt|textsc|fancyhead)", "");
+		// Commands we can ignore (command is removed, its text content is kept)
+		as_out = as_out.replaceAll("\\\\(title|textbf|textit|emph|uline|texttt|textsc|fancyhead|fancyfoot)(\\[.*?\\])?", "");
 		as_out = as_out.replaceAll("\\\\\\w+\\*{0,1}\\{", "");
 		// Inline display math with only digits and letters
 		as_out = as_out.replaceAll("\\\\\\(([A-Za-z0-9,\\.]*?)\\\\\\)", "$1");

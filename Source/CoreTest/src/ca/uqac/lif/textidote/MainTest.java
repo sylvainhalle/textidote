@@ -445,7 +445,7 @@ public class MainTest
 		ByteArrayOutputStream baos_err = new ByteArrayOutputStream();
 		PrintStream err = new PrintStream(baos_err);
 		InputStream is = MainTest.class.getResourceAsStream("rules/data/test-input1.tex");
-		int ret_code = Main.mainLoop(new String[] {"--check", "fr", "--read-all"}, is, out, err, MainTest.class);
+		int ret_code = Main.mainLoop(new String[] {"--check", "fr", "--read-all", "--root", "rules/data/x"}, is, out, err, MainTest.class);
 		String output = new String(baos_out.toByteArray());
 		// TODO: add checks when expanding includes
 		assertFalse(output, output.trim().isEmpty());
@@ -461,7 +461,7 @@ public class MainTest
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		PrintStream out = new PrintStream(baos);
 		InputStream is = MainTest.class.getResourceAsStream("rules/data/test-input1.tex");
-		int ret_code = Main.mainLoop(new String[] {"--check", "fr", "--languagemodel", "/foo", "--read-all"}, is, out, new NullPrintStream(), MainTest.class);
+		int ret_code = Main.mainLoop(new String[] {"--check", "fr", "--languagemodel", "/foo", "--read-all", "--root", "rules/data/x"}, is, out, new NullPrintStream(), MainTest.class);
 		String output = new String(baos.toByteArray());
 		// TODO: add checks when expanding includes
 		assertFalse(output, output.trim().isEmpty());
