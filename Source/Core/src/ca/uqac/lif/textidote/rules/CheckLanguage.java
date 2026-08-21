@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,7 +31,6 @@ import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.UserConfig;
 import org.languagetool.CheckResults;
-import org.languagetool.ExtendedSentenceRange;
 import org.languagetool.language.identifier.LanguageIdentifierService;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
@@ -86,6 +85,21 @@ public class CheckLanguage extends Rule
 	protected boolean m_multilingual = false;
 
 	/**
+	 * Explicit language markers (LaTeX commands the user has declared as
+	 * marking a passage of text as being in a different language). May be
+	 * empty if no marker file was provided.
+	 */
+	/*@ non_null @*/ protected List<LanguageMarker> m_languageMarkers = new ArrayList<LanguageMarker>();
+
+	/**
+	 * Cache of secondary JLanguageTool instances, one per distinct
+	 * LanguageTool short code encountered in {@link #m_languageMarkers}.
+	 * Lazily populated, since constructing a JLanguageTool instance loads
+	 * a full rule set and is relatively expensive.
+	 */
+	/*@ non_null @*/ protected Map<String, JLanguageTool> m_secondaryTools = new HashMap<String, JLanguageTool>();
+
+	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check. If {@code null}, the
 	 * constructor will throw an exception
@@ -138,12 +152,37 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages) throws UnsupportedLanguageException
 	{
+		this(lang, dictionary, additionalLanguages, new ArrayList<LanguageMarker>(0));
+	}
+
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling both per-sentence automatic multilingual detection and
+	 * explicit LaTeX-command-based language marking.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking
+	 * @param additionalLanguages LanguageTool short codes of additional
+	 * candidate languages for automatic detection. Can be {@code null}
+	 * or empty to disable automatic detection.
+	 * @param languageMarkers Explicit language-marker rules, parsed from
+	 * a user-provided config file. Can be {@code null} or empty to
+	 * disable explicit marking.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers) throws UnsupportedLanguageException
+	{
 		super("lt:");
 		if (lang == null)
 		{
 			throw new UnsupportedLanguageException();
 		}
 		setName("lt:" + lang.getShortCode());
+		if (languageMarkers != null)
+		{
+			m_languageMarkers = languageMarkers;
+		}
 		List<String> preferredLanguages = new ArrayList<String>();
 		preferredLanguages.add(stripVariant(lang.getShortCode()));
 		if (additionalLanguages != null)
@@ -190,26 +229,6 @@ public class CheckLanguage extends Rule
 	 * @param preferredLanguages The candidate language short codes
 	 * @return A UserConfig usable to activate multilingual detection
 	 */
-	/**
-	 * Strips any country-variant suffix (e.g. "-DE", "-US") from a
-	 * LanguageTool short code, keeping only the base macro-language code.
-	 * Needed because {@code SimpleLanguageIdentifier} indexes its internal
-	 * data by base short code, while {@code LanguageFactory} resolves
-	 * codes like "de" to a specific variant like "de-DE" for grammar
-	 * checking purposes.
-	 * @param code A LanguageTool short code, possibly with a variant suffix
-	 * @return The base code, without any variant suffix
-	 */
-	private static String stripVariant(String code)
-	{
-		int dash_pos = code.indexOf('-');
-		if (dash_pos < 0)
-		{
-			return code;
-		}
-		return code.substring(0, dash_pos);
-	}
-
 	private static UserConfig buildMultilingualUserConfig(List<String> preferredLanguages)
 	{
 		return new UserConfig(
@@ -232,6 +251,26 @@ public class CheckLanguage extends Rule
 			null,                           // tokenType
 			true                            // suggestionsEnabled
 		);
+	}
+
+	/**
+	 * Strips any country-variant suffix (e.g. "-DE", "-US") from a
+	 * LanguageTool short code, keeping only the base macro-language code.
+	 * Needed because {@code SimpleLanguageIdentifier} indexes its internal
+	 * data by base short code, while {@code LanguageFactory} resolves
+	 * codes like "de" to a specific variant like "de-DE" for grammar
+	 * checking purposes.
+	 * @param code A LanguageTool short code, possibly with a variant suffix
+	 * @return The base code, without any variant suffix
+	 */
+	private static String stripVariant(String code)
+	{
+		int dash_pos = code.indexOf('-');
+		if (dash_pos < 0)
+		{
+			return code;
+		}
+		return code.substring(0, dash_pos);
 	}
 
 	public void handleUserDictionary()
@@ -268,22 +307,123 @@ public class CheckLanguage extends Rule
 		this(lang, new ArrayList<String>(0));
 	}
 
+	/**
+	 * Gets (creating and caching it if necessary) a secondary
+	 * JLanguageTool instance for the given LanguageTool short code, used
+	 * to check text extracted from an explicitly marked language passage.
+	 * @param languageCode A LanguageTool short code (e.g. "en", "es")
+	 * @return A JLanguageTool instance for that language, or {@code null}
+	 * if the code could not be resolved to a supported language
+	 */
+	protected JLanguageTool getSecondaryTool(String languageCode)
+	{
+		if (m_secondaryTools.containsKey(languageCode))
+		{
+			return m_secondaryTools.get(languageCode);
+		}
+		Language lang = LanguageFactory.getLanguageFromString(languageCode);
+		JLanguageTool tool = null;
+		if (lang != null)
+		{
+			tool = new JLanguageTool(lang);
+			if (m_disableWhitespace)
+			{
+				tool.disableRule("WHITESPACE_RULE");
+			}
+		}
+		m_secondaryTools.put(languageCode, tool);
+		return tool;
+	}
+
+	/**
+	 * A marked range translated into positions within the cleaned string,
+	 * paired with its target language.
+	 */
+	protected static class TranslatedMarkedRange
+	{
+		public final int start;
+		public final int end; // inclusive, per ca.uqac.lif.petitpoucet.function.strings.Range convention
+		public final String language;
+
+		public TranslatedMarkedRange(int start, int end, String language)
+		{
+			this.start = start;
+			this.end = end;
+			this.language = language;
+		}
+
+		public boolean contains(int pos_start, int pos_end)
+		{
+			return pos_start >= start && pos_end <= end;
+		}
+	}
+
+	/**
+	 * Scans the original source for explicit language markers and
+	 * translates each match's position into the cleaned string's
+	 * coordinate space.
+	 * @param s The annotated string being evaluated
+	 * @return The list of translated marked ranges. Empty if no markers
+	 * are configured, or none were found in this document.
+	 */
+	protected List<TranslatedMarkedRange> findTranslatedMarkedRanges(AnnotatedString s)
+	{
+		List<TranslatedMarkedRange> out = new ArrayList<TranslatedMarkedRange>();
+		if (m_languageMarkers.isEmpty())
+		{
+			return out;
+		}
+		String original = s.getOriginalString();
+		List<LanguageMarkerScanner.MarkedRange> raw_ranges = LanguageMarkerScanner.scan(original, m_languageMarkers);
+		for (LanguageMarkerScanner.MarkedRange r : raw_ranges)
+		{
+			Range translated = s.findCurrentRange(r.start, r.end);
+			if (translated != null)
+			{
+				out.add(new TranslatedMarkedRange(translated.getStart(), translated.getEnd(), r.language));
+			}
+		}
+		return out;
+	}
+
 	@Override
 	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
 		String s_to_check = s.toString();
+		// Compute marked ranges *before* the main check, so their content can
+		// be masked out (replaced with spaces, preserving length) before
+		// being sent to the main-language JLanguageTool instance. Leaving the
+		// raw foreign-language text in place confuses the main tool's
+		// sentence-boundary detection (e.g. a period inside the marked
+		// passage gets mistaken for the end of a main-language sentence,
+		// causing a bogus "sentence doesn't start with a capital letter"
+		// warning on the text that follows).
+		List<TranslatedMarkedRange> marked_ranges = findTranslatedMarkedRanges(s);
+		String s_for_main_check = s_to_check;
+		if (!marked_ranges.isEmpty())
+		{
+			StringBuilder masked = new StringBuilder(s_to_check);
+			for (TranslatedMarkedRange mr : marked_ranges)
+			{
+				for (int i = mr.start; i <= mr.end && i < masked.length(); i++)
+				{
+					masked.setCharAt(i, ' ');
+				}
+			}
+			s_for_main_check = masked.toString();
+		}
 		List<RuleMatch> matches = null;
 		try
 		{
 			if (m_multilingual)
 			{
-				org.languagetool.markup.AnnotatedText a_text = new org.languagetool.markup.AnnotatedTextBuilder().addText(s_to_check).build();
+				org.languagetool.markup.AnnotatedText a_text = new org.languagetool.markup.AnnotatedTextBuilder().addText(s_for_main_check).build();
 				CheckResults results = m_languageTool.check2(a_text, true, JLanguageTool.ParagraphHandling.NORMAL,
 						null, JLanguageTool.Mode.ALL, JLanguageTool.Level.DEFAULT,
 						Collections.emptySet(), null);
-				matches = new ArrayList<RuleMatch>();
 				List<org.languagetool.Range> ignored_ranges = results.getIgnoredRanges();
+				matches = new ArrayList<RuleMatch>();
 				for (RuleMatch rm : results.getRuleMatches())
 				{
 					boolean is_ignored = false;
@@ -303,7 +443,7 @@ public class CheckLanguage extends Rule
 			}
 			else
 			{
-				matches = m_languageTool.check(s_to_check);
+				matches = m_languageTool.check(s_for_main_check);
 			}
 		}
 		catch (IOException e)
@@ -314,6 +454,57 @@ public class CheckLanguage extends Rule
 		if (matches == null)
 		{
 			return out_list;
+		}
+		// Explicit language markers: filter out matches inside marked
+		// ranges (they'll be re-checked below with the right language),
+		// then check each marked range with its dedicated secondary tool
+		// and merge the (offset-corrected) results in.
+		if (!marked_ranges.isEmpty())
+		{
+			List<RuleMatch> filtered = new ArrayList<RuleMatch>();
+			for (RuleMatch rm : matches)
+			{
+				boolean in_marked_range = false;
+				for (TranslatedMarkedRange mr : marked_ranges)
+				{
+					if (mr.contains(rm.getFromPos(), rm.getToPos()))
+					{
+						in_marked_range = true;
+						break;
+					}
+				}
+				if (!in_marked_range)
+				{
+					filtered.add(rm);
+				}
+			}
+			matches = filtered;
+			for (TranslatedMarkedRange mr : marked_ranges)
+			{
+				JLanguageTool secondary = getSecondaryTool(mr.language);
+				if (secondary == null)
+				{
+					// Unrecognized language code in the marker config: skip
+					// silently, the passage simply won't be checked against
+					// a secondary language (it was already excluded above
+					// from the main-language check).
+					continue;
+				}
+				String extract = s_to_check.substring(mr.start, mr.end + 1);
+				try
+				{
+					List<RuleMatch> secondary_matches = secondary.check(extract);
+					for (RuleMatch sm : secondary_matches)
+					{
+						sm.setOffsetPosition(sm.getFromPos() + mr.start, sm.getToPos() + mr.start);
+						matches.add(sm);
+					}
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
 		}
 		for (RuleMatch rm : matches)
 		{
