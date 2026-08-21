@@ -100,6 +100,14 @@ public class CheckLanguage extends Rule
 	/*@ non_null @*/ protected Map<String, JLanguageTool> m_secondaryTools = new HashMap<String, JLanguageTool>();
 
 	/**
+	 * Directory containing per-language custom dictionary files (named
+	 * {@code <code>.txt}, one word per line, e.g. "en.txt"), applied to secondary
+	 * JLanguageTool instances used for marked/detected foreign-language
+	 * passages. Null if not configured (--lang-dict not provided).
+	 */
+	protected File m_secondaryDictDir = null;
+
+	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check. If {@code null}, the
 	 * constructor will throw an exception
@@ -173,7 +181,34 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers) throws UnsupportedLanguageException
 	{
+		this(lang, dictionary, additionalLanguages, languageMarkers, null);
+	}
+
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling both per-sentence automatic multilingual detection and
+	 * explicit LaTeX-command-based language marking, with per-language
+	 * custom dictionaries for the secondary languages.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking, applied to the MAIN language only
+	 * @param additionalLanguages LanguageTool short codes of additional
+	 * candidate languages for automatic detection. Can be {@code null}
+	 * or empty to disable automatic detection.
+	 * @param languageMarkers Explicit language-marker rules, parsed from
+	 * a user-provided config file. Can be {@code null} or empty to
+	 * disable explicit marking.
+	 * @param secondaryDictDir Directory containing per-language custom
+	 * dictionary files (e.g. "en.txt"), applied to secondary-language
+	 * checks (both automatic and marker-based). Can be {@code null} to
+	 * disable secondary dictionaries entirely.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers, /*@ nullable @*/ File secondaryDictDir) throws UnsupportedLanguageException
+	{
 		super("lt:");
+		m_secondaryDictDir = secondaryDictDir;
 		if (lang == null)
 		{
 			throw new UnsupportedLanguageException();
@@ -330,9 +365,66 @@ public class CheckLanguage extends Rule
 			{
 				tool.disableRule("WHITESPACE_RULE");
 			}
+			if (m_secondaryDictDir != null)
+			{
+				List<String> secondary_dict = loadSecondaryDictionary(languageCode);
+				if (!secondary_dict.isEmpty())
+				{
+					for (org.languagetool.rules.Rule rule : tool.getAllActiveRules())
+					{
+						if (rule instanceof SpellingCheckRule)
+						{
+							((SpellingCheckRule) rule).addIgnoreTokens(secondary_dict);
+						}
+					}
+				}
+			}
 		}
 		m_secondaryTools.put(languageCode, tool);
 		return tool;
+	}
+
+	/**
+	 * Loads the custom dictionary for a given language from
+	 * {@link #m_secondaryDictDir}, if a matching file exists. The expected
+	 * filename is {@code <languageCode>.txt} (base code, no country variant),
+	 * one word per line, blank lines ignored - same format as the main
+	 * --dict file.
+	 * @param languageCode A LanguageTool short code (e.g. "en", "es")
+	 * @return The list of words to ignore, or an empty list if no
+	 * dictionary file was found for this language
+	 */
+	protected List<String> loadSecondaryDictionary(String languageCode)
+	{
+		List<String> words = new ArrayList<String>();
+		if (m_secondaryDictDir == null)
+		{
+			return words;
+		}
+		File dict_file = new File(m_secondaryDictDir, languageCode + ".txt");
+		if (!dict_file.exists())
+		{
+			return words;
+		}
+		try
+		{
+			java.util.Scanner sc = new java.util.Scanner(dict_file);
+			while (sc.hasNextLine())
+			{
+				String line = sc.nextLine().trim();
+				if (!line.isEmpty())
+				{
+					words.add(line);
+				}
+			}
+			sc.close();
+		}
+		catch (java.io.FileNotFoundException e)
+		{
+			// Shouldn't happen since we just checked dict_file.exists(), but
+			// guard against a race condition anyway
+		}
+		return words;
 	}
 
 	/**

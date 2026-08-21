@@ -248,6 +248,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("remove-macros").withArgument("macs").withDescription("Remove LaTeX macros macs"));
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("lang-markers").withArgument("file").withDescription("Declare LaTeX commands marking passages in another language"));
+		cli_parser.addArgument(new Argument().withLongName("lang-dict").withArgument("dir").withDescription("Directory of per-language custom dictionaries for secondary languages"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, singleline, or clickable"));
@@ -560,6 +561,24 @@ public class Main
 			}
 		}
 
+		// Is a directory of per-language secondary dictionaries provided?
+		File secondary_dict_dir = null;
+		if (map.hasOption("lang-dict"))
+		{
+			String lang_dict_dirname = map.getOptionValue("lang-dict");
+			File dir_f = new File(lang_dict_dirname);
+			if (!dir_f.exists() || !dir_f.isDirectory())
+			{
+				stderr.println("Language dictionary directory " + lang_dict_dirname + " not found");
+				return ERR_ARGUMENTS;
+			}
+			else
+			{
+				secondary_dict_dir = dir_f;
+				stderr.println("Using language dictionaries from " + lang_dict_dirname);
+			}
+		}
+
 		// Do we check the language?
 		List<String> dictionary = new ArrayList<String>();
 		String lang_s = "";
@@ -774,7 +793,7 @@ public class Main
 						CheckLanguage cl;
 						if (!additional_langs.isEmpty() || !language_markers.isEmpty())
 						{
-							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary, additional_langs, language_markers);
+							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary, additional_langs, language_markers, secondary_dict_dir);
 						}
 						else
 						{
