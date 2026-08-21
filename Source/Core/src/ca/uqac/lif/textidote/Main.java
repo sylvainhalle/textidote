@@ -249,6 +249,7 @@ public class Main
 		cli_parser.addArgument(new Argument().withLongName("replace").withArgument("file").withDescription("Apply replacement patterns from file"));
 		cli_parser.addArgument(new Argument().withLongName("lang-markers").withArgument("file").withDescription("Declare LaTeX commands marking passages in another language"));
 		cli_parser.addArgument(new Argument().withLongName("lang-dict").withArgument("dir").withDescription("Directory of per-language custom dictionaries for secondary languages"));
+		cli_parser.addArgument(new Argument().withLongName("ignore-english-variant").withDescription("Do not flag British/American English spelling differences in secondary English passages"));
 		cli_parser.addArgument(new Argument().withLongName("type").withArgument("x").withDescription("Input is of type x (tex or md)"));
 		cli_parser.addArgument(new Argument().withLongName("version").withDescription("Show version number"));
 		cli_parser.addArgument(new Argument().withLongName("output").withArgument("method").withDescription("Output as plain (default), json, html, singleline, or clickable"));
@@ -793,7 +794,7 @@ public class Main
 						CheckLanguage cl;
 						if (!additional_langs.isEmpty() || !language_markers.isEmpty())
 						{
-							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary, additional_langs, language_markers, secondary_dict_dir);
+							cl = new CheckLanguage(LanguageFactory.getLanguageFromString(lang_s), dictionary, additional_langs, language_markers, secondary_dict_dir, map.hasOption("ignore-english-variant"));
 						}
 						else
 						{

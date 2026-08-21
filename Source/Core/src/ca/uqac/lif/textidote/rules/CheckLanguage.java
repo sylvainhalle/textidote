@@ -108,6 +108,18 @@ public class CheckLanguage extends Rule
 	protected File m_secondaryDictDir = null;
 
 	/**
+	 * Whether to disable LanguageTool's American/British spelling-variant
+	 * cross-checking rules (AMERICAN_SIMPLE_REPLACE_RULE,
+	 * BRITISH_SIMPLE_REPLACE_RULE) on secondary English instances. These
+	 * rules flag words that are correctly spelled but belong to the
+	 * "other" English variant (e.g. "labour" flagged when checking against
+	 * American English). Useful when secondary English passages are
+	 * quotations that may legitimately mix or use either variant, rather
+	 * than prose the user is expected to keep internally consistent.
+	 */
+	protected boolean m_ignoreEnglishVariant = false;
+
+	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check. If {@code null}, the
 	 * constructor will throw an exception
@@ -181,7 +193,7 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers) throws UnsupportedLanguageException
 	{
-		this(lang, dictionary, additionalLanguages, languageMarkers, null);
+		this(lang, dictionary, additionalLanguages, languageMarkers, null, false);
 	}
 
 	/**
@@ -205,10 +217,11 @@ public class CheckLanguage extends Rule
 	 * disable secondary dictionaries entirely.
 	 * @throws UnsupportedLanguageException If {@code lang} is null
 	 */
-	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers, /*@ nullable @*/ File secondaryDictDir) throws UnsupportedLanguageException
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers, /*@ nullable @*/ File secondaryDictDir, boolean ignoreEnglishVariant) throws UnsupportedLanguageException
 	{
 		super("lt:");
 		m_secondaryDictDir = secondaryDictDir;
+		m_ignoreEnglishVariant = ignoreEnglishVariant;
 		if (lang == null)
 		{
 			throw new UnsupportedLanguageException();
@@ -597,6 +610,27 @@ public class CheckLanguage extends Rule
 					e.printStackTrace();
 				}
 			}
+		}
+		if (m_ignoreEnglishVariant)
+		{
+			// MorfologikAmericanSpellerRule/MorfologikBritishSpellerRule embed
+			// their US<->GB variant cross-check directly inside the spelling
+			// rule itself (see isValidInOtherVariant in LanguageTool's source),
+			// sharing the same rule id as genuine misspellings and with no
+			// exposed toggle to disable just this behavior. Filtering by
+			// message content is the only available lever short of patching
+			// LanguageTool itself - same pattern already used below for
+			// FRENCH_WHITESPACE and EN_QUOTES.
+			List<RuleMatch> variant_filtered = new ArrayList<RuleMatch>();
+			for (RuleMatch rm : matches)
+			{
+				if (rm.getMessage().contains("is British English") || rm.getMessage().contains("is American English"))
+				{
+					continue;
+				}
+				variant_filtered.add(rm);
+			}
+			matches = variant_filtered;
 		}
 		for (RuleMatch rm : matches)
 		{
