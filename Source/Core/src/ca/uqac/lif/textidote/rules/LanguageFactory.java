@@ -18,19 +18,7 @@
 package ca.uqac.lif.textidote.rules;
 
 import org.languagetool.Language;
-import org.languagetool.language.AmericanEnglish;
-import org.languagetool.language.Arabic;
-import org.languagetool.language.AustrianGerman;
-import org.languagetool.language.BritishEnglish;
-import org.languagetool.language.CanadianEnglish;
-import org.languagetool.language.Dutch;
-import org.languagetool.language.French;
-import org.languagetool.language.GermanyGerman;
-import org.languagetool.language.Portuguese;
-import org.languagetool.language.BrazilianPortuguese;
-import org.languagetool.language.Spanish;
-import org.languagetool.language.Polish;
-import org.languagetool.language.SwissGerman;
+import org.languagetool.Languages;
 
 /**
  * Factory class whose sole purpose is to provide instances of {@code Language}
@@ -47,57 +35,87 @@ public class LanguageFactory
 	 */
 	/*@ nullable @*/ public static Language getLanguageFromString(String s)
 	{
+		String code = toLanguageToolCode(s);
+		if (code == null)
+		{
+			return null;
+		}
+		try
+		{
+			// Languages.getLanguageForShortCode delegates to LanguageTool's own
+			// singleton-managed registry (built from language-module.properties),
+			// instead of instantiating Language subclasses directly with "new".
+			// Doing the latter throws under LT 6.x once JLanguageTool has already
+			// instantiated the same language internally.
+			return Languages.getLanguageForShortCode(code);
+		}
+		catch (IllegalArgumentException e)
+		{
+			return null;
+		}
+	}
+
+	/**
+	 * Converts TeXtidote's historical underscore-separated language argument
+	 * (e.g. "en_US", as typed after --check) into the hyphen-separated short
+	 * code expected by LanguageTool's {@code Languages.getLanguageForShortCode}.
+	 * @param s The TeXtidote-style language string
+	 * @return The corresponding LanguageTool short code, or {@code null} if
+	 * unrecognized
+	 */
+	private static String toLanguageToolCode(String s)
+	{
 		if (s.compareToIgnoreCase("en") == 0 || s.compareToIgnoreCase("en_US") == 0)
 		{
-			return new AmericanEnglish();
+			return "en-US";
 		}
 		if (s.compareToIgnoreCase("ar") == 0)
 		{
-			return new Arabic();
+			return "ar";
 		}
 		if (s.compareToIgnoreCase("en_CA") == 0)
 		{
-			return new CanadianEnglish();
+			return "en-CA";
 		}
 		if (s.compareToIgnoreCase("en_UK") == 0)
 		{
-			return new BritishEnglish();
+			return "en-GB";
 		}
 		if (s.compareToIgnoreCase("pl") == 0)
 		{
-			return new Polish();
+			return "pl";
 		}
 		if (s.compareToIgnoreCase("fr") == 0 || s.compareToIgnoreCase("fr_CA") == 0)
 		{
-			return new French();
+			return "fr";
 		}
 		if (s.compareToIgnoreCase("es") == 0)
 		{
-			return new Spanish();
+			return "es";
 		}
 		if (s.compareToIgnoreCase("de") == 0 || s.compareToIgnoreCase("de_DE") == 0)
 		{
-			return new GermanyGerman();
+			return "de-DE";
 		}
 		if (s.compareToIgnoreCase("de_CH") == 0)
 		{
-			return new SwissGerman();
+			return "de-CH";
 		}
 		if (s.compareToIgnoreCase("de_AT") == 0)
 		{
-			return new AustrianGerman();
+			return "de-AT";
 		}
 		if (s.compareToIgnoreCase("nl") == 0)
 		{
-			return new Dutch();
+			return "nl";
 		}
 		if (s.compareToIgnoreCase("pt") == 0)
 		{
-			return new Portuguese();
+			return "pt";
 		}
 		if (s.compareToIgnoreCase("pt_BR") == 0)
 		{
-			return new BrazilianPortuguese();
+			return "pt-BR";
 		}
 		return null;
 	}
