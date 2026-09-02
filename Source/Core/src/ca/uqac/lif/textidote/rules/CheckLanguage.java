@@ -100,6 +100,17 @@ public class CheckLanguage extends Rule
 	/*@ non_null @*/ protected Map<String, JLanguageTool> m_secondaryTools = new HashMap<String, JLanguageTool>();
 
 	/**
+	 * Minimum confidence (as returned by SimpleLanguageIdentifier via
+	 * ExtendedSentenceRange.getLanguageConfidenceRates()) required before
+	 * running a real secondary-language check on an automatically-detected
+	 * foreign sentence. A rough heuristic, not tuned against a large
+	 * corpus; chosen to avoid firing a secondary check on marginal/unsure
+	 * detections, which could otherwise introduce new false positives in
+	 * the wrong secondary language.
+	 */
+	protected static final float AUTO_SECONDARY_CHECK_THRESHOLD = 0.5f;
+
+	/**
 	 * Directory containing per-language custom dictionary files (named
 	 * {@code <code>.txt}, one word per line, e.g. "en.txt"), applied to secondary
 	 * JLanguageTool instances used for marked/detected foreign-language
@@ -253,7 +264,16 @@ public class CheckLanguage extends Rule
 			// by the spelling rules that trigger foreign-language detection.
 			LanguageIdentifierService.INSTANCE.getSimpleLanguageIdentifier(preferredLanguages);
 			UserConfig userConfig = buildMultilingualUserConfig(preferredLanguages);
-			m_languageTool = new MultiThreadedJLanguageTool(lang, null, userConfig);
+			// Deliberately NOT MultiThreadedJLanguageTool here: its performCheck()
+			// merges per-thread CheckResults using CheckResults' 2-argument
+			// constructor, which silently drops extendedSentenceRanges (defaults
+			// to an empty list) even though each worker computes it correctly.
+			// Confirmed by reading MultiThreadedJLanguageTool.java's source.
+			// Multilingual mode needs extendedSentenceRanges to actually verify
+			// detected foreign sentences, so we trade multi-threading for
+			// correctness here; single-language checks are unaffected and keep
+			// using MultiThreadedJLanguageTool below.
+			m_languageTool = new JLanguageTool(lang, (Language) null, (org.languagetool.ResultCache) null, userConfig);
 			m_multilingual = true;
 		}
 		else
@@ -543,6 +563,54 @@ public class CheckLanguage extends Rule
 					if (!is_ignored)
 					{
 						matches.add(rm);
+					}
+				}
+				// LanguageTool's own automatic detection only SUPPRESSES false
+				// positives from the main-language checker on foreign-language
+				// sentences - it never actually verifies them. To provide real
+				// checking (not just false-positive suppression), run each
+				// confidently-detected foreign sentence through its own secondary
+				// JLanguageTool instance, same mechanism already used for
+				// --lang-markers passages.
+				String main_lang_code = stripVariant(m_languageTool.getLanguage().getShortCode());
+				for (org.languagetool.ExtendedSentenceRange esr : results.getExtendedSentenceRanges())
+				{
+					Map.Entry<String, Float> best = null;
+					for (Map.Entry<String, Float> entry : esr.getLanguageConfidenceRates().entrySet())
+					{
+						if (best == null || entry.getValue() > best.getValue())
+						{
+							best = entry;
+						}
+					}
+					if (best == null || best.getKey().equals(main_lang_code) || best.getValue() < AUTO_SECONDARY_CHECK_THRESHOLD)
+					{
+						continue;
+					}
+					JLanguageTool secondary = getSecondaryTool(best.getKey());
+					if (secondary == null)
+					{
+						continue;
+					}
+					int range_start = esr.getFromPos();
+					int range_end = esr.getToPos();
+					if (range_start < 0 || range_end > s_to_check.length() || range_start >= range_end)
+					{
+						continue;
+					}
+					String extract = s_to_check.substring(range_start, range_end);
+					try
+					{
+						List<RuleMatch> secondary_matches = secondary.check(extract);
+						for (RuleMatch sm : secondary_matches)
+						{
+							sm.setOffsetPosition(sm.getFromPos() + range_start, sm.getToPos() + range_start);
+							matches.add(sm);
+						}
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
 					}
 				}
 			}
