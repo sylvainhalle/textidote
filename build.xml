@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!--
     AntRun, a general-purpose Ant build script
-    Copyright (C) 2015-2023  Sylvain Hallé
+    Copyright (C) 2015-2026  Sylvain Hallé
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,14 +26,14 @@
   <antversion property="antversion.running" />
   
   <!-- The build script's version number. Do not edit! -->
-  <property name="antrun.version" value="1.10.1"/>
+  <property name="antrun.version" value="1.11.1"/>
   
   <!-- Load project properties from XML file -->
   <xmlproperty file="config.xml"/>
   
   <!-- Versions of various dependencies -->
-  <property name="versions.jacoco" value="0.8.8"/>
-  <property name="versions.junit" value="1.9.2"/>
+  <property name="versions.jacoco" value="0.8.14"/>
+  <property name="versions.junit" value="1.14.4"/>
   
   <!--
     Default values. Note that Ant's properties cannot be overwritten once
@@ -46,6 +46,9 @@
   
   <!-- The project's version number -->
   <property name="build.version" value="1.0"/>
+  
+  <!-- The project's package -->
+  <property name="build.package" value="antrun/"/>
   
   <!-- The target JDK version for the build -->
   <property name="build.targetjdk" value="11"/>
@@ -107,6 +110,11 @@
   <!-- The filename pattern to recognize test binary files -->
   <property name="build.test.filenamepattern.bin" value="**/*Test.class"/>
   
+  <!-- The location of XSLT files (only required by the eclipse target) -->
+  <property name="xslt.dir" value="lib/xslt"/>
+  <property name="eclipse.project" value=".project"/>
+  <property name="eclipse.classpath" value=".classpath"/>
+  
   <!-- Target: initialization
        All other targets should ultimately
        depend on this one (except perhaps very simple ones such as
@@ -114,6 +122,7 @@
   -->
   <target name="init" depends="ant-contrib,xmltask"
     description="Initialize the project">
+    <echo message="libdir is ${build.libdir}"/>
     <!-- Load ant-contrib -->
     <taskdef resource="net/sf/antcontrib/antlib.xml"
       classpath="${build.libdir}/ant-contrib-1.0b3.jar"/>
@@ -149,6 +158,16 @@
     <mkdir dir="${build.docdir}/doc-files"/>
   </target>
   
+  <!-- Target: check-javadoc
+       Sets the property javadoc.uptodate if the generated documentation
+       is newer than any source file -->
+  <target name="check-javadoc">
+    <uptodate property="javadoc.uptodate"
+            targetfile="${build.javadoc.dir}/.javadoc.stamp">
+      <srcfiles dir="${src.dir}" includes="**/*.java"/>
+    </uptodate>
+  </target>
+  
   <!-- Target: zip
        Zips the jar
   -->
@@ -174,7 +193,6 @@
       srcdir="${build.srcdir}"
       destdir="${build.bindir}"
       debug="${build.debug}"
-      encoding="UTF-8"
       includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
@@ -193,7 +211,6 @@
       srcdir="${build.test.srcdir}"
       destdir="${build.test.bindir}"
       debug="${build.debug}"
-      encoding="UTF-8"
       includeantruntime="false">
       <classpath refid="build.classpath"/>
     </javac>
@@ -205,7 +222,7 @@
   <!-- Target: javadoc
        Generates the javadoc associated to the project
   -->
-  <target name="javadoc" depends="init" description="Generate the documentation">
+  <target name="javadoc" description="Generate the documentation" depends="init,check-javadoc" unless="javadoc.uptodate">
     <mkdir dir="${build.docdir}"/>
     <mkdir dir="${build.docdir}/doc-files"/>
     <javadoc sourcepath="${build.srcdir}"
@@ -233,6 +250,7 @@
       	</copy>
       </then>
     </if>
+    <touch file="${build.docdir}/.javadoc.stamp"/>
   </target>
   
   <!-- Target: jar
@@ -243,13 +261,19 @@
     <tstamp>
        <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
     </tstamp>
-    <jar destfile="${build.jar.filename}-${build.version}.jar" filesetmanifest="skip">
+    <jar destfile="${build.jar.filename}-${build.version}.jar" filesetmanifest="mergewithoutmain" duplicate="preserve" level="9">
 	  <manifest>
 	      <attribute name="Main-Class" value="${build.mainclass}"/>
-	      <attribute name="Class-Path" value="."/>
 	      <attribute name="Built-By" value="${user.name}"/>
 	      <attribute name="Built-Date" value="${TODAY}"/>
           <attribute name="Implementation-Version" value="${build.version}"/>
+	      <section name="${build.package}">
+	        <attribute name="Main-Class" value="${build.mainclass}"/>
+	        <attribute name="Class-Path" value="."/>
+	        <attribute name="Built-By" value="${user.name}"/>
+	        <attribute name="Built-Date" value="${TODAY}"/>
+            <attribute name="Implementation-Version" value="${build.version}"/>
+          </section>
 	  </manifest>
 	  <fileset dir="${build.bindir}">
 	    <filename name="**/*"/>
@@ -323,11 +347,11 @@
     <!-- Run jUnit. Since the jacoco task does not support the nested
          junitlauncher task (required by jUnit5), we run jUnit manually and
          pass the JaCoCo agent as a parameter to the JVM. -->
-    <jacoco:agent property="agentvmparam" enabled="true" destfile="${test.report.jacocodir}/jacoco.exec" />
+    <jacoco:agent property="agentvmparam" enabled="true" destfile="${build.report.jacocodir}/jacoco.exec" />
     <java classpathref="build.test.classpath" classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
       <jvmarg value="${agentvmparam}" />
       <arg line="--scan-classpath" />
-      <arg line="--reports-dir ${test.report.junitdir}" />
+      <arg line="--reports-dir ${build.report.junitdir}" />
     </java>
     <fail if="test.failed"/>
   </target>
@@ -381,7 +405,9 @@
       </executiondata>
       <structure name="${build.name}">
         <classfiles>
-            <fileset dir="${build.bindir}"/>
+            <fileset dir="${build.bindir}">
+              <exclude name="${build.test.filenamepattern}"/>
+            </fileset>
         </classfiles>
         <sourcefiles encoding="UTF-8">
             <fileset dir="${build.srcdir}"/>
@@ -526,6 +552,33 @@
       <mapper type="flatten"/>
     </unzip>
   </target>
+
+  <!-- Generate Eclipse .classpath from config.xml -->
+  <target name="gen-classpath" depends="init">
+    <xslt in="config.xml" out="${eclipse.classpath}" style="classpath.xsl">
+      <!-- You can pass parameters if needed -->
+    </xslt>
+    <echo>.classpath generated</echo>
+  </target>
+
+  <!-- Generate Eclipse .project from config.xml -->
+  <target name="gen-project" depends="init">
+    <xslt in="config.xml" out="${eclipse.project}" style="project.xsl"/>
+    <echo>.project generated</echo>
+  </target>
+
+  <!-- Remove generated Eclipse metadata -->
+  <target name="clean-eclipse">
+    <delete file="${eclipse.project}"/>
+    <delete file="${eclipse.classpath}"/>
+    <delete dir=".metadata"/>
+    <delete dir=".settings"/>
+  </target>
+
+  <!-- Target: eclipse
+       Generates boilerplate .classpath and .project files to import in Eclipse
+  -->
+  <target name="eclipse" depends="gen-classpath,gen-project"/>
   
   <!-- Task: check-deps
        Loops through all dependencies specified in config.xml; checks if
@@ -630,4 +683,4 @@
     </sequential>
   </target>
 </project>
-<!-- :tabWidth=2: -->
+<!-- :tabWidth=2:mode=ant: -->
