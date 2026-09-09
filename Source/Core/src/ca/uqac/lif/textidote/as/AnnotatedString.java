@@ -590,6 +590,16 @@ public class AnnotatedString implements ExplanationQueryable
 	}
 
 	/**
+	 * Gets the original (uncleaned) string, before any processing was
+	 * applied.
+	 * @return The original string
+	 */
+	/*@ pure non_null @*/ public String getOriginalString()
+	{
+		return m_original;
+	}
+
+	/**
 	 * Gets the two-dimensional position of the <em>original</em> string
 	 * corresponding to a line/column position in the current string.
 	 * @param p The position

@@ -20,12 +20,18 @@ package ca.uqac.lif.textidote.rules;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
+import org.languagetool.UserConfig;
+import org.languagetool.CheckResults;
+import org.languagetool.language.identifier.LanguageIdentifierService;
 import org.languagetool.rules.RuleMatch;
 import org.languagetool.rules.spelling.SpellingCheckRule;
 
@@ -70,6 +76,61 @@ public class CheckLanguage extends Rule
 	protected boolean m_disableUnpaired = true;
 
 	/**
+	 * Whether this instance was set up with more than one candidate
+	 * language (i.e. multilingual detection is active). When true,
+	 * {@link #evaluate(AnnotatedString)} uses LanguageTool's
+	 * {@code check2} method to get per-sentence language info instead of
+	 * the plain {@code check} method.
+	 */
+	protected boolean m_multilingual = false;
+
+	/**
+	 * Explicit language markers (LaTeX commands the user has declared as
+	 * marking a passage of text as being in a different language). May be
+	 * empty if no marker file was provided.
+	 */
+	/*@ non_null @*/ protected List<LanguageMarker> m_languageMarkers = new ArrayList<LanguageMarker>();
+
+	/**
+	 * Cache of secondary JLanguageTool instances, one per distinct
+	 * LanguageTool short code encountered in {@link #m_languageMarkers}.
+	 * Lazily populated, since constructing a JLanguageTool instance loads
+	 * a full rule set and is relatively expensive.
+	 */
+	/*@ non_null @*/ protected Map<String, JLanguageTool> m_secondaryTools = new HashMap<String, JLanguageTool>();
+
+	/**
+	 * Minimum confidence (as returned by SimpleLanguageIdentifier via
+	 * ExtendedSentenceRange.getLanguageConfidenceRates()) required before
+	 * running a real secondary-language check on an automatically-detected
+	 * foreign sentence. A rough heuristic, not tuned against a large
+	 * corpus; chosen to avoid firing a secondary check on marginal/unsure
+	 * detections, which could otherwise introduce new false positives in
+	 * the wrong secondary language.
+	 */
+	protected static final float AUTO_SECONDARY_CHECK_THRESHOLD = 0.5f;
+
+	/**
+	 * Directory containing per-language custom dictionary files (named
+	 * {@code <code>.txt}, one word per line, e.g. "en.txt"), applied to secondary
+	 * JLanguageTool instances used for marked/detected foreign-language
+	 * passages. Null if not configured (--lang-dict not provided).
+	 */
+	protected File m_secondaryDictDir = null;
+
+	/**
+	 * Whether to disable LanguageTool's American/British spelling-variant
+	 * cross-checking rules (AMERICAN_SIMPLE_REPLACE_RULE,
+	 * BRITISH_SIMPLE_REPLACE_RULE) on secondary English instances. These
+	 * rules flag words that are correctly spelled but belong to the
+	 * "other" English variant (e.g. "labour" flagged when checking against
+	 * American English). Useful when secondary English passages are
+	 * quotations that may legitimately mix or use either variant, rather
+	 * than prose the user is expected to keep internally consistent.
+	 */
+	protected boolean m_ignoreEnglishVariant = false;
+
+	/**
 	 * Creates a new rule for checking a specific language
 	 * @param lang The language to check. If {@code null}, the
 	 * constructor will throw an exception
@@ -103,6 +164,183 @@ public class CheckLanguage extends Rule
 		handleUserDictionary();
 	}
 
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling per-sentence multilingual detection among a list of
+	 * candidate languages. If {@code additionalLanguages} contains fewer
+	 * than two LanguageTool short codes in total (main language plus
+	 * additional ones), this behaves exactly like the two-argument
+	 * constructor: multilingual detection requires at least two candidate
+	 * languages, per LanguageTool's own {@code ForeignLanguageChecker}.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking
+	 * @param additionalLanguages LanguageTool short codes (e.g. "en-US",
+	 * "de-DE") of additional candidate languages to detect within the
+	 * document, on top of {@code lang}. Can be {@code null} or empty.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages) throws UnsupportedLanguageException
+	{
+		this(lang, dictionary, additionalLanguages, new ArrayList<LanguageMarker>(0));
+	}
+
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling both per-sentence automatic multilingual detection and
+	 * explicit LaTeX-command-based language marking.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking
+	 * @param additionalLanguages LanguageTool short codes of additional
+	 * candidate languages for automatic detection. Can be {@code null}
+	 * or empty to disable automatic detection.
+	 * @param languageMarkers Explicit language-marker rules, parsed from
+	 * a user-provided config file. Can be {@code null} or empty to
+	 * disable explicit marking.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers) throws UnsupportedLanguageException
+	{
+		this(lang, dictionary, additionalLanguages, languageMarkers, null, false);
+	}
+
+	/**
+	 * Creates a new rule for checking a specific language, additionally
+	 * enabling both per-sentence automatic multilingual detection and
+	 * explicit LaTeX-command-based language marking, with per-language
+	 * custom dictionaries for the secondary languages.
+	 * @param lang The main language to check. If {@code null}, the
+	 * constructor will throw an exception
+	 * @param dictionary A set of words that should be ignored by
+	 * spell checking, applied to the MAIN language only
+	 * @param additionalLanguages LanguageTool short codes of additional
+	 * candidate languages for automatic detection. Can be {@code null}
+	 * or empty to disable automatic detection.
+	 * @param languageMarkers Explicit language-marker rules, parsed from
+	 * a user-provided config file. Can be {@code null} or empty to
+	 * disable explicit marking.
+	 * @param secondaryDictDir Directory containing per-language custom
+	 * dictionary files (e.g. "en.txt"), applied to secondary-language
+	 * checks (both automatic and marker-based). Can be {@code null} to
+	 * disable secondary dictionaries entirely.
+	 * @throws UnsupportedLanguageException If {@code lang} is null
+	 */
+	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary, /*@ nullable @*/ List<String> additionalLanguages, /*@ nullable @*/ List<LanguageMarker> languageMarkers, /*@ nullable @*/ File secondaryDictDir, boolean ignoreEnglishVariant) throws UnsupportedLanguageException
+	{
+		super("lt:");
+		m_secondaryDictDir = secondaryDictDir;
+		m_ignoreEnglishVariant = ignoreEnglishVariant;
+		if (lang == null)
+		{
+			throw new UnsupportedLanguageException();
+		}
+		setName("lt:" + lang.getShortCode());
+		if (languageMarkers != null)
+		{
+			m_languageMarkers = languageMarkers;
+		}
+		List<String> preferredLanguages = new ArrayList<String>();
+		preferredLanguages.add(stripVariant(lang.getShortCode()));
+		if (additionalLanguages != null)
+		{
+			for (String code : additionalLanguages)
+			{
+				String base_code = stripVariant(code);
+				if (!preferredLanguages.contains(base_code))
+				{
+					preferredLanguages.add(base_code);
+				}
+			}
+		}
+		if (preferredLanguages.size() >= 2)
+		{
+			// Multilingual mode: LanguageIdentifierService needs to be
+			// initialized with the candidate languages before any
+			// JLanguageTool instance is created, since it is looked up
+			// internally as a singleton (LanguageIdentifierService.INSTANCE)
+			// by the spelling rules that trigger foreign-language detection.
+			LanguageIdentifierService.INSTANCE.getSimpleLanguageIdentifier(preferredLanguages);
+			UserConfig userConfig = buildMultilingualUserConfig(preferredLanguages);
+			// Deliberately NOT MultiThreadedJLanguageTool here: its performCheck()
+			// merges per-thread CheckResults using CheckResults' 2-argument
+			// constructor, which silently drops extendedSentenceRanges (defaults
+			// to an empty list) even though each worker computes it correctly.
+			// Confirmed by reading MultiThreadedJLanguageTool.java's source.
+			// Multilingual mode needs extendedSentenceRanges to actually verify
+			// detected foreign sentences, so we trade multi-threading for
+			// correctness here; single-language checks are unaffected and keep
+			// using MultiThreadedJLanguageTool below.
+			m_languageTool = new JLanguageTool(lang, (Language) null, (org.languagetool.ResultCache) null, userConfig);
+			m_multilingual = true;
+		}
+		else
+		{
+			m_languageTool = new MultiThreadedJLanguageTool(lang);
+		}
+		if (m_disableWhitespace)
+		{
+			m_languageTool.disableRule("WHITESPACE_RULE");
+		}
+		m_dictionary = dictionary;
+		handleUserDictionary();
+	}
+
+	/**
+	 * Builds a {@code UserConfig} with {@code preferredLanguages} set, using
+	 * default/neutral values for every other field. This mirrors the
+	 * 18-argument constructor of {@code org.languagetool.UserConfig} as of
+	 * LanguageTool 6.9; if that constructor's signature changes in a future
+	 * LanguageTool version, this is the one place that needs updating.
+	 * @param preferredLanguages The candidate language short codes
+	 * @return A UserConfig usable to activate multilingual detection
+	 */
+	private static UserConfig buildMultilingualUserConfig(List<String> preferredLanguages)
+	{
+		return new UserConfig(
+			Collections.emptyList(),   // userSpecificSpellerWords
+			Collections.emptyList(),   // userSpecificRules
+			Collections.emptyMap(),    // ruleValues
+			0,                          // maxSpellingSuggestions
+			0L,                          // premiumUid
+			null,                         // userDictName
+			0L,                            // userDictCacheSize
+			null,                           // linguServices
+			false,                          // filterDictionaryMatches
+			null,                           // abTest
+			null,                           // textSessionId
+			false,                          // hidePremiumMatches
+			preferredLanguages,             // preferredLanguages
+			true,                           // trustedSource
+			false,                          // optInThirdPartyAI
+			false,                          // isPremium
+			null,                           // tokenType
+			true                            // suggestionsEnabled
+		);
+	}
+
+	/**
+	 * Strips any country-variant suffix (e.g. "-DE", "-US") from a
+	 * LanguageTool short code, keeping only the base macro-language code.
+	 * Needed because {@code SimpleLanguageIdentifier} indexes its internal
+	 * data by base short code, while {@code LanguageFactory} resolves
+	 * codes like "de" to a specific variant like "de-DE" for grammar
+	 * checking purposes.
+	 * @param code A LanguageTool short code, possibly with a variant suffix
+	 * @return The base code, without any variant suffix
+	 */
+	private static String stripVariant(String code)
+	{
+		int dash_pos = code.indexOf('-');
+		if (dash_pos < 0)
+		{
+			return code;
+		}
+		return code.substring(0, dash_pos);
+	}
+
 	public void handleUserDictionary()
 	{
 		for (org.languagetool.rules.Rule rule : m_languageTool.getAllActiveRules())
@@ -124,7 +362,7 @@ public class CheckLanguage extends Rule
 	 */
 	public CheckLanguage(/*@ nullable @*/ Language lang, /*@ non_null @*/ List<String> dictionary) throws UnsupportedLanguageException
 	{
-		this(lang, null, dictionary);
+		this(lang, (Language) null, dictionary);
 	}
 
 	/**
@@ -137,15 +375,249 @@ public class CheckLanguage extends Rule
 		this(lang, new ArrayList<String>(0));
 	}
 
+	/**
+	 * Gets (creating and caching it if necessary) a secondary
+	 * JLanguageTool instance for the given LanguageTool short code, used
+	 * to check text extracted from an explicitly marked language passage.
+	 * @param languageCode A LanguageTool short code (e.g. "en", "es")
+	 * @return A JLanguageTool instance for that language, or {@code null}
+	 * if the code could not be resolved to a supported language
+	 */
+	protected JLanguageTool getSecondaryTool(String languageCode)
+	{
+		if (m_secondaryTools.containsKey(languageCode))
+		{
+			return m_secondaryTools.get(languageCode);
+		}
+		Language lang = LanguageFactory.getLanguageFromString(languageCode);
+		JLanguageTool tool = null;
+		if (lang != null)
+		{
+			tool = new JLanguageTool(lang);
+			if (m_disableWhitespace)
+			{
+				tool.disableRule("WHITESPACE_RULE");
+			}
+			if (m_secondaryDictDir != null)
+			{
+				List<String> secondary_dict = loadSecondaryDictionary(languageCode);
+				if (!secondary_dict.isEmpty())
+				{
+					for (org.languagetool.rules.Rule rule : tool.getAllActiveRules())
+					{
+						if (rule instanceof SpellingCheckRule)
+						{
+							((SpellingCheckRule) rule).addIgnoreTokens(secondary_dict);
+						}
+					}
+				}
+			}
+		}
+		m_secondaryTools.put(languageCode, tool);
+		return tool;
+	}
+
+	/**
+	 * Loads the custom dictionary for a given language from
+	 * {@link #m_secondaryDictDir}, if a matching file exists. The expected
+	 * filename is {@code <languageCode>.txt} (base code, no country variant),
+	 * one word per line, blank lines ignored - same format as the main
+	 * --dict file.
+	 * @param languageCode A LanguageTool short code (e.g. "en", "es")
+	 * @return The list of words to ignore, or an empty list if no
+	 * dictionary file was found for this language
+	 */
+	protected List<String> loadSecondaryDictionary(String languageCode)
+	{
+		List<String> words = new ArrayList<String>();
+		if (m_secondaryDictDir == null)
+		{
+			return words;
+		}
+		File dict_file = new File(m_secondaryDictDir, languageCode + ".txt");
+		if (!dict_file.exists())
+		{
+			return words;
+		}
+		try
+		{
+			java.util.Scanner sc = new java.util.Scanner(dict_file);
+			while (sc.hasNextLine())
+			{
+				String line = sc.nextLine().trim();
+				if (!line.isEmpty())
+				{
+					words.add(line);
+				}
+			}
+			sc.close();
+		}
+		catch (java.io.FileNotFoundException e)
+		{
+			// Shouldn't happen since we just checked dict_file.exists(), but
+			// guard against a race condition anyway
+		}
+		return words;
+	}
+
+	/**
+	 * A marked range translated into positions within the cleaned string,
+	 * paired with its target language.
+	 */
+	protected static class TranslatedMarkedRange
+	{
+		public final int start;
+		public final int end; // inclusive, per ca.uqac.lif.petitpoucet.function.strings.Range convention
+		public final String language;
+
+		public TranslatedMarkedRange(int start, int end, String language)
+		{
+			this.start = start;
+			this.end = end;
+			this.language = language;
+		}
+
+		public boolean contains(int pos_start, int pos_end)
+		{
+			return pos_start >= start && pos_end <= end;
+		}
+	}
+
+	/**
+	 * Scans the original source for explicit language markers and
+	 * translates each match's position into the cleaned string's
+	 * coordinate space.
+	 * @param s The annotated string being evaluated
+	 * @return The list of translated marked ranges. Empty if no markers
+	 * are configured, or none were found in this document.
+	 */
+	protected List<TranslatedMarkedRange> findTranslatedMarkedRanges(AnnotatedString s)
+	{
+		List<TranslatedMarkedRange> out = new ArrayList<TranslatedMarkedRange>();
+		if (m_languageMarkers.isEmpty())
+		{
+			return out;
+		}
+		String original = s.getOriginalString();
+		List<LanguageMarkerScanner.MarkedRange> raw_ranges = LanguageMarkerScanner.scan(original, m_languageMarkers);
+		for (LanguageMarkerScanner.MarkedRange r : raw_ranges)
+		{
+			Range translated = s.findCurrentRange(r.start, r.end);
+			if (translated != null)
+			{
+				out.add(new TranslatedMarkedRange(translated.getStart(), translated.getEnd(), r.language));
+			}
+		}
+		return out;
+	}
+
 	@Override
 	public List<Advice> evaluate(AnnotatedString s)
 	{
 		List<Advice> out_list = new ArrayList<Advice>();
 		String s_to_check = s.toString();
+		// Compute marked ranges *before* the main check, so their content can
+		// be masked out (replaced with spaces, preserving length) before
+		// being sent to the main-language JLanguageTool instance. Leaving the
+		// raw foreign-language text in place confuses the main tool's
+		// sentence-boundary detection (e.g. a period inside the marked
+		// passage gets mistaken for the end of a main-language sentence,
+		// causing a bogus "sentence doesn't start with a capital letter"
+		// warning on the text that follows).
+		List<TranslatedMarkedRange> marked_ranges = findTranslatedMarkedRanges(s);
+		String s_for_main_check = s_to_check;
+		if (!marked_ranges.isEmpty())
+		{
+			StringBuilder masked = new StringBuilder(s_to_check);
+			for (TranslatedMarkedRange mr : marked_ranges)
+			{
+				for (int i = mr.start; i <= mr.end && i < masked.length(); i++)
+				{
+					masked.setCharAt(i, ' ');
+				}
+			}
+			s_for_main_check = masked.toString();
+		}
 		List<RuleMatch> matches = null;
 		try
 		{
-			matches = m_languageTool.check(s_to_check);
+			if (m_multilingual)
+			{
+				org.languagetool.markup.AnnotatedText a_text = new org.languagetool.markup.AnnotatedTextBuilder().addText(s_for_main_check).build();
+				CheckResults results = m_languageTool.check2(a_text, true, JLanguageTool.ParagraphHandling.NORMAL,
+						null, JLanguageTool.Mode.ALL, JLanguageTool.Level.DEFAULT,
+						Collections.emptySet(), null);
+				List<org.languagetool.Range> ignored_ranges = results.getIgnoredRanges();
+				matches = new ArrayList<RuleMatch>();
+				for (RuleMatch rm : results.getRuleMatches())
+				{
+					boolean is_ignored = false;
+					for (org.languagetool.Range ir : ignored_ranges)
+					{
+						if (rm.getFromPos() >= ir.getFromPos() && rm.getToPos() <= ir.getToPos())
+						{
+							is_ignored = true;
+							break;
+						}
+					}
+					if (!is_ignored)
+					{
+						matches.add(rm);
+					}
+				}
+				// LanguageTool's own automatic detection only SUPPRESSES false
+				// positives from the main-language checker on foreign-language
+				// sentences - it never actually verifies them. To provide real
+				// checking (not just false-positive suppression), run each
+				// confidently-detected foreign sentence through its own secondary
+				// JLanguageTool instance, same mechanism already used for
+				// --lang-markers passages.
+				String main_lang_code = stripVariant(m_languageTool.getLanguage().getShortCode());
+				for (org.languagetool.ExtendedSentenceRange esr : results.getExtendedSentenceRanges())
+				{
+					Map.Entry<String, Float> best = null;
+					for (Map.Entry<String, Float> entry : esr.getLanguageConfidenceRates().entrySet())
+					{
+						if (best == null || entry.getValue() > best.getValue())
+						{
+							best = entry;
+						}
+					}
+					if (best == null || best.getKey().equals(main_lang_code) || best.getValue() < AUTO_SECONDARY_CHECK_THRESHOLD)
+					{
+						continue;
+					}
+					JLanguageTool secondary = getSecondaryTool(best.getKey());
+					if (secondary == null)
+					{
+						continue;
+					}
+					int range_start = esr.getFromPos();
+					int range_end = esr.getToPos();
+					if (range_start < 0 || range_end > s_to_check.length() || range_start >= range_end)
+					{
+						continue;
+					}
+					String extract = s_to_check.substring(range_start, range_end);
+					try
+					{
+						List<RuleMatch> secondary_matches = secondary.check(extract);
+						for (RuleMatch sm : secondary_matches)
+						{
+							sm.setOffsetPosition(sm.getFromPos() + range_start, sm.getToPos() + range_start);
+							matches.add(sm);
+						}
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			}
+			else
+			{
+				matches = m_languageTool.check(s_for_main_check);
+			}
 		}
 		catch (IOException e)
 		{
@@ -155,6 +627,78 @@ public class CheckLanguage extends Rule
 		if (matches == null)
 		{
 			return out_list;
+		}
+		// Explicit language markers: filter out matches inside marked
+		// ranges (they'll be re-checked below with the right language),
+		// then check each marked range with its dedicated secondary tool
+		// and merge the (offset-corrected) results in.
+		if (!marked_ranges.isEmpty())
+		{
+			List<RuleMatch> filtered = new ArrayList<RuleMatch>();
+			for (RuleMatch rm : matches)
+			{
+				boolean in_marked_range = false;
+				for (TranslatedMarkedRange mr : marked_ranges)
+				{
+					if (mr.contains(rm.getFromPos(), rm.getToPos()))
+					{
+						in_marked_range = true;
+						break;
+					}
+				}
+				if (!in_marked_range)
+				{
+					filtered.add(rm);
+				}
+			}
+			matches = filtered;
+			for (TranslatedMarkedRange mr : marked_ranges)
+			{
+				JLanguageTool secondary = getSecondaryTool(mr.language);
+				if (secondary == null)
+				{
+					// Unrecognized language code in the marker config: skip
+					// silently, the passage simply won't be checked against
+					// a secondary language (it was already excluded above
+					// from the main-language check).
+					continue;
+				}
+				String extract = s_to_check.substring(mr.start, mr.end + 1);
+				try
+				{
+					List<RuleMatch> secondary_matches = secondary.check(extract);
+					for (RuleMatch sm : secondary_matches)
+					{
+						sm.setOffsetPosition(sm.getFromPos() + mr.start, sm.getToPos() + mr.start);
+						matches.add(sm);
+					}
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+			}
+		}
+		if (m_ignoreEnglishVariant)
+		{
+			// MorfologikAmericanSpellerRule/MorfologikBritishSpellerRule embed
+			// their US<->GB variant cross-check directly inside the spelling
+			// rule itself (see isValidInOtherVariant in LanguageTool's source),
+			// sharing the same rule id as genuine misspellings and with no
+			// exposed toggle to disable just this behavior. Filtering by
+			// message content is the only available lever short of patching
+			// LanguageTool itself - same pattern already used below for
+			// FRENCH_WHITESPACE and EN_QUOTES.
+			List<RuleMatch> variant_filtered = new ArrayList<RuleMatch>();
+			for (RuleMatch rm : matches)
+			{
+				if (rm.getMessage().contains("is British English") || rm.getMessage().contains("is American English"))
+				{
+					continue;
+				}
+				variant_filtered.add(rm);
+			}
+			matches = variant_filtered;
 		}
 		for (RuleMatch rm : matches)
 		{
